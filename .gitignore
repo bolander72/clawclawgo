@@ -1,0 +1,4 @@
+node_modules/
+dist/
+loadout.json
+*.tgz
