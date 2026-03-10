@@ -1,0 +1,109 @@
+@import "tailwindcss";
+
+:root {
+  /* Cyberpunk palette */
+  --rc-bg: #0a0a0f;
+  --rc-surface: #12121a;
+  --rc-surface-hover: #1a1a25;
+  --rc-border: #2a2a3a;
+  --rc-border-active: #00f0ff;
+  --rc-cyan: #00f0ff;
+  --rc-cyan-dim: #00f0ff66;
+  --rc-magenta: #ff00aa;
+  --rc-magenta-dim: #ff00aa66;
+  --rc-yellow: #f0e040;
+  --rc-green: #00ff88;
+  --rc-red: #ff3366;
+  --rc-text: #e0e0f0;
+  --rc-text-dim: #808090;
+  --rc-text-muted: #505060;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'SF Mono', 'JetBrains Mono', 'Fira Code', monospace;
+  background: var(--rc-bg);
+  color: var(--rc-text);
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--rc-border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--rc-cyan-dim);
+}
+
+/* Glow effects */
+.glow-cyan {
+  box-shadow: 0 0 8px var(--rc-cyan-dim), inset 0 0 8px var(--rc-cyan-dim);
+  border-color: var(--rc-cyan);
+}
+
+.glow-magenta {
+  box-shadow: 0 0 8px var(--rc-magenta-dim), inset 0 0 8px var(--rc-magenta-dim);
+  border-color: var(--rc-magenta);
+}
+
+.slot-card {
+  background: var(--rc-surface);
+  border: 1px solid var(--rc-border);
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.slot-card:hover {
+  background: var(--rc-surface-hover);
+  border-color: var(--rc-cyan);
+  box-shadow: 0 0 12px var(--rc-cyan-dim);
+}
+
+.slot-card.active {
+  border-color: var(--rc-cyan);
+  box-shadow: 0 0 16px var(--rc-cyan-dim), inset 0 0 12px rgba(0, 240, 255, 0.05);
+}
+
+/* Scanline overlay */
+.scanlines::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  z-index: 9999;
+}
+
+/* Pulse animation for health dot */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px var(--rc-green); }
+  50% { opacity: 0.7; box-shadow: 0 0 12px var(--rc-green); }
+}
+
+.health-pulse {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
