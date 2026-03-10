@@ -1,0 +1,81 @@
+import { invoke } from '@tauri-apps/api/core';
+import { useEffect, useState } from 'react';
+import type { SlotData, Mod } from '../types';
+
+// Generic hook for invoking Tauri commands with caching
+function useTauriCommand<T>(command: string, fallback: T, deps: unknown[] = []): {
+  data: T;
+  loading: boolean;
+  error: string | null;
+  refresh: () => void;
+} {
+  const [data, setData] = useState<T>(fallback);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = () => {
+    setLoading(true);
+    invoke<T>(command)
+      .then((result) => {
+        setData(result);
+        setError(null);
+      })
+      .catch((err) => {
+        console.error(`[${command}]`, err);
+        setError(String(err));
+      })
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    load();
+  }, deps);
+
+  return { data, loading, error, refresh: load };
+}
+
+export function useSlots() {
+  return useTauriCommand<SlotData[]>('get_slots', []);
+}
+
+export function useSkills() {
+  const result = useTauriCommand<Array<{ name: string; source: string; description?: string; path: string }>>(
+    'get_skills',
+    []
+  );
+
+  // Map to Mod type
+  const mods: Mod[] = result.data.map((s) => ({
+    name: s.name,
+    source: s.source as Mod['source'],
+    enabled: true,
+    description: s.description,
+  }));
+
+  return { ...result, data: mods };
+}
+
+export function useSystemStatus() {
+  return useTauriCommand<{
+    gateway: string;
+    version?: string;
+    uptime?: string;
+    model?: string;
+    os: string;
+    arch: string;
+  }>('get_system_status', { gateway: 'unknown', os: '', arch: '' });
+}
+
+export function useCronJobs() {
+  return useTauriCommand<Array<{
+    id: string;
+    name?: string;
+    enabled: boolean;
+    state: Record<string, unknown>;
+    schedule: Record<string, unknown>;
+  }>>('get_cron_jobs', []);
+}
+
+export function useConfig() {
+  return useTauriCommand<Record<string, unknown>>('get_config', {});
+}
