@@ -726,7 +726,7 @@ function FAQSection() {
       <div className="max-w-3xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-grotesk font-bold text-rc-text mb-4">
-            Questions
+            FAQs
           </h2>
         </div>
 
