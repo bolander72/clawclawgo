@@ -2,7 +2,12 @@ import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useState } from 'react';
 import type { SlotData, Mod } from '../types';
 
-function useTauriCommand<T>(command: string, fallback: T, deps: unknown[] = []): {
+function useTauriCommand<T>(
+  command: string,
+  fallback: T,
+  args?: Record<string, unknown>,
+  deps: unknown[] = []
+): {
   data: T;
   loading: boolean;
   error: string | null;
@@ -14,7 +19,7 @@ function useTauriCommand<T>(command: string, fallback: T, deps: unknown[] = []):
 
   const load = () => {
     setLoading(true);
-    invoke<T>(command)
+    invoke<T>(command, args)
       .then((result) => {
         setData(result);
         setError(null);
@@ -33,8 +38,26 @@ function useTauriCommand<T>(command: string, fallback: T, deps: unknown[] = []):
   return { data, loading, error, refresh: load };
 }
 
-export function useSlots() {
-  return useTauriCommand<SlotData[]>('get_slots', []);
+export function useSlots(agentId?: string) {
+  return useTauriCommand<SlotData[]>(
+    'get_slots',
+    [],
+    agentId ? { agentId } : undefined,
+    [agentId]
+  );
+}
+
+export interface AgentInfo {
+  id: string;
+  name: string | null;
+  is_default: boolean;
+  workspace: string | null;
+  model: string | null;
+  skill_count: number | null;
+}
+
+export function useAgents() {
+  return useTauriCommand<AgentInfo[]>('get_agents', []);
 }
 
 export function useSkills() {

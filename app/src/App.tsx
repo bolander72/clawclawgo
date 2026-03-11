@@ -7,7 +7,7 @@ import { CompareView } from './components/CompareView';
 import { FeedView } from './components/FeedView';
 import { LoadoutsView } from './components/LoadoutsView';
 import { PublishDialog } from './components/PublishDialog';
-import { useSlots, useSkills, useSystemStatus, useCloneLoadout } from './hooks/useTauri';
+import { useSlots, useSkills, useSystemStatus, useCloneLoadout, useAgents } from './hooks/useTauri';
 import { slots as mockSlots, mods as mockMods } from './data/mockLoadout';
 
 type View = 'rig' | 'mods' | 'loadouts' | 'compare' | 'feed';
@@ -18,11 +18,21 @@ function App() {
   const [showPublish, setShowPublish] = useState(false);
   const [compareTarget, setCompareTarget] = useState<unknown | null>(null);
   const [cloneResult, setCloneResult] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [activeAgent, setActiveAgent] = useState<string | undefined>(undefined);
   const { cloneLoadout } = useCloneLoadout();
 
-  const { data: realSlots, loading: slotsLoading, error: slotsError } = useSlots();
+  const { data: agents } = useAgents();
+  const { data: realSlots, loading: slotsLoading, error: slotsError } = useSlots(activeAgent);
   const { data: realMods, loading: modsLoading } = useSkills();
   const { data: status } = useSystemStatus();
+
+  // Set initial active agent once loaded
+  useEffect(() => {
+    if (agents.length > 0 && !activeAgent) {
+      const defaultAgent = agents.find(a => a.is_default) || agents[0];
+      setActiveAgent(defaultAgent.id);
+    }
+  }, [agents]);
 
   const slots = realSlots.length > 0 ? realSlots : mockSlots;
   const mods = realMods.length > 0 ? realMods : mockMods;
@@ -55,6 +65,27 @@ function App() {
           className="w-14 flex flex-col items-center py-4 gap-2 border-r"
           style={{ borderColor: 'var(--rc-border)', background: 'var(--rc-surface)' }}
         >
+          {/* Agent selector — only when multiple agents */}
+          {agents.length > 1 && (
+            <div className="mb-2 pb-2 w-full flex flex-col items-center gap-1" style={{ borderBottom: '1px solid var(--rc-border)' }}>
+              {agents.map((agent) => (
+                <button
+                  key={agent.id}
+                  onClick={() => setActiveAgent(agent.id)}
+                  className="w-9 h-9 rounded-lg flex items-center justify-center text-[10px] font-bold uppercase transition-all"
+                  style={{
+                    background: activeAgent === agent.id ? 'rgba(0, 240, 255, 0.15)' : 'transparent',
+                    color: activeAgent === agent.id ? 'var(--rc-cyan)' : 'var(--rc-text-muted)',
+                    border: activeAgent === agent.id ? '1px solid var(--rc-cyan)' : '1px solid transparent',
+                  }}
+                  title={agent.name || agent.id}
+                >
+                  {(agent.name || agent.id).slice(0, 2)}
+                </button>
+              ))}
+            </div>
+          )}
+
           {navItems.map((item) => (
             <button
               key={item.id}

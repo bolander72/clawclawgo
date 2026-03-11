@@ -31,6 +31,113 @@ fn file_token_estimate(path: &PathBuf) -> Option<usize> {
     fs::read_to_string(path).ok().map(|c| c.split_whitespace().count() * 4 / 3)
 }
 
+// ─── Agent discovery ───
+
+#[derive(Serialize, Clone)]
+struct AgentInfo {
+    id: String,
+    name: Option<String>,
+    is_default: bool,
+    workspace: Option<String>,
+    model: Option<String>,
+    skill_count: Option<usize>,
+}
+
+#[tauri::command]
+fn get_agents() -> Vec<AgentInfo> {
+    let config = read_config();
+    let mut agents = Vec::new();
+
+    // Read agents.list array
+    if let Some(list) = config.pointer("/agents/list").and_then(|v| v.as_array()) {
+        for entry in list {
+            let id = entry.get("id").and_then(|v| v.as_str()).unwrap_or("unknown").to_string();
+            let name = entry.get("name").and_then(|v| v.as_str()).map(|s| s.to_string());
+            let is_default = entry.get("default").and_then(|v| v.as_bool()).unwrap_or(false);
+            let workspace = entry.get("workspace").and_then(|v| v.as_str()).map(|s| s.to_string());
+            let model = entry.get("model").and_then(|v| {
+                // model can be a string or object with .primary
+                if let Some(s) = v.as_str() { Some(s.to_string()) }
+                else { v.pointer("/primary").and_then(|p| p.as_str()).map(|s| s.to_string()) }
+            });
+            let skill_count = entry.get("skills").and_then(|v| v.as_array()).map(|a| a.len());
+
+            agents.push(AgentInfo { id, name, is_default, workspace, model, skill_count });
+        }
+    }
+
+    // If no agents.list, synthesize one from defaults
+    if agents.is_empty() {
+        let defaults = config.pointer("/agents/defaults");
+        let model = defaults
+            .and_then(|d| d.pointer("/model/primary"))
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+        let workspace = defaults
+            .and_then(|d| d.get("workspace"))
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+
+        // Try to get agent name from IDENTITY.md
+        let ws = workspace.as_ref()
+            .map(|w| PathBuf::from(w))
+            .unwrap_or_else(|| workspace_dir());
+        let name = fs::read_to_string(ws.join("IDENTITY.md"))
+            .ok()
+            .and_then(|c| {
+                c.lines()
+                    .find(|l| l.contains("**Name:**"))
+                    .map(|l| l.split("**Name:**").nth(1).unwrap_or("").trim().to_string())
+            });
+
+        agents.push(AgentInfo {
+            id: "main".to_string(),
+            name,
+            is_default: true,
+            workspace,
+            model,
+            skill_count: None,
+        });
+    }
+
+    agents
+}
+
+/// Resolve workspace path for a given agent ID
+fn resolve_agent_workspace(agent_id: &str) -> PathBuf {
+    let config = read_config();
+    if let Some(list) = config.pointer("/agents/list").and_then(|v| v.as_array()) {
+        for entry in list {
+            let id = entry.get("id").and_then(|v| v.as_str()).unwrap_or("");
+            if id == agent_id {
+                if let Some(ws) = entry.get("workspace").and_then(|v| v.as_str()) {
+                    return PathBuf::from(ws);
+                }
+            }
+        }
+    }
+    // Fallback to default workspace
+    let default_ws = config.pointer("/agents/defaults/workspace")
+        .and_then(|v| v.as_str())
+        .map(|s| PathBuf::from(s));
+    default_ws.unwrap_or_else(|| workspace_dir())
+}
+
+/// Read config overrides for a specific agent
+fn resolve_agent_config(agent_id: &str) -> Value {
+    let config = read_config();
+    if let Some(list) = config.pointer("/agents/list").and_then(|v| v.as_array()) {
+        for entry in list {
+            let id = entry.get("id").and_then(|v| v.as_str()).unwrap_or("");
+            if id == agent_id {
+                return entry.clone();
+            }
+        }
+    }
+    // Return defaults if no specific agent found
+    config.pointer("/agents/defaults").cloned().unwrap_or(Value::Null)
+}
+
 // ─── Config reader ───
 
 #[tauri::command]
@@ -209,9 +316,11 @@ struct SubComponent {
 }
 
 #[tauri::command]
-fn get_slots() -> Vec<SlotData> {
+fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
     let config = read_config();
-    let ws = workspace_dir();
+    let ws = agent_id.as_ref()
+        .map(|id| resolve_agent_workspace(id))
+        .unwrap_or_else(|| workspace_dir());
     let mut slots = Vec::new();
 
     // ── SOUL ──
@@ -799,7 +908,7 @@ fn import_loadout(path: String) -> Result<Value, String> {
 fn export_loadout() -> Result<Value, String> {
     // Build a loadout from current state
     let _config = read_config();
-    let slots_data = get_slots();
+    let slots_data = get_slots(None);
     let skills = get_skills();
     let _status = get_system_status();
 
@@ -1028,6 +1137,7 @@ pub fn run() {
             get_system_status,
             get_cron_jobs,
             get_slots,
+            get_agents,
             import_loadout,
             export_loadout,
             export_loadout_safe,
