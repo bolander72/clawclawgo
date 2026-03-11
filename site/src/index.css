@@ -61,7 +61,7 @@ body {
   );
   background-size: 100% 4px;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 0;
   opacity: 0.6;
 }
 
@@ -75,12 +75,12 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(0, 240, 255, 0.4),
+    rgba(0, 240, 255, 0.7),
     transparent
   );
   animation: scanline 12s linear infinite;
   pointer-events: none;
-  z-index: 9999;
+  z-index: 0;
 }
 
 /* Custom scrollbar */
