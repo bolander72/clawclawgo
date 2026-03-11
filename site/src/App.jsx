@@ -9,8 +9,7 @@ import {
   IconHeartbeat, IconClock, IconBell,
   IconCube, IconPlug, IconBolt, IconSparkles, IconServer, IconClockHour4,
   IconArrowDown, IconExternalLink, IconCopy, IconChevronRight,
-  IconBrandApple, IconBrandDebian, IconDownload, IconTerminal,
-  IconLock, IconRefresh, IconPuzzle, IconMessages, IconRobot,
+  IconRefresh, IconPuzzle, IconMessages,
   IconChevronDown, IconBook2, IconBrandDiscord,
 } from '@tabler/icons-react'
 import { loadouts } from './loadouts'
@@ -460,39 +459,39 @@ function LoadoutDetail({ loadout, onClose }) {
   )
 }
 
-// ─── What Is OpenClaw ──────────────────────────────────────
+// ─── What Is Ripperclaw ────────────────────────────────────
 
 function WhatIsSection() {
   const features = [
     {
-      icon: IconRobot,
-      title: 'Your own AI agent',
-      desc: 'OpenClaw runs on your machine — a Mac mini, a Raspberry Pi, a VPS. It connects to your life: messages, calendar, email, smart home, files. One agent that actually knows your context.',
-    },
-    {
       icon: IconPuzzle,
-      title: 'Modular by design',
-      desc: 'Swap models, add integrations, install skills, tune personality. Everything is a config file. No vendor lock-in, no black boxes. You own the whole stack.',
+      title: 'Modular loadouts',
+      desc: 'Every agent is built from slots — model, integrations, skills, personality, memory, scheduling. Mix and match to create something that fits exactly how you work.',
     },
     {
-      icon: IconLock,
-      title: 'Private by default',
-      desc: 'Your data stays on your hardware. API keys stay in your keychain. No telemetry, no training on your conversations. Open source means you can verify every claim.',
+      icon: IconCopy,
+      title: 'One-click copy',
+      desc: 'See a loadout you like? Copy the whole thing and bootstrap your agent in seconds. Swap out what doesn\'t fit, keep what does.',
     },
     {
       icon: IconMessages,
-      title: 'Meets you where you are',
-      desc: 'iMessage, Discord, Telegram, Signal, WhatsApp, Slack — OpenClaw connects to the channels you already use. Talk to your agent like you\'d talk to a friend.',
-    },
-    {
-      icon: IconRefresh,
-      title: 'Always running',
-      desc: 'Cron jobs, heartbeats, scheduled tasks. Your agent monitors what matters and acts without being asked. Set it and forget it.',
+      title: 'Share your build',
+      desc: 'Publish your loadout for the community. Show how you\'ve wired up your agent — what model, which skills, what personality. Help others skip the setup grind.',
     },
     {
       icon: IconBolt,
-      title: 'Skills marketplace',
-      desc: 'Browse ClawHub for community-built skills — weather, smart home, voice, coding, marketing, and more. Install with one command. Or build your own.',
+      title: 'Community-driven',
+      desc: 'New loadouts drop in as people share them. Browse what others have built, get inspired, and discover integrations and skills you didn\'t know existed.',
+    },
+    {
+      icon: IconSparkles,
+      title: 'Personality included',
+      desc: 'Loadouts aren\'t just technical configs. They capture the agent\'s voice, behavior, and style. The stuff that makes an AI assistant feel like yours.',
+    },
+    {
+      icon: IconRefresh,
+      title: 'Always evolving',
+      desc: 'Update your loadout as you add skills, swap models, or change how your agent works. Your loadout grows with you.',
     },
   ]
 
@@ -501,11 +500,11 @@ function WhatIsSection() {
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-grotesk font-bold text-rc-text mb-4">
-            What is OpenClaw?
+            What is Ripperclaw?
           </h2>
           <p className="text-rc-text-dim text-lg max-w-2xl mx-auto">
-            An open source AI agent framework that lives on your hardware, connects to your life,
-            and gets better the longer you use it.
+            A place to build, share, and discover AI agent loadouts.
+            Think dotfiles for your AI — modular, shareable, and endlessly remixable.
           </p>
         </div>
 
@@ -538,21 +537,18 @@ function HowItWorks() {
   const steps = [
     {
       num: '01',
-      title: 'Install',
-      desc: 'One command. OpenClaw installs as a system daemon on macOS, Linux, or any machine with Node.js. Takes about two minutes.',
-      code: 'npm install -g openclaw && openclaw init',
+      title: 'Build your loadout',
+      desc: 'Pick your model, wire up integrations, install skills, write a personality. Every piece is a slot you can swap independently.',
     },
     {
       num: '02',
-      title: 'Configure',
-      desc: 'Pick your model (Claude, GPT, Llama, Qwen — or mix them). Connect your channels. Add integrations. Write a personality file or start from a community loadout.',
-      code: 'openclaw config # interactive setup',
+      title: 'Share it',
+      desc: 'Publish your loadout to the community. Others can see exactly how your agent is configured — no black boxes.',
     },
     {
       num: '03',
-      title: 'Run',
-      desc: 'Start the gateway. Your agent comes online across all connected channels. It learns your patterns, handles your tasks, and runs 24/7.',
-      code: 'openclaw gateway start',
+      title: 'Browse and remix',
+      desc: 'Find a loadout that fits your use case. Copy it, tweak the slots, make it yours. Skip the blank-page problem entirely.',
     },
   ]
 
@@ -562,10 +558,10 @@ function HowItWorks() {
       <div className="max-w-4xl mx-auto relative z-10">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-grotesk font-bold text-rc-text mb-4">
-            Up and running in minutes
+            How it works
           </h2>
           <p className="text-rc-text-dim text-lg max-w-xl mx-auto">
-            No cloud accounts. No API dashboards. Just your machine and a terminal.
+            Create a loadout, share it, or start from someone else's.
           </p>
         </div>
 
@@ -584,10 +580,7 @@ function HowItWorks() {
               </div>
               <div className="flex-1">
                 <h3 className="font-grotesk font-bold text-rc-text text-xl mb-2">{step.title}</h3>
-                <p className="text-rc-text-dim text-sm leading-relaxed mb-3">{step.desc}</p>
-                <div className="inline-block px-4 py-2 bg-black/40 rounded-lg border border-rc-border">
-                  <code className="text-rc-cyan text-xs font-mono">{step.code}</code>
-                </div>
+                <p className="text-rc-text-dim text-sm leading-relaxed">{step.desc}</p>
               </div>
             </motion.div>
           ))}
@@ -597,82 +590,45 @@ function HowItWorks() {
   )
 }
 
-// ─── Download Section ──────────────────────────────────────
+// ─── Anatomy of a Loadout ──────────────────────────────────
 
-function DownloadSection() {
-  const platforms = [
-    {
-      icon: IconBrandApple,
-      name: 'macOS',
-      desc: 'Apple Silicon & Intel',
-      primary: true,
-      links: [
-        { label: 'Download .dmg', href: '/docs/install/macos', icon: IconDownload },
-        { label: 'Homebrew', href: '/docs/install/macos#homebrew', icon: IconTerminal },
-      ],
-    },
-    {
-      icon: IconBrandDebian,
-      name: 'Linux',
-      desc: 'Debian, Ubuntu, Arch, and more',
-      primary: false,
-      links: [
-        { label: 'Install guide', href: '/docs/install/linux', icon: IconDownload },
-        { label: 'Docker', href: '/docs/install/docker', icon: IconTerminal },
-      ],
-    },
-    {
-      icon: IconTerminal,
-      name: 'npm',
-      desc: 'Any platform with Node.js',
-      primary: false,
-      links: [
-        { label: 'npm install -g openclaw', href: '/docs/install/npm', icon: IconTerminal },
-      ],
-    },
+function AnatomySection() {
+  const slots = [
+    { name: 'Model', icon: IconCube, desc: 'The brain. Claude, GPT, Llama, Qwen — or mix models for different tasks.', color: 'from-purple-500/30 to-blue-500/30' },
+    { name: 'Integrations', icon: IconPlug, desc: 'What your agent connects to. iMessage, Calendar, Email, Smart Home, GitHub — your life\'s APIs.', color: 'from-green-500/30 to-cyan-500/30' },
+    { name: 'Skills', icon: IconBolt, desc: 'What your agent can do. Weather, coding, voice, web search, marketing — install from ClawHub or build your own.', color: 'from-pink-500/30 to-violet-500/30' },
+    { name: 'Personality', icon: IconSparkles, desc: 'How your agent thinks and talks. Tone, style, boundaries, opinions. The soul file.', color: 'from-cyan-500/30 to-emerald-500/30' },
+    { name: 'Memory', icon: IconServer, desc: 'What your agent remembers. Facts, preferences, conversation history, handoff notes between sessions.', color: 'from-amber-500/30 to-orange-500/30' },
+    { name: 'Scheduling', icon: IconClockHour4, desc: 'When your agent acts on its own. Heartbeats, cron jobs, reminders, monitoring tasks.', color: 'from-rose-500/30 to-blue-500/30' },
   ]
 
   return (
     <section className="py-24 px-6">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-grotesk font-bold text-rc-text mb-4">
-            Get OpenClaw
+            Anatomy of a loadout
           </h2>
           <p className="text-rc-text-dim text-lg max-w-xl mx-auto">
-            Free and open source. Install on your hardware, keep your data.
+            Six slots. Infinite combinations. Every slot is independent — swap one without touching the rest.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {platforms.map((p, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {slots.map((slot, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              className={`p-6 rounded-2xl border transition-colors ${
-                p.primary
-                  ? 'bg-rc-cyan/5 border-rc-cyan/30'
-                  : 'bg-rc-surface border-rc-border hover:border-rc-cyan/20'
-              }`}
+              transition={{ delay: i * 0.08, duration: 0.5 }}
+              className="p-5 rounded-2xl border border-rc-border hover:border-rc-cyan/20 transition-colors group"
             >
-              <p.icon size={28} className="text-rc-cyan mb-4" stroke={1.5} />
-              <h3 className="font-grotesk font-bold text-rc-text text-lg mb-1">{p.name}</h3>
-              <p className="text-rc-text-dim text-sm mb-5">{p.desc}</p>
-              <div className="space-y-2">
-                {p.links.map((link, li) => (
-                  <a
-                    key={li}
-                    href={link.href}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-sm text-rc-text font-medium transition-colors border border-rc-border"
-                  >
-                    <link.icon size={14} className="text-rc-cyan" />
-                    {link.label}
-                  </a>
-                ))}
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${slot.color} flex items-center justify-center mb-4`}>
+                <slot.icon size={22} className="text-rc-text" stroke={1.5} />
               </div>
+              <h3 className="font-grotesk font-semibold text-rc-text text-base mb-1.5">{slot.name}</h3>
+              <p className="text-rc-text-dim text-sm leading-relaxed">{slot.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -688,36 +644,36 @@ function FAQSection() {
 
   const faqs = [
     {
-      q: 'What do I need to run OpenClaw?',
-      a: 'Any machine with Node.js 20+. A Mac mini, a Linux server, a Raspberry Pi, a VPS — anything that stays on. Most people run it on a dedicated Mac mini or a small home server.',
+      q: 'What is a loadout?',
+      a: 'A loadout is a complete agent configuration — the model, integrations, skills, personality, memory, and scheduling that define how an AI agent works. Think of it like a character build in a game, or dotfiles for your AI.',
     },
     {
-      q: 'Which AI models does it support?',
-      a: 'Claude (Opus, Sonnet, Haiku), GPT-4o/4.5, Gemini, Llama, Qwen, Mistral, and any OpenAI-compatible API. You can use different models for different tasks — Opus for complex reasoning, a small local model for heartbeats, Whisper for voice.',
+      q: 'Do I need OpenClaw to use a loadout?',
+      a: 'Loadouts are designed for OpenClaw agents, but the concepts are universal. The model choices, integration patterns, and personality approaches apply to any AI agent setup.',
     },
     {
-      q: 'Is my data private?',
-      a: 'Your data never leaves your machine unless you explicitly connect an external API. There\'s no OpenClaw cloud, no telemetry, no data collection. API calls go directly from your machine to the model provider. Everything is auditable in the open source code.',
+      q: 'How do I create a loadout?',
+      a: 'Set up your OpenClaw agent however you want — pick models, connect integrations, install skills, write a personality file. Then export your config as a loadout and publish it here.',
     },
     {
-      q: 'How is this different from ChatGPT or Claude.ai?',
-      a: 'Those are chat interfaces. OpenClaw is an agent. It runs 24/7, connects to your real tools (messages, calendar, email, smart home), executes tasks autonomously, and maintains memory across sessions. It\'s the difference between texting someone and having a full-time assistant.',
+      q: 'Can I copy someone else\'s loadout?',
+      a: 'That\'s the whole point. Click any loadout card, hit "Copy Loadout," and you\'ve got their full configuration. Swap out what doesn\'t fit, keep what does.',
     },
     {
-      q: 'What are loadouts?',
-      a: 'A loadout is a complete agent configuration — the model, integrations, skills, personality, memory settings, and scheduling. Think of it like a dotfiles repo for your AI. You can share loadouts, copy from others, and remix them.',
+      q: 'What\'s in a typical loadout?',
+      a: 'Six slots: Model (which AI), Integrations (what it connects to), Skills (what it can do), Personality (how it communicates), Memory (what it remembers), and Scheduling (when it acts autonomously).',
     },
     {
-      q: 'What channels does it support?',
-      a: 'iMessage (via BlueBubbles), Discord, Telegram, Signal, WhatsApp, Slack, Google Chat, IRC, and LINE. Connect one or all of them. Your agent responds wherever you message it.',
+      q: 'Is this free?',
+      a: 'Ripperclaw is free. OpenClaw is free and open source. You\'ll pay for AI model API calls depending on which providers you use — or run fully local models for zero cost.',
     },
     {
-      q: 'Is it really free?',
-      a: 'OpenClaw itself is free and open source (MIT). You\'ll pay for the AI model API calls — typically $20-200/month depending on usage and which models you pick. Or run fully local models like Llama or Qwen for zero cost.',
+      q: 'What is OpenClaw?',
+      a: 'An open source AI agent framework. It runs on your hardware, connects to your real tools (messages, calendar, email, smart home), and operates 24/7. Ripperclaw is where the community shares their OpenClaw configurations.',
     },
     {
-      q: 'Can I use it for my business?',
-      a: 'Yes. MIT license means no restrictions. People use OpenClaw for personal assistants, customer support, internal tools, smart home automation, and more.',
+      q: 'How do I get started?',
+      a: 'Browse the loadouts above, find one that matches your use case, and copy it. Or install OpenClaw, build your own agent, and share your loadout with the community.',
     },
   ]
 
@@ -785,10 +741,10 @@ function Footer() {
         {/* CTA */}
         <div className="text-center mb-16">
           <h3 className="text-2xl md:text-3xl font-grotesk font-bold text-rc-text mb-4">
-            Build yours.
+            Build yours. Share it.
           </h3>
           <p className="text-rc-text-dim text-sm mb-8 max-w-md mx-auto">
-            Install OpenClaw, configure your loadout, and start building an AI that actually knows you.
+            Create your agent loadout, publish it for the community, and discover builds you never thought of.
           </p>
           <div className="flex items-center justify-center gap-4">
             <a
@@ -798,14 +754,16 @@ function Footer() {
               className="px-6 py-3 bg-rc-cyan text-rc-bg font-grotesk font-semibold rounded-xl hover:bg-rc-cyan/90 transition-colors flex items-center gap-2"
             >
               <IconBrandGithub size={18} />
-              Get Started
+              Get OpenClaw
             </a>
             <a
-              href="/docs"
+              href="https://docs.openclaw.ai"
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-6 py-3 bg-white/5 hover:bg-white/10 text-rc-text font-grotesk font-semibold rounded-xl transition-colors border border-rc-border flex items-center gap-2"
             >
               <IconBook2 size={18} />
-              Read the Docs
+              Docs
             </a>
           </div>
         </div>
@@ -813,21 +771,18 @@ function Footer() {
         {/* Links grid */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
           <div>
-            <h4 className="font-grotesk font-semibold text-rc-text text-sm mb-4">Product</h4>
+            <h4 className="font-grotesk font-semibold text-rc-text text-sm mb-4">Ripperclaw</h4>
             <ul className="space-y-2.5">
-              <li><a href="/docs" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Documentation</a></li>
-              <li><a href="/docs/install" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Installation</a></li>
-              <li><a href="/docs/skills" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Skills</a></li>
-              <li><a href="https://clawhub.com" target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">ClawHub</a></li>
+              <li><a href="#showcase" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Browse Loadouts</a></li>
+              <li><a href="https://clawhub.com" target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">ClawHub Skills</a></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-grotesk font-semibold text-rc-text text-sm mb-4">Resources</h4>
+            <h4 className="font-grotesk font-semibold text-rc-text text-sm mb-4">OpenClaw</h4>
             <ul className="space-y-2.5">
-              <li><a href="/docs/guides" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Guides</a></li>
-              <li><a href="/docs/config" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Configuration</a></li>
-              <li><a href="/docs/channels" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Channels</a></li>
-              <li><a href="/docs/models" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Models</a></li>
+              <li><a href="https://docs.openclaw.ai" target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Documentation</a></li>
+              <li><a href="https://docs.openclaw.ai/install" target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Installation</a></li>
+              <li><a href="https://docs.openclaw.ai/config" target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Configuration</a></li>
             </ul>
           </div>
           <div>
@@ -835,15 +790,13 @@ function Footer() {
             <ul className="space-y-2.5">
               <li><a href="https://discord.com/invite/clawd" target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Discord</a></li>
               <li><a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">GitHub</a></li>
-              <li><a href="https://github.com/openclaw/openclaw/issues" target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Issues</a></li>
               <li><a href="https://github.com/openclaw/openclaw/discussions" target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Discussions</a></li>
             </ul>
           </div>
           <div>
             <h4 className="font-grotesk font-semibold text-rc-text text-sm mb-4">Legal</h4>
             <ul className="space-y-2.5">
-              <li><a href="/docs/license" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">MIT License</a></li>
-              <li><a href="/docs/privacy" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Privacy</a></li>
+              <li><a href="https://github.com/openclaw/openclaw/blob/main/LICENSE" target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">MIT License</a></li>
             </ul>
           </div>
         </div>
@@ -878,7 +831,7 @@ export default function App() {
       <ConveyorBelt onSelectLoadout={setSelectedLoadout} />
       <WhatIsSection />
       <HowItWorks />
-      <DownloadSection />
+      <AnatomySection />
       <FAQSection />
       <Footer />
 
