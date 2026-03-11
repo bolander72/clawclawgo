@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
 
@@ -17,67 +17,11 @@
 
   --font-family-grotesk: 'Space Grotesk', sans-serif;
   --font-family-mono: 'JetBrains Mono', monospace;
-  --font-family-inter: 'Inter', sans-serif;
-
-  --animate-scanline: scanline 8s linear infinite;
-  --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
-  --animate-flicker: flicker 3s linear infinite;
-  --animate-glitch: glitch 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
 @keyframes scanline {
   0% { transform: translateY(-100%); }
   100% { transform: translateY(100vh); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { opacity: 1; box-shadow: 0 0 20px currentColor; }
-  50% { opacity: 0.8; box-shadow: 0 0 40px currentColor; }
-}
-
-@keyframes flicker {
-  0%, 100% { opacity: 1; }
-  41.99% { opacity: 1; }
-  42% { opacity: 0.8; }
-  43% { opacity: 1; }
-  45.99% { opacity: 1; }
-  46% { opacity: 0.6; }
-  46.5% { opacity: 1; }
-}
-
-@keyframes glitch {
-  0% {
-    transform: translate(0);
-  }
-  20% {
-    transform: translate(-2px, 2px);
-  }
-  40% {
-    transform: translate(-2px, -2px);
-  }
-  60% {
-    transform: translate(2px, 2px);
-  }
-  80% {
-    transform: translate(2px, -2px);
-  }
-  100% {
-    transform: translate(0);
-  }
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-10px); }
-}
-
-@keyframes glow-pulse {
-  0%, 100% {
-    filter: drop-shadow(0 0 5px currentColor);
-  }
-  50% {
-    filter: drop-shadow(0 0 20px currentColor);
-  }
 }
 
 body {
@@ -89,33 +33,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Text effects */
-.text-glow {
-  text-shadow: 0 0 20px currentColor;
-}
-
-.text-glow-cyan {
-  text-shadow: 0 0 20px #00f0ff, 0 0 40px #00f0ff;
-}
-
-.text-glow-magenta {
-  text-shadow: 0 0 20px #ff00aa, 0 0 40px #ff00aa;
-}
-
-.text-glow-green {
-  text-shadow: 0 0 20px #00ff88, 0 0 40px #00ff88;
-}
-
-/* Border effects */
-.border-glow {
-  box-shadow: 0 0 10px currentColor;
-}
-
-.border-glow-strong {
-  box-shadow: 0 0 20px currentColor, 0 0 40px currentColor;
-}
-
-/* Scanlines overlay */
+/* Scanlines overlay - cyberpunk aesthetic */
 .scanlines {
   position: relative;
 }
@@ -129,12 +47,12 @@ body {
   height: 100%;
   background: linear-gradient(
     transparent 50%,
-    rgba(0, 240, 255, 0.02) 50%
+    rgba(0, 240, 255, 0.015) 50%
   );
   background-size: 100% 4px;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.5;
+  opacity: 0.6;
 }
 
 .scanlines::after {
@@ -147,17 +65,17 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(0, 240, 255, 0.3),
+    rgba(0, 240, 255, 0.4),
     transparent
   );
-  animation: scanline 8s linear infinite;
+  animation: scanline 12s linear infinite;
   pointer-events: none;
   z-index: 9999;
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
   background: #0a0a0f;
 }
 
@@ -167,12 +85,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #00f0ff;
-  border-radius: 2px;
+  background: linear-gradient(180deg, #00f0ff, #ff00aa);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #00d4dd;
+  background: linear-gradient(180deg, #00d4dd, #dd0088);
 }
 
 /* Selection */
@@ -186,27 +104,11 @@ body {
   color: #e8e8f0;
 }
 
-/* Utility animations */
-.animate-float {
-  animation: float 3s ease-in-out infinite;
-}
-
-.animate-glow-pulse {
-  animation: glow-pulse 2s ease-in-out infinite;
-}
-
-/* Backdrop blur fallback */
-@supports not (backdrop-filter: blur(10px)) {
-  .backdrop-blur-sm {
-    background-color: rgba(18, 18, 26, 0.9);
-  }
-}
-
 /* Focus styles */
 a:focus-visible,
 button:focus-visible {
   outline: 2px solid #00f0ff;
-  outline-offset: 2px;
+  outline-offset: 3px;
 }
 
 /* Smooth scroll */
@@ -214,10 +116,28 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Print styles */
+/* Remove scanlines in print */
 @media print {
   .scanlines::before,
   .scanlines::after {
     display: none;
   }
+}
+
+/* Utility: parchment sepia tones for da Vinci aesthetic */
+.parchment-tone {
+  color: #cdb48c;
+}
+
+/* Utility: neon glow text */
+.glow-cyan {
+  text-shadow: 0 0 20px #00f0ff, 0 0 40px #00f0ff;
+}
+
+.glow-magenta {
+  text-shadow: 0 0 20px #ff00aa, 0 0 40px #ff00aa;
+}
+
+.glow-green {
+  text-shadow: 0 0 20px #00ff88, 0 0 40px #00ff88;
 }
