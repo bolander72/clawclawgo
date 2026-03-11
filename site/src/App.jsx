@@ -511,7 +511,7 @@ export default function App() {
   const [selectedLoadout, setSelectedLoadout] = useState(null)
 
   return (
-    <div className="min-h-screen bg-rc-bg scanlines">
+    <div className="min-h-screen bg-rc-bg">
       <Hero />
       <ConveyorBelt onSelectLoadout={setSelectedLoadout} />
       <Footer />
