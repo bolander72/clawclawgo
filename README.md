@@ -1,6 +1,8 @@
 # RipperClaw
 
-Cyberware manager for AI agents. Export, compare, and share your agent's loadout.
+Modular loadouts for AI agents. Build, share, and remix how your agent is configured.
+
+**[ripperclaw.com](https://ripperclaw.com)**
 
 ![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Tauri v2](https://img.shields.io/badge/tauri-v2-orange.svg)
@@ -8,21 +10,18 @@ Cyberware manager for AI agents. Export, compare, and share your agent's loadout
 
 ## What is it?
 
-Your AI agent is more than config files. It's a **rig** — a collection of models, skills, memory systems, voice pipelines, integrations, and personality that work together. RipperClaw maps all of it to 9 cyberware slots and lets you export, compare, and share the whole thing as a **loadout**.
+Your AI agent is more than config files. It's a combination of models, skills, integrations, personality, memory, and automations that work together. RipperClaw lets you package all of that as a **loadout** — then export it, share it, or apply someone else's to a new agent.
 
-### The 9 Slots
+### The 6 Slots
 
 | Slot | What It Maps To |
 |---|---|
-| **Soul** | Personality, identity, behavioral rules (SOUL.md, IDENTITY.md, USER.md) |
-| **Brain** | Context engine, memory files, LCM/DAG compaction, daily notes |
-| **Skeleton** | Model router — primary, sub-agent, local (Ollama), image models |
-| **OS** | Base runtime (OpenClaw version, Node.js, platform) |
-| **Heart** | Heartbeat tasks, cron jobs, scheduled automations |
-| **Nervous System** | Channels, calendar, email, reminders, Home Assistant, paired nodes |
-| **Mouth** | TTS output — Kokoro, Edge, voice loop |
-| **Ears** | STT input — Whisper, real-time transcription |
-| **Eyes** | Vision models, cameras (UniFi), screen capture (Peekaboo), paired device cameras |
+| **Model** | LLM routing — primary, sub-agent, local (Ollama), image models |
+| **Persona** | Personality, identity, behavioral rules (SOUL.md, IDENTITY.md, USER.md) |
+| **Skills** | Installed skill packages — voice, vision, tools, workflows |
+| **Integrations** | Channels, calendar, email, smart home, cameras, GitHub |
+| **Automations** | Heartbeat tasks, cron jobs, scheduled routines |
+| **Memory** | Context engine, LCM, memory files, daily notes |
 
 ## Desktop App
 
@@ -37,60 +36,65 @@ npm run tauri dev
 ### Features
 
 - **Live slot visualization** — reads your OpenClaw config in real-time
-- **Multiple loadouts** — save, name, and switch between configurations
-- **Multi-agent** — switch between agents if you run more than one
+- **Multi-agent support** — switch between agents if you run more than one
 - **The Feed** — browse and clone loadouts published on Nostr
 - **Compare view** — side-by-side diff of any loadout against yours
-- **PII scrubber** — strips 12+ pattern types (emails, keys, IPs, paths) before publishing
-- **Publish flow** — review scrubbed output, sign with your Nostr keys, push to relays
-- **Import/clone** — one click to apply someone else's loadout (with backup)
+- **Apply wizard** — slot-by-slot review with safety guards, model remapping, and skill installs
+- **PII scrubber** — strips 12+ pattern types before publishing
+- **Publish flow** — review scrubbed output, sign with Nostr keys, push to relays
 
-## The Feed
+## Apply Flow
 
-Share your rig on [Nostr](https://nostr.com/) using kind 38333 (parameterized replaceable events). Your loadout is JSON, signed with your keys, and published to relays. Update it anytime — the old version gets replaced.
+Apply a loadout to create a new agent or configure an existing one:
 
-**Three modes:**
+1. **Select loadout** — from the Feed, a file, or a saved loadout
+2. **Choose target** — pick an agent ID and name
+3. **Review slots** — slot-by-slot preview with warnings and options
+4. **Apply** — workspace created, skills installed, config wired up
 
-| Mode | How It Works |
-|---|---|
-| **Offline** | Export/import `.loadout.json` files |
-| **Connected** | Publish to relays, browse the Feed in-app |
-| **Self-hosted** | Run your own relay as an OpenClaw plugin |
-
-**Default relays:** relay.damus.io, nos.lol, relay.nostr.band
+Safety rules:
+- Never overwrites an existing agent workspace
+- Protects your default agent when adding to `agents.list`
+- Credentials and integrations are never copied — always manual setup
+- Automatic backup of config before changes
+- `--use-my-models` remaps loadout models to your existing tiers
 
 ## CLI
 
 ```bash
-npm install && npm run build
-
 # Export your current loadout
-npx ripperclaw export
+node cli/ripperclaw.mjs export
 
-# Diff against another loadout
-npx ripperclaw diff other.loadout.json
+# Preview what applying would do
+node cli/ripperclaw.mjs apply loadout.json --agent my-bot --dry-run
 
-# Inspect a loadout file
-npx ripperclaw inspect loadout.json
+# Apply a loadout to create a new agent
+node cli/ripperclaw.mjs apply loadout.json --agent my-bot --name "My Bot"
+
+# Use your own models instead of the loadout's
+node cli/ripperclaw.mjs apply loadout.json --agent my-bot --use-my-models
 ```
 
-## Starter Templates
+## The Feed
 
-| Template | Style | Use Case |
-|---|---|---|
-| **Homelab** | Self-hosted, privacy-first | Local models, own relay, minimal cloud |
-| **Ops** | Lean productivity | Calendar, email, reminders, GitHub |
-| **Researcher** | Deep analysis | Large context, web search, PDF analysis |
-| **Smart Home** | Automation-focused | HA, cameras, sensors, routines |
-| **Creator** | Content & social | Voice, TTS, social media, scheduling |
+Share your loadout on [Nostr](https://nostr.com/) using kind 38333. Your loadout is JSON, signed with your keys, and published to relays. Update it anytime — the old version gets replaced.
+
+| Mode | How It Works |
+|---|---|
+| **Offline** | Export/import `.json` files |
+| **Connected** | Publish to relays, browse the Feed in-app |
+| **Self-hosted** | Run your own relay as an OpenClaw plugin |
+
+## Landing Page
+
+The site at [ripperclaw.com](https://ripperclaw.com) is built with Vite + React and deployed via GitHub Pages. Source is in `site/`.
 
 ## Privacy & Security
 
 The PII scrubber runs **locally** before any data leaves your machine:
 
 - Phone numbers, email addresses, SSNs
-- IP addresses (private + public ranges)
-- API keys, bearer tokens, nostr secret keys
+- IP addresses, API keys, bearer tokens, nostr secret keys
 - Home directory paths, street addresses
 - MAC addresses, hex private keys
 - Sensitive config fields (channels, HA config, agent names)
@@ -101,31 +105,21 @@ You review the scrubbed output in a diff view before publishing.
 
 ```
 ripperclaw/
-├── src/              # CLI (TypeScript)
+├── cli/              # CLI tool (ripperclaw.mjs)
 ├── app/              # Desktop app (Tauri v2 + React)
 │   ├── src/          # React frontend
-│   │   ├── components/   # SlotCard, FeedView, CompareView, etc.
+│   │   ├── components/   # SlotCard, FeedView, CompareView, ApplyWizard
 │   │   └── hooks/        # useTauri, useNostr
 │   └── src-tauri/    # Rust backend
 │       └── src/
-│           ├── lib.rs    # OpenClaw data reading, slot detection
+│           ├── lib.rs    # OpenClaw data reading, slot detection, apply
 │           ├── nostr.rs  # Nostr protocol (keys, publish, subscribe)
-│           └── scrub.rs  # PII scrubber (12 regex patterns)
-├── site/             # Landing page (Vite + React)
+│           └── scrub.rs  # PII scrubber
+├── site/             # Landing page (ripperclaw.com)
+├── specs/            # Loadout schema and spec
 ├── plugin/           # OpenClaw relay plugin (ripperclaw-relay)
-└── PLAN.md           # Full roadmap
+└── PLAN.md           # Roadmap
 ```
-
-## Roadmap
-
-- [x] Phase 0: CLI export/diff/inspect
-- [x] Phase 1: Tauri desktop app with cyberpunk UI
-- [x] Phase 2: Live OpenClaw data (9 slots with sub-component detection)
-- [x] Phase 3a: Feed + compare + loadout library views
-- [x] Phase 3b: Nostr integration + PII scrubber + publish flow
-- [x] Phase 3c: OpenClaw relay plugin
-- [ ] Phase 3d: Social features (follows, zaps, comments)
-- [ ] Phase 4: Bitcoin ordinals anchoring (inscribe loadout hash on-chain)
 
 ## Built With
 
@@ -133,10 +127,6 @@ ripperclaw/
 - [React](https://react.dev/) + [Tailwind CSS](https://tailwindcss.com/) — frontend
 - [nostr-sdk](https://github.com/rust-nostr/nostr) — Nostr protocol (Rust)
 - [OpenClaw](https://openclaw.ai/) — the agent platform this is built for
-
-## Contributing
-
-PRs welcome. Issues triaged. The roadmap is public in [PLAN.md](PLAN.md).
 
 ## License
 
