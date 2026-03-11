@@ -323,7 +323,69 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
         .unwrap_or_else(|| workspace_dir());
     let mut slots = Vec::new();
 
-    // ── SOUL ──
+    // ── MODEL ──
+    let primary_model = config.pointer("/model/default")
+        .or(config.pointer("/model"))
+        .and_then(|v| v.as_str())
+        .unwrap_or("unknown")
+        .to_string();
+    let subagent_model = config.pointer("/model/subagent")
+        .and_then(|v| v.as_str())
+        .unwrap_or("unknown")
+        .to_string();
+
+    let local_models = Command::new("ollama")
+        .arg("list")
+        .output()
+        .ok()
+        .map(|o| {
+            String::from_utf8_lossy(&o.stdout)
+                .lines()
+                .skip(1)
+                .filter_map(|l| l.split_whitespace().next().map(String::from))
+                .collect::<Vec<String>>()
+        })
+        .unwrap_or_default();
+
+    let mut model_subs = vec![
+        SubComponent {
+            name: "Primary".to_string(),
+            status: "active".to_string(),
+            detail: primary_model.clone(),
+            icon: Some("🧠".to_string()),
+        },
+        SubComponent {
+            name: "Sub-agent".to_string(),
+            status: "active".to_string(),
+            detail: subagent_model.clone(),
+            icon: Some("🔗".to_string()),
+        },
+    ];
+    if !local_models.is_empty() {
+        model_subs.push(SubComponent {
+            name: "Local (Ollama)".to_string(),
+            status: "active".to_string(),
+            detail: format!("{} models", local_models.len()),
+            icon: Some("🏠".to_string()),
+        });
+    }
+
+    slots.push(SlotData {
+        id: "model".to_string(),
+        label: "Model".to_string(),
+        icon: "⬢".to_string(),
+        status: "active".to_string(),
+        component: primary_model.clone(),
+        version: None,
+        details: serde_json::json!({
+            "primary": primary_model,
+            "subagent": subagent_model,
+            "local_models": local_models,
+        }),
+        sub_components: model_subs,
+    });
+
+    // ── PERSONA ──
     let soul_exists = ws.join("SOUL.md").exists();
     let soul_tokens = file_token_estimate(&ws.join("SOUL.md"));
     let identity_name = fs::read_to_string(ws.join("IDENTITY.md"))
@@ -342,7 +404,7 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
                 .map(|l| l.split("**Name:**").nth(1).unwrap_or("").trim().to_string())
         });
 
-    let mut soul_subs = vec![
+    let mut persona_subs = vec![
         SubComponent {
             name: "SOUL.md".to_string(),
             status: if soul_exists { "active" } else { "missing" }.to_string(),
@@ -357,7 +419,7 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
         },
     ];
     if let Some(ref un) = user_name {
-        soul_subs.push(SubComponent {
+        persona_subs.push(SubComponent {
             name: "USER.md".to_string(),
             status: "active".to_string(),
             detail: format!("Human: {}", un),
@@ -366,8 +428,8 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
     }
 
     slots.push(SlotData {
-        id: "soul".to_string(),
-        label: "Soul".to_string(),
+        id: "persona".to_string(),
+        label: "Persona".to_string(),
         icon: "◈".to_string(),
         status: if soul_exists { "active" } else { "empty" }.to_string(),
         component: format!("{} — {}", identity_name, if soul_exists { "defined" } else { "undefined" }),
@@ -380,10 +442,337 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
             "has_identity": ws.join("IDENTITY.md").exists(),
             "has_user": ws.join("USER.md").exists(),
         }),
-        sub_components: soul_subs,
+        sub_components: persona_subs,
     });
 
-    // ── BRAIN (Memory + LCM) ──
+    // ── SKILLS ──
+    let all_skills = get_skills();
+    let bundled_count = all_skills.iter().filter(|s| s.source == "bundled").count();
+    let custom_count = all_skills.iter().filter(|s| s.source == "custom").count();
+
+    let mut skills_subs: Vec<SubComponent> = vec![
+        SubComponent {
+            name: "Bundled".to_string(),
+            status: "active".to_string(),
+            detail: format!("{} skills", bundled_count),
+            icon: Some("📦".to_string()),
+        },
+    ];
+    if custom_count > 0 {
+        skills_subs.push(SubComponent {
+            name: "Custom".to_string(),
+            status: "active".to_string(),
+            detail: format!("{} skills", custom_count),
+            icon: Some("🔧".to_string()),
+        });
+    }
+    // List individual skills (up to 10)
+    for skill in all_skills.iter().take(10) {
+        skills_subs.push(SubComponent {
+            name: skill.name.clone(),
+            status: "active".to_string(),
+            detail: skill.source.clone(),
+            icon: Some("⚡".to_string()),
+        });
+    }
+    if all_skills.len() > 10 {
+        skills_subs.push(SubComponent {
+            name: format!("+{} more", all_skills.len() - 10),
+            status: "active".to_string(),
+            detail: "".to_string(),
+            icon: Some("…".to_string()),
+        });
+    }
+
+    slots.push(SlotData {
+        id: "skills".to_string(),
+        label: "Skills".to_string(),
+        icon: "⚡".to_string(),
+        status: if all_skills.is_empty() { "empty" } else { "active" }.to_string(),
+        component: format!("{} installed", all_skills.len()),
+        version: None,
+        details: serde_json::json!({
+            "total": all_skills.len(),
+            "bundled": bundled_count,
+            "custom": custom_count,
+            "names": all_skills.iter().map(|s| &s.name).collect::<Vec<_>>(),
+        }),
+        sub_components: skills_subs,
+    });
+
+    // ── INTEGRATIONS (Channels + Tools + Voice I/O + Cameras) ──
+    let channels = &config["channels"];
+    let channel_names: Vec<String> = if let Some(obj) = channels.as_object() {
+        obj.keys().cloned().collect()
+    } else {
+        vec![]
+    };
+
+    let mut integ_subs: Vec<SubComponent> = Vec::new();
+
+    // Messaging channels
+    for ch in &channel_names {
+        integ_subs.push(SubComponent {
+            name: ch.clone(),
+            status: "active".to_string(),
+            detail: "messaging channel".to_string(),
+            icon: Some("📡".to_string()),
+        });
+    }
+
+    // Calendar (caldir)
+    let has_caldir = home_dir().join(".local/bin/caldir").exists();
+    if has_caldir {
+        integ_subs.push(SubComponent {
+            name: "Calendar (caldir)".to_string(),
+            status: "active".to_string(),
+            detail: "iCloud + Google".to_string(),
+            icon: Some("📅".to_string()),
+        });
+    }
+
+    // Email (himalaya)
+    let has_himalaya = Command::new("which").arg("himalaya").output()
+        .ok().map(|o| o.status.success()).unwrap_or(false);
+    if has_himalaya {
+        integ_subs.push(SubComponent {
+            name: "Email (himalaya)".to_string(),
+            status: "active".to_string(),
+            detail: "IMAP/SMTP".to_string(),
+            icon: Some("📧".to_string()),
+        });
+    }
+
+    // Reminders (remindctl)
+    let has_remindctl = Command::new("which").arg("remindctl").output()
+        .ok().map(|o| o.status.success()).unwrap_or(false);
+    if has_remindctl {
+        integ_subs.push(SubComponent {
+            name: "Reminders".to_string(),
+            status: "active".to_string(),
+            detail: "Apple Reminders".to_string(),
+            icon: Some("✅".to_string()),
+        });
+    }
+
+    // Home Assistant
+    let ha_url_config = config.pointer("/homeAssistant/url")
+        .and_then(|v| v.as_str());
+    let tools_md = fs::read_to_string(ws.join("TOOLS.md")).unwrap_or_default();
+    let ha_in_tools = tools_md.contains("Home Assistant") || tools_md.contains("home_assistant");
+    let ha_url = ha_url_config.or(if ha_in_tools { Some("via TOOLS.md") } else { None });
+    if ha_url.is_some() {
+        integ_subs.push(SubComponent {
+            name: "Home Assistant".to_string(),
+            status: "active".to_string(),
+            detail: ha_url.unwrap_or("configured").to_string(),
+            icon: Some("🏠".to_string()),
+        });
+    }
+
+    // Smart home devices file
+    let ha_devices = ws.join("memory/home-devices.md").exists();
+    if ha_devices {
+        let device_count = fs::read_to_string(ws.join("memory/home-devices.md"))
+            .ok()
+            .map(|c| c.lines().filter(|l| l.starts_with("- ") || l.starts_with("  - ")).count())
+            .unwrap_or(0);
+        if device_count > 0 {
+            integ_subs.push(SubComponent {
+                name: "Smart Devices".to_string(),
+                status: "active".to_string(),
+                detail: format!("{} devices", device_count),
+                icon: Some("💡".to_string()),
+            });
+        }
+    }
+
+    // Paired nodes
+    let paired_file = openclaw_dir().join("devices/paired.json");
+    let paired_count = fs::read_to_string(&paired_file)
+        .ok()
+        .and_then(|c| serde_json::from_str::<Value>(&c).ok())
+        .and_then(|v| v.as_array().map(|a| a.len()))
+        .unwrap_or(0);
+    if paired_count > 0 {
+        integ_subs.push(SubComponent {
+            name: "Paired Nodes".to_string(),
+            status: "active".to_string(),
+            detail: format!("{} device{}", paired_count, if paired_count == 1 { "" } else { "s" }),
+            icon: Some("🔗".to_string()),
+        });
+    }
+
+    // Git/GitHub
+    let has_gh = Command::new("which").arg("gh").output()
+        .ok().map(|o| o.status.success()).unwrap_or(false);
+    if has_gh {
+        integ_subs.push(SubComponent {
+            name: "GitHub CLI".to_string(),
+            status: "active".to_string(),
+            detail: "gh".to_string(),
+            icon: Some("🐙".to_string()),
+        });
+    }
+
+    // Apple Notes (memo CLI)
+    let has_memo = Command::new("which").arg("memo").output()
+        .ok().map(|o| o.status.success()).unwrap_or(false);
+    if has_memo {
+        integ_subs.push(SubComponent {
+            name: "Apple Notes".to_string(),
+            status: "active".to_string(),
+            detail: "memo CLI".to_string(),
+            icon: Some("📒".to_string()),
+        });
+    }
+
+    // Voice I/O (TTS + STT — folded into integrations)
+    let tts_provider = config.pointer("/tts/provider")
+        .and_then(|v| v.as_str())
+        .unwrap_or("none");
+    let kokoro_exists = home_dir().join(".cache/kokoro-onnx/kokoro-v1.0.onnx").exists();
+    let voice_loop_exists = home_dir().join("voice-loop/voice_loop.py").exists();
+    if kokoro_exists {
+        integ_subs.push(SubComponent {
+            name: "Kokoro-ONNX (TTS)".to_string(),
+            status: "active".to_string(),
+            detail: "local voice output".to_string(),
+            icon: Some("🗣️".to_string()),
+        });
+    } else if tts_provider != "none" {
+        integ_subs.push(SubComponent {
+            name: format!("TTS ({})", tts_provider),
+            status: "active".to_string(),
+            detail: "voice output".to_string(),
+            icon: Some("🗣️".to_string()),
+        });
+    }
+
+    let whisper_exists = Command::new("which").arg("whisper").output()
+        .ok().map(|o| o.status.success()).unwrap_or(false);
+    if whisper_exists || voice_loop_exists {
+        integ_subs.push(SubComponent {
+            name: "Whisper (STT)".to_string(),
+            status: "active".to_string(),
+            detail: "local voice input".to_string(),
+            icon: Some("👂".to_string()),
+        });
+    }
+
+    if voice_loop_exists {
+        integ_subs.push(SubComponent {
+            name: "Voice Loop".to_string(),
+            status: "active".to_string(),
+            detail: "bidirectional voice".to_string(),
+            icon: Some("🔄".to_string()),
+        });
+    }
+
+    // Cameras + Vision
+    let has_peekaboo = Command::new("which").arg("peekaboo").output()
+        .ok().map(|o| o.status.success()).unwrap_or(false);
+    let image_model = config.pointer("/model/image")
+        .and_then(|v| v.as_str());
+    if ha_url.is_some() {
+        integ_subs.push(SubComponent {
+            name: "UniFi Cameras".to_string(),
+            status: "active".to_string(),
+            detail: "via Home Assistant".to_string(),
+            icon: Some("📷".to_string()),
+        });
+    }
+    if has_peekaboo {
+        integ_subs.push(SubComponent {
+            name: "Peekaboo".to_string(),
+            status: "active".to_string(),
+            detail: "macOS screen capture".to_string(),
+            icon: Some("🖥️".to_string()),
+        });
+    }
+    if let Some(model) = image_model {
+        integ_subs.push(SubComponent {
+            name: "Vision Model".to_string(),
+            status: "active".to_string(),
+            detail: model.to_string(),
+            icon: Some("👁️".to_string()),
+        });
+    }
+
+    slots.push(SlotData {
+        id: "integrations".to_string(),
+        label: "Integrations".to_string(),
+        icon: "⚡".to_string(),
+        status: if integ_subs.is_empty() { "empty" } else { "active" }.to_string(),
+        component: format!("{} connected", integ_subs.len()),
+        version: None,
+        details: serde_json::json!({
+            "channels": channel_names,
+            "total": integ_subs.len(),
+            "has_calendar": has_caldir,
+            "has_email": has_himalaya,
+            "has_home_assistant": ha_url.is_some(),
+            "has_voice": kokoro_exists || tts_provider != "none",
+            "has_stt": whisper_exists || voice_loop_exists,
+            "has_cameras": has_peekaboo || ha_url.is_some(),
+        }),
+        sub_components: integ_subs,
+    });
+
+    // ── AUTOMATIONS (Heartbeat + Crons) ──
+    let hb_path = ws.join("HEARTBEAT.md");
+    let hb_exists = hb_path.exists();
+    let hb_content = fs::read_to_string(&hb_path).unwrap_or_default();
+    let hb_tasks: Vec<String> = hb_content.lines()
+        .filter(|l| l.starts_with("- **"))
+        .filter_map(|l| {
+            l.trim_start_matches("- **")
+                .split("**")
+                .next()
+                .map(|s| s.trim_end_matches(':').to_string())
+        })
+        .collect();
+
+    let cron_count = get_cron_jobs().ok().map(|j| j.len()).unwrap_or(0);
+
+    let mut auto_subs = vec![
+        SubComponent {
+            name: "Heartbeat".to_string(),
+            status: if hb_exists && !hb_tasks.is_empty() { "active" } else { "inactive" }.to_string(),
+            detail: if hb_tasks.is_empty() { "no tasks".to_string() } else { format!("{} tasks", hb_tasks.len()) },
+            icon: Some("💓".to_string()),
+        },
+        SubComponent {
+            name: "Cron Jobs".to_string(),
+            status: if cron_count > 0 { "active" } else { "inactive" }.to_string(),
+            detail: format!("{} scheduled", cron_count),
+            icon: Some("⏰".to_string()),
+        },
+    ];
+    for task in &hb_tasks {
+        auto_subs.push(SubComponent {
+            name: task.clone(),
+            status: "active".to_string(),
+            detail: "heartbeat task".to_string(),
+            icon: Some("·".to_string()),
+        });
+    }
+
+    slots.push(SlotData {
+        id: "automations".to_string(),
+        label: "Automations".to_string(),
+        icon: "⏱".to_string(),
+        status: if hb_exists && (!hb_tasks.is_empty() || cron_count > 0) { "active" } else { "empty" }.to_string(),
+        component: format!("{} heartbeat + {} cron", hb_tasks.len(), cron_count),
+        version: None,
+        details: serde_json::json!({
+            "heartbeat_tasks": hb_tasks,
+            "cron_jobs": cron_count,
+        }),
+        sub_components: auto_subs,
+    });
+
+    // ── MEMORY ──
     let lcm_db = openclaw_dir().join("lcm.db");
     let lcm_exists = lcm_db.exists();
     let lcm_size = if lcm_exists {
@@ -414,7 +803,12 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
         0
     };
 
-    let mut brain_subs = vec![
+    let plugins_allow = config.pointer("/plugins/allow")
+        .and_then(|v| v.as_array())
+        .map(|a| a.iter().filter_map(|v| v.as_str().map(String::from)).collect::<Vec<_>>())
+        .unwrap_or_default();
+
+    let mut mem_subs = vec![
         SubComponent {
             name: "Context Engine".to_string(),
             status: if lcm_exists { "active" } else { "inactive" }.to_string(),
@@ -423,30 +817,21 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
         },
     ];
     if lcm_exists {
-        brain_subs.push(SubComponent {
+        mem_subs.push(SubComponent {
             name: "LCM Database".to_string(),
             status: "active".to_string(),
             detail: format!("{:.1} MB", lcm_size as f64 / 1_048_576.0),
             icon: Some("💾".to_string()),
         });
     }
-    brain_subs.push(SubComponent {
+    mem_subs.push(SubComponent {
         name: "Memory Files".to_string(),
         status: if has_memory_md { "active" } else { "minimal" }.to_string(),
         detail: format!("{} core + {} daily notes", memory_files.len() + if has_memory_md { 1 } else { 0 }, daily_notes_count),
         icon: Some("📝".to_string()),
     });
-
-    // Plugins
-    let plugins_allow = config.pointer("/plugins/allow")
-        .and_then(|v| v.as_array())
-        .map(|a| a.iter().filter_map(|v| v.as_str().map(String::from)).collect::<Vec<_>>())
-        .unwrap_or_default();
-    let context_plugin = config.pointer("/plugins/slots/contextEngine")
-        .and_then(|v| v.as_str())
-        .map(String::from);
     if !plugins_allow.is_empty() {
-        brain_subs.push(SubComponent {
+        mem_subs.push(SubComponent {
             name: "Plugins".to_string(),
             status: "active".to_string(),
             detail: plugins_allow.join(", "),
@@ -455,10 +840,10 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
     }
 
     slots.push(SlotData {
-        id: "brain".to_string(),
-        label: "Brain".to_string(),
-        icon: "⧫".to_string(),
-        status: if lcm_exists { "active" } else { "degraded" }.to_string(),
+        id: "memory".to_string(),
+        label: "Memory".to_string(),
+        icon: "◉".to_string(),
+        status: if lcm_exists || has_memory_md { "active" } else { "empty" }.to_string(),
         component: context_engine.to_string(),
         version: None,
         details: serde_json::json!({
@@ -468,489 +853,8 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
             "has_memory_md": has_memory_md,
             "daily_notes": daily_notes_count,
             "plugins": plugins_allow,
-            "context_plugin": context_plugin,
         }),
-        sub_components: brain_subs,
-    });
-
-    // ── SKELETON (Models) ──
-    let primary_model = config.pointer("/model/default")
-        .or(config.pointer("/model"))
-        .and_then(|v| v.as_str())
-        .unwrap_or("unknown")
-        .to_string();
-    let subagent_model = config.pointer("/model/subagent")
-        .and_then(|v| v.as_str())
-        .unwrap_or("unknown")
-        .to_string();
-
-    // Check for local models via ollama
-    let local_models = Command::new("ollama")
-        .arg("list")
-        .output()
-        .ok()
-        .map(|o| {
-            String::from_utf8_lossy(&o.stdout)
-                .lines()
-                .skip(1) // header
-                .filter_map(|l| l.split_whitespace().next().map(String::from))
-                .collect::<Vec<String>>()
-        })
-        .unwrap_or_default();
-
-    let mut skel_subs = vec![
-        SubComponent {
-            name: "Primary".to_string(),
-            status: "active".to_string(),
-            detail: primary_model.clone(),
-            icon: Some("🦴".to_string()),
-        },
-        SubComponent {
-            name: "Sub-agent".to_string(),
-            status: "active".to_string(),
-            detail: subagent_model.clone(),
-            icon: Some("🔗".to_string()),
-        },
-    ];
-    if !local_models.is_empty() {
-        skel_subs.push(SubComponent {
-            name: "Local (Ollama)".to_string(),
-            status: "active".to_string(),
-            detail: format!("{} models", local_models.len()),
-            icon: Some("🏠".to_string()),
-        });
-    }
-
-    slots.push(SlotData {
-        id: "skeleton".to_string(),
-        label: "Skeleton".to_string(),
-        icon: "⬢".to_string(),
-        status: "active".to_string(),
-        component: primary_model.clone(),
-        version: None,
-        details: serde_json::json!({
-            "primary": primary_model,
-            "subagent": subagent_model,
-            "local_models": local_models,
-        }),
-        sub_components: skel_subs,
-    });
-
-    // ── OS ──
-    let oc_version = Command::new("openclaw")
-        .arg("--version")
-        .output()
-        .ok()
-        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
-        .filter(|s| !s.is_empty());
-    let node_version = Command::new("node")
-        .arg("--version")
-        .output()
-        .ok()
-        .map(|o| String::from_utf8_lossy(&o.stdout).trim().to_string())
-        .filter(|s| !s.is_empty());
-
-    let os_subs = vec![
-        SubComponent {
-            name: "OpenClaw".to_string(),
-            status: "active".to_string(),
-            detail: oc_version.clone().unwrap_or("unknown".to_string()),
-            icon: Some("⬡".to_string()),
-        },
-        SubComponent {
-            name: "Node.js".to_string(),
-            status: "active".to_string(),
-            detail: node_version.clone().unwrap_or("unknown".to_string()),
-            icon: Some("📦".to_string()),
-        },
-        SubComponent {
-            name: "Platform".to_string(),
-            status: "active".to_string(),
-            detail: format!("{} {}", std::env::consts::OS, std::env::consts::ARCH),
-            icon: Some("💻".to_string()),
-        },
-    ];
-
-    slots.push(SlotData {
-        id: "os".to_string(),
-        label: "Operating System".to_string(),
-        icon: "⬡".to_string(),
-        status: "active".to_string(),
-        component: "OpenClaw".to_string(),
-        version: oc_version.clone(),
-        details: serde_json::json!({
-            "openclaw_version": oc_version,
-            "node_version": node_version,
-            "platform": std::env::consts::OS,
-            "arch": std::env::consts::ARCH,
-        }),
-        sub_components: os_subs,
-    });
-
-    // ── HEART (Heartbeat + Crons) ──
-    let hb_path = ws.join("HEARTBEAT.md");
-    let hb_exists = hb_path.exists();
-    let hb_content = fs::read_to_string(&hb_path).unwrap_or_default();
-    let hb_tasks: Vec<String> = hb_content.lines()
-        .filter(|l| l.starts_with("- **"))
-        .filter_map(|l| {
-            l.trim_start_matches("- **")
-                .split("**")
-                .next()
-                .map(|s| s.trim_end_matches(':').to_string())
-        })
-        .collect();
-
-    // Count cron jobs
-    let cron_count = get_cron_jobs().ok().map(|j| j.len()).unwrap_or(0);
-
-    let mut heart_subs = vec![
-        SubComponent {
-            name: "Heartbeat".to_string(),
-            status: if hb_exists && !hb_tasks.is_empty() { "active" } else { "inactive" }.to_string(),
-            detail: if hb_tasks.is_empty() { "no tasks".to_string() } else { format!("{} tasks", hb_tasks.len()) },
-            icon: Some("💓".to_string()),
-        },
-        SubComponent {
-            name: "Cron Jobs".to_string(),
-            status: if cron_count > 0 { "active" } else { "inactive" }.to_string(),
-            detail: format!("{} scheduled", cron_count),
-            icon: Some("⏰".to_string()),
-        },
-    ];
-    for task in &hb_tasks {
-        heart_subs.push(SubComponent {
-            name: task.clone(),
-            status: "active".to_string(),
-            detail: "heartbeat task".to_string(),
-            icon: Some("·".to_string()),
-        });
-    }
-
-    slots.push(SlotData {
-        id: "heart".to_string(),
-        label: "Heart".to_string(),
-        icon: "♥".to_string(),
-        status: if hb_exists && (!hb_tasks.is_empty() || cron_count > 0) { "active" } else { "empty" }.to_string(),
-        component: "Heartbeat Engine".to_string(),
-        version: None,
-        details: serde_json::json!({
-            "heartbeat_tasks": hb_tasks,
-            "cron_jobs": cron_count,
-        }),
-        sub_components: heart_subs,
-    });
-
-    // ── NERVOUS SYSTEM (Channels, Integrations, Calendar, Email, HA) ──
-    let channels = &config["channels"];
-    let channel_names: Vec<String> = if let Some(obj) = channels.as_object() {
-        obj.keys().cloned().collect()
-    } else {
-        vec![]
-    };
-
-    let mut nerve_subs: Vec<SubComponent> = Vec::new();
-
-    // Channels
-    for ch in &channel_names {
-        nerve_subs.push(SubComponent {
-            name: ch.clone(),
-            status: "active".to_string(),
-            detail: "messaging channel".to_string(),
-            icon: Some("📡".to_string()),
-        });
-    }
-
-    // Calendar (caldir)
-    let has_caldir = home_dir().join(".local/bin/caldir").exists();
-    if has_caldir {
-        nerve_subs.push(SubComponent {
-            name: "Calendar (caldir)".to_string(),
-            status: "active".to_string(),
-            detail: "iCloud + Google".to_string(),
-            icon: Some("📅".to_string()),
-        });
-    }
-
-    // Email (himalaya)
-    let has_himalaya = Command::new("which").arg("himalaya").output()
-        .ok().map(|o| o.status.success()).unwrap_or(false);
-    if has_himalaya {
-        nerve_subs.push(SubComponent {
-            name: "Email (himalaya)".to_string(),
-            status: "active".to_string(),
-            detail: "IMAP/SMTP".to_string(),
-            icon: Some("📧".to_string()),
-        });
-    }
-
-    // Reminders (remindctl)
-    let has_remindctl = Command::new("which").arg("remindctl").output()
-        .ok().map(|o| o.status.success()).unwrap_or(false);
-    if has_remindctl {
-        nerve_subs.push(SubComponent {
-            name: "Reminders".to_string(),
-            status: "active".to_string(),
-            detail: "Apple Reminders".to_string(),
-            icon: Some("✅".to_string()),
-        });
-    }
-
-    // Home Assistant — check config AND TOOLS.md
-    let ha_url_config = config.pointer("/homeAssistant/url")
-        .and_then(|v| v.as_str());
-    let tools_md = fs::read_to_string(ws.join("TOOLS.md")).unwrap_or_default();
-    let ha_in_tools = tools_md.contains("Home Assistant") || tools_md.contains("home_assistant");
-    let ha_url = ha_url_config.or(if ha_in_tools { Some("via TOOLS.md") } else { None });
-    if ha_url.is_some() {
-        nerve_subs.push(SubComponent {
-            name: "Home Assistant".to_string(),
-            status: "active".to_string(),
-            detail: ha_url.unwrap_or("configured").to_string(),
-            icon: Some("🏠".to_string()),
-        });
-    }
-
-    // Smart home devices file
-    let ha_devices = ws.join("memory/home-devices.md").exists();
-    if ha_devices {
-        let device_count = fs::read_to_string(ws.join("memory/home-devices.md"))
-            .ok()
-            .map(|c| c.lines().filter(|l| l.starts_with("- ") || l.starts_with("  - ")).count())
-            .unwrap_or(0);
-        if device_count > 0 {
-            nerve_subs.push(SubComponent {
-                name: "Smart Devices".to_string(),
-                status: "active".to_string(),
-                detail: format!("{} devices", device_count),
-                icon: Some("💡".to_string()),
-            });
-        }
-    }
-
-    // Paired nodes
-    let paired_file = openclaw_dir().join("devices/paired.json");
-    let paired_count = fs::read_to_string(&paired_file)
-        .ok()
-        .and_then(|c| serde_json::from_str::<Value>(&c).ok())
-        .and_then(|v| v.as_array().map(|a| a.len()))
-        .unwrap_or(0);
-    if paired_count > 0 {
-        nerve_subs.push(SubComponent {
-            name: "Paired Nodes".to_string(),
-            status: "active".to_string(),
-            detail: format!("{} device{}", paired_count, if paired_count == 1 { "" } else { "s" }),
-            icon: Some("🔗".to_string()),
-        });
-    }
-
-    // Git/GitHub integration
-    let has_gh = Command::new("which").arg("gh").output()
-        .ok().map(|o| o.status.success()).unwrap_or(false);
-    if has_gh {
-        nerve_subs.push(SubComponent {
-            name: "GitHub CLI".to_string(),
-            status: "active".to_string(),
-            detail: "gh".to_string(),
-            icon: Some("🐙".to_string()),
-        });
-    }
-
-    // Apple Notes (memo CLI)
-    let has_memo = Command::new("which").arg("memo").output()
-        .ok().map(|o| o.status.success()).unwrap_or(false);
-    if has_memo {
-        nerve_subs.push(SubComponent {
-            name: "Apple Notes".to_string(),
-            status: "active".to_string(),
-            detail: "memo CLI".to_string(),
-            icon: Some("📒".to_string()),
-        });
-    }
-
-    let integration_count = nerve_subs.len() - channel_names.len();
-    slots.push(SlotData {
-        id: "nervousSystem".to_string(),
-        label: "Nervous System".to_string(),
-        icon: "⚡".to_string(),
-        status: if channel_names.is_empty() { "empty" } else { "active" }.to_string(),
-        component: if channel_names.len() == 1 {
-            channel_names[0].clone()
-        } else {
-            format!("{} channels", channel_names.len())
-        },
-        version: None,
-        details: serde_json::json!({
-            "channels": channel_names,
-            "integrations": integration_count,
-            "has_calendar": has_caldir,
-            "has_email": has_himalaya,
-            "has_home_assistant": ha_url.is_some(),
-        }),
-        sub_components: nerve_subs,
-    });
-
-    // ── MOUTH (TTS) ──
-    let tts_provider = config.pointer("/tts/provider")
-        .and_then(|v| v.as_str())
-        .unwrap_or("none");
-    let tts_voice = config.pointer("/tts/voice")
-        .and_then(|v| v.as_str());
-
-    // Check for Kokoro
-    let kokoro_exists = home_dir().join(".cache/kokoro-onnx/kokoro-v1.0.onnx").exists();
-    let voice_loop_exists = home_dir().join("voice-loop/voice_loop.py").exists();
-
-    let mut mouth_subs = vec![
-        SubComponent {
-            name: "TTS Provider".to_string(),
-            status: if tts_provider != "none" { "active" } else { "inactive" }.to_string(),
-            detail: tts_provider.to_string(),
-            icon: Some("🗣️".to_string()),
-        },
-    ];
-    if let Some(voice) = tts_voice {
-        mouth_subs.push(SubComponent {
-            name: "Voice".to_string(),
-            status: "active".to_string(),
-            detail: voice.to_string(),
-            icon: Some("🎙️".to_string()),
-        });
-    }
-    if kokoro_exists {
-        mouth_subs.push(SubComponent {
-            name: "Kokoro-ONNX".to_string(),
-            status: "active".to_string(),
-            detail: "local TTS (~82MB)".to_string(),
-            icon: Some("🔊".to_string()),
-        });
-    }
-    if voice_loop_exists {
-        mouth_subs.push(SubComponent {
-            name: "Voice Loop".to_string(),
-            status: "active".to_string(),
-            detail: "bidirectional voice".to_string(),
-            icon: Some("🔄".to_string()),
-        });
-    }
-
-    slots.push(SlotData {
-        id: "mouth".to_string(),
-        label: "Mouth".to_string(),
-        icon: "◐".to_string(),
-        status: if tts_provider != "none" || kokoro_exists { "active" } else { "empty" }.to_string(),
-        component: if kokoro_exists { "Kokoro + Edge".to_string() } else { tts_provider.to_string() },
-        version: None,
-        details: serde_json::json!({
-            "provider": tts_provider,
-            "voice": tts_voice,
-            "kokoro_installed": kokoro_exists,
-            "voice_loop": voice_loop_exists,
-        }),
-        sub_components: mouth_subs,
-    });
-
-    // ── EARS (STT) ──
-    let whisper_exists = Command::new("which").arg("whisper").output()
-        .ok().map(|o| o.status.success()).unwrap_or(false);
-    let voice_loop_stt = voice_loop_exists; // same voice loop does STT
-
-    let mut ears_subs = vec![];
-    if whisper_exists || voice_loop_stt {
-        ears_subs.push(SubComponent {
-            name: "Whisper".to_string(),
-            status: "active".to_string(),
-            detail: "local, base.en".to_string(),
-            icon: Some("👂".to_string()),
-        });
-    }
-    if voice_loop_stt {
-        ears_subs.push(SubComponent {
-            name: "Voice Loop STT".to_string(),
-            status: "active".to_string(),
-            detail: "real-time transcription".to_string(),
-            icon: Some("🎧".to_string()),
-        });
-    }
-
-    slots.push(SlotData {
-        id: "ears".to_string(),
-        label: "Ears".to_string(),
-        icon: "◑".to_string(),
-        status: if whisper_exists || voice_loop_stt { "active" } else { "empty" }.to_string(),
-        component: if voice_loop_stt { "Whisper (local)".to_string() } else { "none".to_string() },
-        version: None,
-        details: serde_json::json!({
-            "whisper_installed": whisper_exists,
-            "voice_loop": voice_loop_stt,
-            "engine": "local",
-        }),
-        sub_components: ears_subs,
-    });
-
-    // ── EYES (Cameras, Screen Capture, Vision) ──
-    let has_peekaboo = Command::new("which").arg("peekaboo").output()
-        .ok().map(|o| o.status.success()).unwrap_or(false);
-    let image_model = config.pointer("/model/image")
-        .and_then(|v| v.as_str());
-
-    let mut eyes_subs = vec![];
-
-    // UniFi cameras from HA config
-    if ha_url.is_some() {
-        eyes_subs.push(SubComponent {
-            name: "G4 Doorbell Pro".to_string(),
-            status: "active".to_string(),
-            detail: "front porch + package cam".to_string(),
-            icon: Some("📷".to_string()),
-        });
-    }
-
-    if has_peekaboo {
-        eyes_subs.push(SubComponent {
-            name: "Peekaboo".to_string(),
-            status: "active".to_string(),
-            detail: "macOS screen/window capture".to_string(),
-            icon: Some("🖥️".to_string()),
-        });
-    }
-
-    if let Some(model) = image_model {
-        eyes_subs.push(SubComponent {
-            name: "Vision Model".to_string(),
-            status: "active".to_string(),
-            detail: model.to_string(),
-            icon: Some("👁️".to_string()),
-        });
-    }
-
-    // Paired nodes with cameras
-    let has_nodes = config.pointer("/nodes").is_some();
-    if has_nodes {
-        eyes_subs.push(SubComponent {
-            name: "Node Cameras".to_string(),
-            status: "active".to_string(),
-            detail: "paired device cameras".to_string(),
-            icon: Some("📱".to_string()),
-        });
-    }
-
-    slots.push(SlotData {
-        id: "eyes".to_string(),
-        label: "Eyes".to_string(),
-        icon: "◉".to_string(),
-        status: if !eyes_subs.is_empty() { "active" } else { "empty" }.to_string(),
-        component: if ha_url.is_some() { "UniFi + Peekaboo".to_string() }
-                   else if has_peekaboo { "Peekaboo".to_string() }
-                   else { "none".to_string() },
-        version: None,
-        details: serde_json::json!({
-            "cameras": if ha_url.is_some() { 1 } else { 0 },
-            "peekaboo": has_peekaboo,
-            "image_model": image_model,
-            "nodes": has_nodes,
-        }),
-        sub_components: eyes_subs,
+        sub_components: mem_subs,
     });
 
     slots

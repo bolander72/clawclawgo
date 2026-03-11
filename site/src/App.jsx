@@ -18,20 +18,20 @@ import { loadouts } from './loadouts'
 
 const slotColors = {
   Model: 'from-purple-500/40 to-blue-500/40',
-  Integrations: 'from-green-500/40 to-cyan-500/40',
+  Persona: 'from-cyan-500/40 to-emerald-500/40',
   Skills: 'from-pink-500/40 to-violet-500/40',
-  Personality: 'from-cyan-500/40 to-emerald-500/40',
+  Integrations: 'from-green-500/40 to-cyan-500/40',
+  Automations: 'from-rose-500/40 to-blue-500/40',
   Memory: 'from-amber-500/40 to-orange-500/40',
-  Scheduling: 'from-rose-500/40 to-blue-500/40',
 }
 
 const slotIcons = {
   Model: IconCube,
-  Integrations: IconPlug,
+  Persona: IconSparkles,
   Skills: IconBolt,
-  Personality: IconSparkles,
+  Integrations: IconPlug,
+  Automations: IconClockHour4,
   Memory: IconServer,
-  Scheduling: IconClockHour4,
 }
 
 function formatDate(dateStr) {
@@ -92,13 +92,13 @@ function Hero() {
         {/* CTA */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <a
-            href="https://github.com/openclaw/openclaw"
+            href="https://github.com/bolander72/ripperclaw/releases"
             target="_blank"
             rel="noopener noreferrer"
             className="px-6 py-3 bg-rc-cyan text-rc-bg font-grotesk font-semibold rounded-xl hover:bg-rc-cyan/90 transition-colors flex items-center gap-2"
           >
-            Get OpenClaw
-            <IconExternalLink size={16} />
+            Get Ripperclaw
+            <IconArrowDown size={16} />
           </a>
           <button
             onClick={() => document.getElementById('showcase')?.scrollIntoView({ behavior: 'smooth' })}
@@ -466,7 +466,7 @@ function WhatIsSection() {
     {
       icon: IconPuzzle,
       title: 'Modular loadouts',
-      desc: 'Every agent is built from slots — model, integrations, skills, personality, memory, scheduling. Mix and match to create something that fits exactly how you work.',
+      desc: 'Every agent is built from six slots — model, persona, skills, integrations, automations, memory. Mix and match to create something that fits exactly how you work.',
     },
     {
       icon: IconCopy,
@@ -594,12 +594,12 @@ function HowItWorks() {
 
 function AnatomySection() {
   const slots = [
-    { name: 'Model', icon: IconCube, desc: 'The brain. Claude, GPT, Llama, Qwen — or mix models for different tasks.', color: 'from-purple-500/30 to-blue-500/30' },
-    { name: 'Integrations', icon: IconPlug, desc: 'What your agent connects to. iMessage, Calendar, Email, Smart Home, GitHub — your life\'s APIs.', color: 'from-green-500/30 to-cyan-500/30' },
-    { name: 'Skills', icon: IconBolt, desc: 'What your agent can do. Weather, coding, voice, web search, marketing — install from ClawHub or build your own.', color: 'from-pink-500/30 to-violet-500/30' },
-    { name: 'Personality', icon: IconSparkles, desc: 'How your agent thinks and talks. Tone, style, boundaries, opinions. The soul file.', color: 'from-cyan-500/30 to-emerald-500/30' },
-    { name: 'Memory', icon: IconServer, desc: 'What your agent remembers. Facts, preferences, conversation history, handoff notes between sessions.', color: 'from-amber-500/30 to-orange-500/30' },
-    { name: 'Scheduling', icon: IconClockHour4, desc: 'When your agent acts on its own. Heartbeats, cron jobs, reminders, monitoring tasks.', color: 'from-rose-500/30 to-blue-500/30' },
+    { name: 'Model', icon: IconCube, desc: 'Which LLMs power it. Route Opus for deep thinking, Sonnet for speed, local Qwen for free — or one model for everything.', color: 'from-purple-500/30 to-blue-500/30' },
+    { name: 'Persona', icon: IconSparkles, desc: 'How it thinks, talks, and acts. Tone, opinions, boundaries, identity. The stuff that makes it feel like yours, not a chatbot.', color: 'from-cyan-500/30 to-emerald-500/30' },
+    { name: 'Skills', icon: IconBolt, desc: 'What it can do. Voice chat, coding, web research, marketing, home automation — install from ClawHub or build your own.', color: 'from-pink-500/30 to-violet-500/30' },
+    { name: 'Integrations', icon: IconPlug, desc: 'What it connects to. iMessage, Calendar, Email, Smart Home, cameras, GitHub, voice I/O — your life\'s APIs wired in.', color: 'from-green-500/30 to-cyan-500/30' },
+    { name: 'Automations', icon: IconClockHour4, desc: 'What it does on its own. Heartbeat checks, cron jobs, monitors, reminders. The autonomous layer.', color: 'from-rose-500/30 to-blue-500/30' },
+    { name: 'Memory', icon: IconServer, desc: 'How it remembers. Context engine, conversation history, facts, daily notes, handoff between sessions.', color: 'from-amber-500/30 to-orange-500/30' },
   ]
 
   return (
@@ -661,7 +661,7 @@ function FAQSection() {
     },
     {
       q: 'What\'s in a typical loadout?',
-      a: 'Six slots: Model (which AI), Integrations (what it connects to), Skills (what it can do), Personality (how it communicates), Memory (what it remembers), and Scheduling (when it acts autonomously).',
+      a: 'Six slots: Model (which LLMs), Persona (how it thinks and talks), Skills (what it can do), Integrations (what it connects to), Automations (what it does on its own), and Memory (how it remembers).',
     },
     {
       q: 'Is this free?',
@@ -748,13 +748,13 @@ function Footer() {
           </p>
           <div className="flex items-center justify-center gap-4">
             <a
-              href="https://github.com/openclaw/openclaw"
+              href="https://github.com/bolander72/ripperclaw/releases"
               target="_blank"
               rel="noopener noreferrer"
               className="px-6 py-3 bg-rc-cyan text-rc-bg font-grotesk font-semibold rounded-xl hover:bg-rc-cyan/90 transition-colors flex items-center gap-2"
             >
-              <IconBrandGithub size={18} />
-              Get OpenClaw
+              <IconArrowDown size={18} />
+              Get Ripperclaw
             </a>
             <a
               href="https://docs.openclaw.ai"

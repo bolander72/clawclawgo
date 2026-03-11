@@ -16,16 +16,15 @@ export const loadouts = [
           { name: 'Claude Opus', color: 'text-purple-400' },
           { name: 'Claude Sonnet', color: 'text-blue-400' },
           { name: 'Qwen 3.5:4b', color: 'text-rc-green' },
-          { name: 'Whisper', color: 'text-rc-text-dim' },
+          { name: 'Whisper (local)', color: 'text-rc-text-dim' },
         ],
       },
       {
-        name: 'Integrations',
+        name: 'Persona',
         items: [
-          { name: 'iMessage', color: 'text-green-400' },
-          { name: 'Calendar', color: 'text-rc-red' },
-          { name: 'Email', color: 'text-blue-400' },
-          { name: 'Smart Home', color: 'text-rc-yellow' },
+          { name: 'Calm & direct', color: 'text-rc-cyan' },
+          { name: 'Anti-AI-slop tone', color: 'text-rc-green' },
+          { name: 'Action-biased', color: 'text-orange-400' },
         ],
       },
       {
@@ -38,28 +37,30 @@ export const loadouts = [
         ],
       },
       {
-        name: 'Personality',
+        name: 'Integrations',
         items: [
-          { name: 'SOUL.md', color: 'text-rc-green' },
-          { name: 'IDENTITY.md', color: 'text-purple-400' },
-          { name: 'USER.md', color: 'text-blue-400' },
+          { name: 'iMessage', color: 'text-green-400' },
+          { name: 'Calendar', color: 'text-rc-red' },
+          { name: 'Email', color: 'text-blue-400' },
+          { name: 'Smart Home', color: 'text-rc-yellow' },
+          { name: 'GitHub', color: 'text-rc-text' },
+        ],
+      },
+      {
+        name: 'Automations',
+        items: [
+          { name: 'Heartbeats', color: 'text-rose-400' },
+          { name: 'Cron Jobs', color: 'text-blue-400' },
+          { name: 'Reminders', color: 'text-rc-yellow' },
         ],
       },
       {
         name: 'Memory',
         items: [
-          { name: 'MEMORY.md', color: 'text-rc-green' },
+          { name: 'LCM (lossless)', color: 'text-rc-green' },
           { name: 'Daily Notes', color: 'text-amber-400' },
           { name: 'Handoff', color: 'text-rc-cyan' },
-          { name: 'Facts', color: 'text-rc-red' },
-        ],
-      },
-      {
-        name: 'Scheduling',
-        items: [
-          { name: 'Heartbeats', color: 'text-rose-400' },
-          { name: 'Cron Jobs', color: 'text-blue-400' },
-          { name: 'Reminders', color: 'text-rc-yellow' },
+          { name: 'Facts DB', color: 'text-rc-red' },
         ],
       },
     ],
@@ -81,12 +82,10 @@ export const loadouts = [
         ],
       },
       {
-        name: 'Integrations',
+        name: 'Persona',
         items: [
-          { name: 'GitHub', color: 'text-rc-text' },
-          { name: 'Linear', color: 'text-violet-400' },
-          { name: 'Slack', color: 'text-purple-400' },
-          { name: 'Vercel', color: 'text-rc-text' },
+          { name: 'Senior engineer', color: 'text-rc-cyan' },
+          { name: 'Terse, no fluff', color: 'text-rc-green' },
         ],
       },
       {
@@ -99,11 +98,27 @@ export const loadouts = [
         ],
       },
       {
+        name: 'Integrations',
+        items: [
+          { name: 'GitHub', color: 'text-rc-text' },
+          { name: 'Linear', color: 'text-violet-400' },
+          { name: 'Slack', color: 'text-purple-400' },
+          { name: 'Vercel', color: 'text-rc-text' },
+        ],
+      },
+      {
         name: 'Memory',
         items: [
           { name: 'Codebase Map', color: 'text-rc-cyan' },
           { name: 'Architecture Decisions', color: 'text-amber-400' },
           { name: 'Sprint History', color: 'text-rc-green' },
+        ],
+      },
+      {
+        name: 'Automations',
+        items: [
+          { name: 'CI Watcher', color: 'text-rc-red' },
+          { name: 'Nightly Tests', color: 'text-blue-400' },
         ],
       },
     ],
@@ -120,16 +135,14 @@ export const loadouts = [
         name: 'Model',
         items: [
           { name: 'Qwen 3.5:4b', color: 'text-rc-green' },
-          { name: 'Whisper', color: 'text-rc-text-dim' },
+          { name: 'Whisper (local)', color: 'text-rc-text-dim' },
         ],
       },
       {
-        name: 'Integrations',
+        name: 'Persona',
         items: [
-          { name: 'Home Assistant', color: 'text-blue-400' },
-          { name: 'HomeKit', color: 'text-rc-text' },
-          { name: 'Telegram', color: 'text-sky-400' },
-          { name: 'UniFi Protect', color: 'text-violet-400' },
+          { name: 'Home concierge', color: 'text-rc-cyan' },
+          { name: 'Minimal chatter', color: 'text-rc-text-dim' },
         ],
       },
       {
@@ -142,11 +155,27 @@ export const loadouts = [
         ],
       },
       {
-        name: 'Scheduling',
+        name: 'Integrations',
+        items: [
+          { name: 'Home Assistant', color: 'text-blue-400' },
+          { name: 'HomeKit', color: 'text-rc-text' },
+          { name: 'Telegram', color: 'text-sky-400' },
+          { name: 'UniFi Protect', color: 'text-violet-400' },
+        ],
+      },
+      {
+        name: 'Automations',
         items: [
           { name: 'Routines', color: 'text-rc-cyan' },
           { name: 'Motion Alerts', color: 'text-rose-400' },
           { name: 'Night Mode', color: 'text-purple-400' },
+        ],
+      },
+      {
+        name: 'Memory',
+        items: [
+          { name: 'Device Registry', color: 'text-rc-green' },
+          { name: 'Usage Patterns', color: 'text-amber-400' },
         ],
       },
     ],
@@ -165,6 +194,13 @@ export const loadouts = [
           { name: 'Claude Opus', color: 'text-purple-400' },
           { name: 'Perplexity', color: 'text-sky-400' },
           { name: 'GPT-5.2', color: 'text-emerald-400' },
+        ],
+      },
+      {
+        name: 'Persona',
+        items: [
+          { name: 'Academic rigor', color: 'text-rc-cyan' },
+          { name: 'Citation-first', color: 'text-amber-400' },
         ],
       },
       {
@@ -193,6 +229,13 @@ export const loadouts = [
           { name: 'Knowledge Graph', color: 'text-rc-yellow' },
         ],
       },
+      {
+        name: 'Automations',
+        items: [
+          { name: 'ArXiv Watch', color: 'text-orange-400' },
+          { name: 'Weekly Digest', color: 'text-blue-400' },
+        ],
+      },
     ],
   },
   {
@@ -208,6 +251,13 @@ export const loadouts = [
         items: [
           { name: 'Claude Sonnet', color: 'text-blue-400' },
           { name: 'GPT-5.2', color: 'text-emerald-400' },
+        ],
+      },
+      {
+        name: 'Persona',
+        items: [
+          { name: 'Brand voice', color: 'text-rc-cyan' },
+          { name: 'Conversion-focused', color: 'text-orange-400' },
         ],
       },
       {
@@ -229,10 +279,17 @@ export const loadouts = [
         ],
       },
       {
-        name: 'Personality',
+        name: 'Automations',
         items: [
-          { name: 'Brand Voice', color: 'text-rc-cyan' },
-          { name: 'Tone Guide', color: 'text-orange-400' },
+          { name: 'Campaign Reports', color: 'text-rc-cyan' },
+          { name: 'Competitor Watch', color: 'text-rc-red' },
+        ],
+      },
+      {
+        name: 'Memory',
+        items: [
+          { name: 'Campaign History', color: 'text-amber-400' },
+          { name: 'Audience Segments', color: 'text-rc-green' },
         ],
       },
     ],
@@ -253,12 +310,10 @@ export const loadouts = [
         ],
       },
       {
-        name: 'Integrations',
+        name: 'Persona',
         items: [
-          { name: 'Stripe', color: 'text-purple-400' },
-          { name: 'Plaid', color: 'text-rc-green' },
-          { name: 'Google Sheets', color: 'text-rc-green' },
-          { name: 'Telegram', color: 'text-sky-400' },
+          { name: 'Conservative & precise', color: 'text-rc-cyan' },
+          { name: 'Numbers-first', color: 'text-amber-400' },
         ],
       },
       {
@@ -271,10 +326,26 @@ export const loadouts = [
         ],
       },
       {
-        name: 'Scheduling',
+        name: 'Integrations',
+        items: [
+          { name: 'Stripe', color: 'text-purple-400' },
+          { name: 'Plaid', color: 'text-rc-green' },
+          { name: 'Google Sheets', color: 'text-rc-green' },
+          { name: 'Telegram', color: 'text-sky-400' },
+        ],
+      },
+      {
+        name: 'Automations',
         items: [
           { name: 'Daily Summary', color: 'text-rc-cyan' },
           { name: 'Bill Reminders', color: 'text-rc-yellow' },
+        ],
+      },
+      {
+        name: 'Memory',
+        items: [
+          { name: 'Transaction Log', color: 'text-rc-green' },
+          { name: 'Budget Targets', color: 'text-amber-400' },
         ],
       },
     ],
@@ -295,12 +366,10 @@ export const loadouts = [
         ],
       },
       {
-        name: 'Integrations',
+        name: 'Persona',
         items: [
-          { name: 'Linear', color: 'text-violet-400' },
-          { name: 'Slack', color: 'text-purple-400' },
-          { name: 'Google Calendar', color: 'text-blue-400' },
-          { name: 'Notion', color: 'text-rc-text' },
+          { name: 'Team-aware', color: 'text-rc-cyan' },
+          { name: 'Status-obsessed', color: 'text-rc-green' },
         ],
       },
       {
@@ -310,6 +379,22 @@ export const loadouts = [
           { name: 'Sprint Planning', color: 'text-rc-cyan' },
           { name: 'Blocker Detection', color: 'text-rc-red' },
           { name: 'Team Updates', color: 'text-rc-yellow' },
+        ],
+      },
+      {
+        name: 'Integrations',
+        items: [
+          { name: 'Linear', color: 'text-violet-400' },
+          { name: 'Slack', color: 'text-purple-400' },
+          { name: 'Google Calendar', color: 'text-blue-400' },
+          { name: 'Notion', color: 'text-rc-text' },
+        ],
+      },
+      {
+        name: 'Automations',
+        items: [
+          { name: 'Morning Standup', color: 'text-rc-green' },
+          { name: 'Deadline Alerts', color: 'text-rc-red' },
         ],
       },
       {
@@ -338,6 +423,14 @@ export const loadouts = [
         ],
       },
       {
+        name: 'Persona',
+        items: [
+          { name: 'Brand voice', color: 'text-rc-cyan' },
+          { name: 'Style guide', color: 'text-rc-green' },
+          { name: 'Audience profile', color: 'text-orange-400' },
+        ],
+      },
+      {
         name: 'Skills',
         items: [
           { name: 'Blog Writing', color: 'text-rc-cyan' },
@@ -356,11 +449,17 @@ export const loadouts = [
         ],
       },
       {
-        name: 'Personality',
+        name: 'Automations',
         items: [
-          { name: 'Brand Voice', color: 'text-rc-cyan' },
-          { name: 'Style Guide', color: 'text-rc-green' },
-          { name: 'Audience Profile', color: 'text-orange-400' },
+          { name: 'Content Calendar', color: 'text-rc-yellow' },
+          { name: 'Publish Queue', color: 'text-rc-green' },
+        ],
+      },
+      {
+        name: 'Memory',
+        items: [
+          { name: 'Content Archive', color: 'text-amber-400' },
+          { name: 'Performance Data', color: 'text-rc-cyan' },
         ],
       },
     ],
