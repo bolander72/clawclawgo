@@ -437,6 +437,23 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
         icon: Some("📝".to_string()),
     });
 
+    // Plugins
+    let plugins_allow = config.pointer("/plugins/allow")
+        .and_then(|v| v.as_array())
+        .map(|a| a.iter().filter_map(|v| v.as_str().map(String::from)).collect::<Vec<_>>())
+        .unwrap_or_default();
+    let context_plugin = config.pointer("/plugins/slots/contextEngine")
+        .and_then(|v| v.as_str())
+        .map(String::from);
+    if !plugins_allow.is_empty() {
+        brain_subs.push(SubComponent {
+            name: "Plugins".to_string(),
+            status: "active".to_string(),
+            detail: plugins_allow.join(", "),
+            icon: Some("🔌".to_string()),
+        });
+    }
+
     slots.push(SlotData {
         id: "brain".to_string(),
         label: "Brain".to_string(),
@@ -450,6 +467,8 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
             "memory_files": memory_files,
             "has_memory_md": has_memory_md,
             "daily_notes": daily_notes_count,
+            "plugins": plugins_allow,
+            "context_plugin": context_plugin,
         }),
         sub_components: brain_subs,
     });
@@ -677,9 +696,12 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
         });
     }
 
-    // Home Assistant
-    let ha_url = config.pointer("/homeAssistant/url")
+    // Home Assistant — check config AND TOOLS.md
+    let ha_url_config = config.pointer("/homeAssistant/url")
         .and_then(|v| v.as_str());
+    let tools_md = fs::read_to_string(ws.join("TOOLS.md")).unwrap_or_default();
+    let ha_in_tools = tools_md.contains("Home Assistant") || tools_md.contains("home_assistant");
+    let ha_url = ha_url_config.or(if ha_in_tools { Some("via TOOLS.md") } else { None });
     if ha_url.is_some() {
         nerve_subs.push(SubComponent {
             name: "Home Assistant".to_string(),
@@ -704,6 +726,46 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
                 icon: Some("💡".to_string()),
             });
         }
+    }
+
+    // Paired nodes
+    let paired_file = openclaw_dir().join("devices/paired.json");
+    let paired_count = fs::read_to_string(&paired_file)
+        .ok()
+        .and_then(|c| serde_json::from_str::<Value>(&c).ok())
+        .and_then(|v| v.as_array().map(|a| a.len()))
+        .unwrap_or(0);
+    if paired_count > 0 {
+        nerve_subs.push(SubComponent {
+            name: "Paired Nodes".to_string(),
+            status: "active".to_string(),
+            detail: format!("{} device{}", paired_count, if paired_count == 1 { "" } else { "s" }),
+            icon: Some("🔗".to_string()),
+        });
+    }
+
+    // Git/GitHub integration
+    let has_gh = Command::new("which").arg("gh").output()
+        .ok().map(|o| o.status.success()).unwrap_or(false);
+    if has_gh {
+        nerve_subs.push(SubComponent {
+            name: "GitHub CLI".to_string(),
+            status: "active".to_string(),
+            detail: "gh".to_string(),
+            icon: Some("🐙".to_string()),
+        });
+    }
+
+    // Apple Notes (memo CLI)
+    let has_memo = Command::new("which").arg("memo").output()
+        .ok().map(|o| o.status.success()).unwrap_or(false);
+    if has_memo {
+        nerve_subs.push(SubComponent {
+            name: "Apple Notes".to_string(),
+            status: "active".to_string(),
+            detail: "memo CLI".to_string(),
+            icon: Some("📒".to_string()),
+        });
     }
 
     let integration_count = nerve_subs.len() - channel_names.len();
