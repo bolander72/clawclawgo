@@ -15,12 +15,12 @@ import { loadouts } from './loadouts'
 // ─── Helpers ───────────────────────────────────────────────
 
 const slotColors = {
-  Model: 'from-purple-500/20 to-blue-500/20',
-  Integrations: 'from-green-500/20 to-cyan-500/20',
-  Skills: 'from-pink-500/20 to-violet-500/20',
-  Personality: 'from-cyan-500/20 to-emerald-500/20',
-  Memory: 'from-amber-500/20 to-orange-500/20',
-  Scheduling: 'from-rose-500/20 to-blue-500/20',
+  Model: 'from-purple-500/40 to-blue-500/40',
+  Integrations: 'from-green-500/40 to-cyan-500/40',
+  Skills: 'from-pink-500/40 to-violet-500/40',
+  Personality: 'from-cyan-500/40 to-emerald-500/40',
+  Memory: 'from-amber-500/40 to-orange-500/40',
+  Scheduling: 'from-rose-500/40 to-blue-500/40',
 }
 
 const slotIcons = {
@@ -164,10 +164,10 @@ function LoadoutCard({ loadout, index, onClick, dropped }) {
               return (
                 <div
                   key={si}
-                  className={`aspect-square rounded-xl bg-gradient-to-br ${slotColors[slot.name] || 'from-white/5 to-white/10'} border border-white/5 flex flex-col items-center justify-center gap-1 p-2`}
+                  className={`aspect-square rounded-xl bg-gradient-to-br ${slotColors[slot.name] || 'from-white/10 to-white/20'} border border-white/10 flex flex-col items-center justify-center gap-1.5 p-2`}
                 >
-                  <Icon size={16} stroke={1.5} className="text-rc-text-dim" />
-                  <span className="text-[9px] font-mono text-rc-text-muted truncate w-full text-center">
+                  <Icon size={22} stroke={1.5} className="text-rc-text" />
+                  <span className="text-xs font-mono font-semibold text-rc-text-dim truncate w-full text-center">
                     {slot.items.length}
                   </span>
                 </div>
@@ -262,7 +262,7 @@ function ConveyorBelt({ onSelectLoadout }) {
           ref={trackRef}
           className="flex gap-6 px-6"
           style={{
-            animation: `scroll ${loadouts.length * 5}s linear infinite`,
+            animation: `scroll ${loadouts.length * 3}s linear infinite`,
             animationPlayState: isPaused ? 'paused' : 'running',
           }}
         >
