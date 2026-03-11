@@ -1,134 +1,150 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNostrKeys, useNostrFeed, type FeedRig } from '../hooks/useNostr';
 
-interface FeedRig {
+// Mock feed data — shown when no real events exist yet
+const mockFeed: DisplayRig[] = [
+  {
+    id: 'mock-1',
+    name: 'Nighthawk',
+    author: 'npub1cyb3r...punk',
+    template: 'homelab',
+    description: 'Full surveillance rig with local LLMs, multi-camera vision, and voice control. Zero cloud dependency.',
+    tags: ['privacy', 'local-first', 'voice', 'cameras'],
+    publishedAt: Date.now() / 1000 - 3600,
+    model: 'llama-3.3-70b (local)',
+    isMock: true,
+  },
+  {
+    id: 'mock-2',
+    name: 'Mercury',
+    author: 'npub1fast...ship',
+    template: 'ops',
+    description: 'Lean and fast. Sonnet backbone, minimal skills, pure productivity. Sub-2s response times.',
+    tags: ['minimal', 'fast', 'productivity'],
+    publishedAt: Date.now() / 1000 - 7200,
+    model: 'claude-sonnet-4-5',
+    isMock: true,
+  },
+  {
+    id: 'mock-3',
+    name: 'Athena',
+    author: 'npub1wiz...ard',
+    template: 'researcher',
+    description: 'Research-focused rig with deep web search, PDF analysis, and academic citation tracking. 40+ custom skills.',
+    tags: ['research', 'academic', 'deep-web'],
+    publishedAt: Date.now() / 1000 - 14400,
+    model: 'claude-opus-4-6',
+    isMock: true,
+  },
+  {
+    id: 'mock-4',
+    name: 'Patchwork',
+    author: 'npub1home...base',
+    template: 'smart-home',
+    description: 'Smart home beast. 47 HA entities, automated routines, energy monitoring, security cams with person detection.',
+    tags: ['smart-home', 'automation', 'security'],
+    publishedAt: Date.now() / 1000 - 86400,
+    model: 'gpt-5.2',
+    isMock: true,
+  },
+  {
+    id: 'mock-5',
+    name: 'Ghostwriter',
+    author: 'npub1pen...ink',
+    template: 'creator',
+    description: 'Content creation rig. Blog posts, social media, email sequences, SEO optimization. Writes in your voice.',
+    tags: ['content', 'writing', 'seo', 'social-media'],
+    publishedAt: Date.now() / 1000 - 172800,
+    model: 'claude-opus-4-6',
+    isMock: true,
+  },
+  {
+    id: 'mock-6',
+    name: 'Djinn',
+    author: 'npub1void...abyss',
+    template: 'ops',
+    description: 'DeFi monitoring + execution. On-chain analytics, portfolio tracking, automated rebalancing.',
+    tags: ['defi', 'crypto', 'solana', 'trading'],
+    publishedAt: Date.now() / 1000 - 259200,
+    model: 'claude-sonnet-4-5',
+    isMock: true,
+  },
+];
+
+interface DisplayRig {
   id: string;
   name: string;
   author: string;
   template: string;
   description: string;
-  slotCount: number;
-  modCount: number;
   tags: string[];
-  publishedAt: string;
-  reactions: number;
-  model: string;
-  channels: string[];
+  publishedAt: number;
+  model?: string;
+  isMock?: boolean;
 }
 
-// Mock feed data — will be replaced with nostr events
-const mockFeed: FeedRig[] = [
-  {
-    id: '1',
-    name: 'Nighthawk',
-    author: 'npub1cyb3r...punk',
-    template: 'netrunner',
-    description: 'Full surveillance rig with local LLMs, multi-camera vision, and voice control. Zero cloud dependency.',
-    slotCount: 9,
-    modCount: 32,
-    tags: ['privacy', 'local-first', 'voice', 'cameras'],
-    publishedAt: '2026-03-10T22:00:00Z',
-    reactions: 42,
-    model: 'llama-3.3-70b (local)',
-    channels: ['matrix', 'signal'],
-  },
-  {
-    id: '2',
-    name: 'Mercury',
-    author: 'npub1fast...ship',
-    template: 'fixer',
-    description: 'Lean and fast. Sonnet backbone, minimal skills, pure productivity. Sub-2s response times.',
-    slotCount: 7,
-    modCount: 12,
-    tags: ['minimal', 'fast', 'productivity'],
-    publishedAt: '2026-03-10T20:00:00Z',
-    reactions: 28,
-    model: 'claude-sonnet-4-5',
-    channels: ['telegram'],
-  },
-  {
-    id: '3',
-    name: 'Athena',
-    author: 'npub1wiz...ard',
-    template: 'solo',
-    description: 'Research-focused rig with deep web search, PDF analysis, and academic citation tracking. 40+ custom skills.',
-    slotCount: 9,
-    modCount: 44,
-    tags: ['research', 'academic', 'deep-web', 'citations'],
-    publishedAt: '2026-03-10T18:00:00Z',
-    reactions: 67,
-    model: 'claude-opus-4-6',
-    channels: ['discord', 'email'],
-  },
-  {
-    id: '4',
-    name: 'Patchwork',
-    author: 'npub1home...base',
-    template: 'nomad',
-    description: 'Smart home beast. 47 HA entities, automated routines, energy monitoring, security cams with person detection.',
-    slotCount: 9,
-    modCount: 22,
-    tags: ['smart-home', 'automation', 'security', 'energy'],
-    publishedAt: '2026-03-09T15:00:00Z',
-    reactions: 35,
-    model: 'gpt-5.2',
-    channels: ['whatsapp', 'homeassistant'],
-  },
-  {
-    id: '5',
-    name: 'Ghostwriter',
-    author: 'npub1pen...ink',
-    template: 'rockerboy',
-    description: 'Content creation rig. Blog posts, social media, email sequences, SEO optimization. Writes in your voice.',
-    slotCount: 8,
-    modCount: 28,
-    tags: ['content', 'writing', 'seo', 'social-media'],
-    publishedAt: '2026-03-09T12:00:00Z',
-    reactions: 51,
-    model: 'claude-opus-4-6',
-    channels: ['slack', 'notion'],
-  },
-  {
-    id: '6',
-    name: 'Djinn',
-    author: 'npub1void...abyss',
-    template: 'netrunner',
-    description: 'DeFi monitoring + execution. On-chain analytics, portfolio tracking, automated rebalancing. Uses Jito and Jupiter.',
-    slotCount: 7,
-    modCount: 15,
-    tags: ['defi', 'crypto', 'solana', 'trading'],
-    publishedAt: '2026-03-08T20:00:00Z',
-    reactions: 89,
-    model: 'claude-sonnet-4-5',
-    channels: ['telegram', 'discord'],
-  },
-];
-
 const templateColors: Record<string, string> = {
-  netrunner: 'var(--rc-cyan)',
-  fixer: 'var(--rc-yellow)',
-  solo: 'var(--rc-magenta)',
-  nomad: 'var(--rc-green)',
-  rockerboy: 'var(--rc-red)',
+  homelab: 'var(--rc-cyan)',
+  ops: 'var(--rc-yellow)',
+  researcher: 'var(--rc-magenta)',
+  'smart-home': 'var(--rc-green)',
+  creator: 'var(--rc-red)',
 };
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const hours = Math.floor(diff / 3600000);
-  if (hours < 1) return 'just now';
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
+const templates = ['homelab', 'ops', 'researcher', 'smart-home', 'creator'];
+
+function timeAgo(ts: number): string {
+  const diff = Date.now() / 1000 - ts;
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  return `${Math.floor(diff / 86400)}d ago`;
+}
+
+function parseFeedRig(rig: FeedRig): DisplayRig {
+  let parsed: Record<string, unknown> = {};
+  try {
+    parsed = JSON.parse(rig.content);
+  } catch { /* ignore */ }
+
+  const template = rig.template || rig.tags.find((t) => templates.includes(t)) || 'ops';
+  const meta = (parsed.meta || {}) as Record<string, unknown>;
+
+  return {
+    id: rig.id,
+    name: rig.name,
+    author: rig.author,
+    template,
+    description: (meta.description as string) || `${rig.tags.length} tags · Published via RipperClaw`,
+    tags: rig.tags,
+    publishedAt: rig.published_at,
+    model: ((parsed.slots as Record<string, unknown>)?.skeleton as Record<string, unknown>)?.component as string | undefined,
+  };
 }
 
 export function FeedView() {
   const [filter, setFilter] = useState<string | null>(null);
-  const [selectedRig, setSelectedRig] = useState<FeedRig | null>(null);
+  const [selectedRig, setSelectedRig] = useState<DisplayRig | null>(null);
+  const [showKeySetup, setShowKeySetup] = useState(false);
+  const [nsecInput, setNsecInput] = useState('');
+
+  const { keys, generate, importKey } = useNostrKeys();
+  const { feed: nostrFeed, loading: feedLoading, error: feedError, fetchFeed } = useNostrFeed();
+
+  // Fetch feed on mount if we have keys
+  useEffect(() => {
+    if (keys.has_keys) {
+      fetchFeed(50);
+    }
+  }, [keys.has_keys]);
+
+  // Convert nostr events to display rigs, fall back to mock
+  const realRigs = nostrFeed.map(parseFeedRig);
+  const displayRigs = realRigs.length > 0 ? realRigs : mockFeed;
+  const isUsingMock = realRigs.length === 0;
 
   const filtered = filter
-    ? mockFeed.filter((r) => r.template === filter || r.tags.includes(filter))
-    : mockFeed;
-
-  const templates = ['netrunner', 'fixer', 'solo', 'nomad', 'rockerboy'];
+    ? displayRigs.filter((r) => r.template === filter || r.tags.includes(filter))
+    : displayRigs;
 
   return (
     <div className="flex-1 flex overflow-hidden">
@@ -143,19 +159,141 @@ export function FeedView() {
             >
               The Feed
             </h3>
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] px-2 py-0.5 rounded" style={{ 
-                background: 'rgba(255,0,170,0.1)',
-                color: 'var(--rc-magenta)',
-                border: '1px solid var(--rc-magenta-dim)',
-              }}>
-                MOCK DATA
-              </span>
+            <div className="flex items-center gap-2">
+              {isUsingMock && (
+                <span className="text-[10px] px-2 py-0.5 rounded" style={{
+                  background: 'rgba(255,0,170,0.1)',
+                  color: 'var(--rc-magenta)',
+                  border: '1px solid var(--rc-magenta-dim)',
+                }}>
+                  MOCK DATA
+                </span>
+              )}
+              {feedLoading && (
+                <span className="text-[10px] animate-pulse" style={{ color: 'var(--rc-cyan)' }}>
+                  SYNCING...
+                </span>
+              )}
             </div>
           </div>
-          <p className="text-xs mb-4" style={{ color: 'var(--rc-text-dim)' }}>
-            Browse public rigs from the network. Nostr integration coming soon.
-          </p>
+
+          {/* Identity bar */}
+          <div
+            className="flex items-center justify-between mb-4 p-3 rounded-lg border"
+            style={{ background: 'var(--rc-surface)', borderColor: 'var(--rc-border)' }}
+          >
+            {keys.has_keys ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full" style={{ background: 'var(--rc-green)' }} />
+                  <span className="text-[10px] font-mono" style={{ color: 'var(--rc-text-muted)' }}>
+                    {keys.npub_short}
+                  </span>
+                </div>
+                <button
+                  onClick={() => fetchFeed(50)}
+                  className="text-[10px] px-2 py-1 rounded border transition-all hover:opacity-80"
+                  style={{
+                    borderColor: 'var(--rc-cyan)',
+                    color: 'var(--rc-cyan)',
+                    background: 'rgba(0,240,255,0.05)',
+                  }}
+                >
+                  Refresh
+                </button>
+              </>
+            ) : (
+              <div className="flex items-center justify-between w-full">
+                <span className="text-[10px]" style={{ color: 'var(--rc-text-muted)' }}>
+                  No identity set — generate or import a nostr key to publish & subscribe
+                </span>
+                <button
+                  onClick={() => setShowKeySetup(!showKeySetup)}
+                  className="text-[10px] px-2 py-1 rounded border transition-all hover:opacity-80"
+                  style={{
+                    borderColor: 'var(--rc-cyan)',
+                    color: 'var(--rc-cyan)',
+                    background: 'rgba(0,240,255,0.05)',
+                  }}
+                >
+                  Setup Identity
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Key setup panel */}
+          {showKeySetup && !keys.has_keys && (
+            <div
+              className="mb-4 p-4 rounded-lg border"
+              style={{ background: 'var(--rc-surface)', borderColor: 'var(--rc-cyan-dim)' }}
+            >
+              <h4 className="text-xs font-semibold mb-3" style={{ color: 'var(--rc-text)' }}>
+                Nostr Identity
+              </h4>
+              <div className="space-y-3">
+                <button
+                  onClick={async () => {
+                    await generate();
+                    setShowKeySetup(false);
+                  }}
+                  className="w-full py-2 rounded text-xs font-semibold uppercase tracking-wider border transition-all hover:opacity-80"
+                  style={{
+                    borderColor: 'var(--rc-cyan)',
+                    color: 'var(--rc-cyan)',
+                    background: 'rgba(0,240,255,0.1)',
+                  }}
+                >
+                  Generate New Keys
+                </button>
+                <div className="text-center text-[10px]" style={{ color: 'var(--rc-text-muted)' }}>or</div>
+                <div className="flex gap-2">
+                  <input
+                    type="password"
+                    value={nsecInput}
+                    onChange={(e) => setNsecInput(e.target.value)}
+                    placeholder="nsec1..."
+                    className="flex-1 px-3 py-2 rounded text-xs font-mono border outline-none"
+                    style={{
+                      background: 'rgba(255,255,255,0.03)',
+                      borderColor: 'var(--rc-border)',
+                      color: 'var(--rc-text)',
+                    }}
+                  />
+                  <button
+                    onClick={async () => {
+                      if (nsecInput.startsWith('nsec1')) {
+                        await importKey(nsecInput);
+                        setNsecInput('');
+                        setShowKeySetup(false);
+                      }
+                    }}
+                    className="px-3 py-2 rounded text-xs border transition-all hover:opacity-80"
+                    style={{
+                      borderColor: 'var(--rc-border)',
+                      color: 'var(--rc-text-dim)',
+                    }}
+                  >
+                    Import
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Error display */}
+          {feedError && (
+            <div
+              className="mb-4 p-3 rounded-lg border text-xs"
+              style={{
+                borderColor: 'var(--rc-red)',
+                color: 'var(--rc-red)',
+                background: 'rgba(255,50,50,0.05)',
+              }}
+            >
+              {feedError}
+            </div>
+          )}
 
           {/* Template filters */}
           <div className="flex gap-2 mb-6 flex-wrap">
@@ -199,7 +337,6 @@ export function FeedView() {
                 }}
                 onClick={() => setSelectedRig(selectedRig?.id === rig.id ? null : rig)}
               >
-                {/* Card header */}
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold" style={{ color: 'var(--rc-text)' }}>
@@ -214,44 +351,42 @@ export function FeedView() {
                     >
                       {rig.template}
                     </span>
+                    {rig.isMock && (
+                      <span className="text-[9px] px-1 py-0.5 rounded" style={{
+                        color: 'var(--rc-text-muted)',
+                        opacity: 0.5,
+                      }}>
+                        sample
+                      </span>
+                    )}
                   </div>
                   <span className="text-[10px]" style={{ color: 'var(--rc-text-muted)' }}>
                     {timeAgo(rig.publishedAt)}
                   </span>
                 </div>
 
-                {/* Description */}
                 <p className="text-xs mb-3 leading-relaxed" style={{ color: 'var(--rc-text-dim)' }}>
                   {rig.description}
                 </p>
 
-                {/* Stats row */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <span className="text-[10px]" style={{ color: 'var(--rc-text-muted)' }}>
-                      {rig.slotCount} slots
+                    <span className="text-[10px] font-mono" style={{ color: 'var(--rc-text-muted)' }}>
+                      {rig.author}
                     </span>
-                    <span className="text-[10px]" style={{ color: 'var(--rc-text-muted)' }}>
-                      {rig.modCount} mods
-                    </span>
-                    <span className="text-[10px] font-mono" style={{ color: 'var(--rc-cyan)' }}>
-                      {rig.model}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="text-[10px]" style={{ color: 'var(--rc-yellow)' }}>⚡</span>
-                    <span className="text-[10px]" style={{ color: 'var(--rc-text-muted)' }}>
-                      {rig.reactions}
-                    </span>
+                    {rig.model && (
+                      <span className="text-[10px] font-mono" style={{ color: 'var(--rc-cyan)' }}>
+                        {rig.model}
+                      </span>
+                    )}
                   </div>
                 </div>
 
-                {/* Tags */}
                 <div className="flex gap-1 mt-2 flex-wrap">
                   {rig.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="text-[9px] px-1.5 py-0.5 rounded font-mono"
+                      className="text-[9px] px-1.5 py-0.5 rounded font-mono cursor-pointer"
                       style={{
                         background: 'rgba(255,255,255,0.03)',
                         color: 'var(--rc-text-muted)',
@@ -307,26 +442,17 @@ export function FeedView() {
               {selectedRig.description}
             </p>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {[
-                { label: 'Model', value: selectedRig.model },
-                { label: 'Channels', value: selectedRig.channels.join(', ') },
-                { label: 'Slots', value: String(selectedRig.slotCount) },
-                { label: 'Mods', value: String(selectedRig.modCount) },
-              ].map((stat) => (
-                <div key={stat.label} className="py-2 px-3 rounded" style={{ background: 'rgba(255,255,255,0.02)' }}>
-                  <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--rc-text-muted)' }}>
-                    {stat.label}
-                  </div>
-                  <div className="text-xs font-mono mt-0.5" style={{ color: 'var(--rc-text)' }}>
-                    {stat.value}
-                  </div>
+            {selectedRig.model && (
+              <div className="mb-6 py-2 px-3 rounded" style={{ background: 'rgba(255,255,255,0.02)' }}>
+                <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--rc-text-muted)' }}>
+                  Model
                 </div>
-              ))}
-            </div>
+                <div className="text-xs font-mono mt-0.5" style={{ color: 'var(--rc-text)' }}>
+                  {selectedRig.model}
+                </div>
+              </div>
+            )}
 
-            {/* Actions */}
             <div className="flex gap-3">
               <button
                 className="flex-1 py-2 rounded text-xs font-semibold uppercase tracking-wider border transition-all hover:opacity-80"

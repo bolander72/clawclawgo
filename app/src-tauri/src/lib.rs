@@ -1,3 +1,6 @@
+mod nostr;
+mod scrub;
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::fs;
@@ -844,6 +847,25 @@ fn export_loadout() -> Result<Value, String> {
     Ok(loadout)
 }
 
+// ─── PII-safe export for publishing ───
+
+#[derive(Serialize)]
+struct ScrubReport {
+    scrubbed_fields: Vec<String>,
+    warnings: Vec<String>,
+}
+
+#[tauri::command]
+fn export_loadout_safe(
+    template: Option<String>,
+    description: Option<String>,
+    tags: Option<Vec<String>>,
+) -> Result<(Value, ScrubReport), String> {
+    let raw = export_loadout()?;
+    let (scrubbed, report) = scrub::scrub_loadout(raw, template, description, tags);
+    Ok((scrubbed, report))
+}
+
 fn chrono_now() -> String {
     // Simple ISO timestamp without chrono crate
     let output = Command::new("date")
@@ -869,6 +891,13 @@ pub fn run() {
             get_slots,
             import_loadout,
             export_loadout,
+            export_loadout_safe,
+            nostr::nostr_get_keys,
+            nostr::nostr_generate_keys,
+            nostr::nostr_import_keys,
+            nostr::nostr_publish_loadout,
+            nostr::nostr_fetch_feed,
+            nostr::nostr_get_relays,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

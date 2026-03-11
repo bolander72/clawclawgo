@@ -5,6 +5,7 @@ import { SlotDetail } from './components/SlotDetail';
 import { ModList } from './components/ModList';
 import { CompareView } from './components/CompareView';
 import { FeedView } from './components/FeedView';
+import { PublishDialog } from './components/PublishDialog';
 import { useSlots, useSkills, useSystemStatus } from './hooks/useTauri';
 import { slots as mockSlots, mods as mockMods } from './data/mockLoadout';
 
@@ -13,6 +14,7 @@ type View = 'rig' | 'mods' | 'compare' | 'feed';
 function App() {
   const [selectedSlot, setSelectedSlot] = useState('soul');
   const [view, setView] = useState<View>('rig');
+  const [showPublish, setShowPublish] = useState(false);
 
   const { data: realSlots, loading: slotsLoading, error: slotsError } = useSlots();
   const { data: realMods, loading: modsLoading } = useSkills();
@@ -63,6 +65,22 @@ function App() {
               {item.icon}
             </button>
           ))}
+
+          <div className="flex-1" />
+
+          {/* Publish button */}
+          <button
+            onClick={() => setShowPublish(true)}
+            className="w-9 h-9 rounded-lg flex items-center justify-center text-sm transition-all hover:opacity-80"
+            style={{
+              background: 'rgba(0, 240, 255, 0.08)',
+              color: 'var(--rc-cyan)',
+              border: '1px solid var(--rc-cyan-dim)',
+            }}
+            title="Publish Your Rig"
+          >
+            ▲
+          </button>
         </nav>
 
         {/* Main content */}
@@ -152,6 +170,9 @@ function App() {
         </span>
         <span>LOADOUT: QUINN · {slots.length} SLOTS · {mods.length} MODS</span>
       </footer>
+
+      {/* Publish dialog */}
+      {showPublish && <PublishDialog onClose={() => setShowPublish(false)} />}
     </div>
   );
 }

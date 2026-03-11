@@ -121,6 +121,26 @@ content: <loadout JSON string>
 
 Parameterized replaceable means updating your rig replaces the old event (same author + same "d" tag).
 
+### Phase 4: Bitcoin Permanence Layer
+
+Nostr handles mutable, discoverable loadouts. Bitcoin handles permanence.
+
+**Concept:** Inscribe a commitment (hash of loadout JSON) on-chain via ordinals. The full loadout lives on nostr (updatable), but the on-chain inscription proves "this rig existed at this point in time."
+
+**Use cases:**
+- Proof-of-build: "I was running this exact config on this date"
+- Loadout versioning with immutable history
+- Premium/verified rigs anchored on-chain
+- Could tie into Taproot Wizards ecosystem
+
+**Implementation (later):**
+- SHA-256 hash of canonical loadout JSON
+- Inscribe via ord CLI or Xverse API
+- Store inscription ID in nostr event tags: `["i", "ord:<inscription_id>"]`
+- UI: gold badge on loadouts with on-chain anchors
+
+Not urgent — build nostr first, add Bitcoin anchoring when the network has real users.
+
 ### Implementation Phases
 
 **Phase 3a: Local Feed (no network)**
