@@ -881,23 +881,23 @@ fn clone_loadout(loadout_json: String, mode: String) -> Result<CloneResult, Stri
     let loadout: Value = serde_json::from_str(&loadout_json)
         .map_err(|e| format!("Invalid loadout JSON: {}", e))?;
 
-    let builds_dir = workspace_dir().join("builds");
-    let _ = fs::create_dir_all(&builds_dir);
+    let loadouts_dir = workspace_dir().join("loadouts");
+    let _ = fs::create_dir_all(&loadouts_dir);
 
     if mode == "new" {
-        // Save as a new named build file
+        // Save as a new named loadout file
         let name = loadout.pointer("/meta/name")
             .and_then(|v| v.as_str())
-            .unwrap_or("imported-build");
+            .unwrap_or("imported-loadout");
         let safe_name: String = name.chars()
             .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '-' })
             .collect();
         let timestamp = chrono_now().replace(':', "-").replace('T', "_");
         let filename = format!("{}-{}.loadout.json", safe_name, timestamp);
-        let path = builds_dir.join(&filename);
+        let path = loadouts_dir.join(&filename);
 
         fs::write(&path, serde_json::to_string_pretty(&loadout).unwrap_or_default())
-            .map_err(|e| format!("Failed to write build: {}", e))?;
+            .map_err(|e| format!("Failed to write loadout: {}", e))?;
 
         return Ok(CloneResult {
             applied_skills: vec![],
@@ -947,9 +947,9 @@ fn clone_loadout(loadout_json: String, mode: String) -> Result<CloneResult, Stri
         }
     }
 
-    // Save the loadout to builds dir for reference
+    // Save the loadout to loadouts dir for reference
     let ref_name = format!("cloned-{}.loadout.json", chrono_now().replace(':', "-"));
-    let ref_path = builds_dir.join(&ref_name);
+    let ref_path = loadouts_dir.join(&ref_name);
     let _ = fs::write(&ref_path, serde_json::to_string_pretty(&loadout).unwrap_or_default());
 
     Ok(CloneResult {
@@ -960,40 +960,44 @@ fn clone_loadout(loadout_json: String, mode: String) -> Result<CloneResult, Stri
     })
 }
 
-// ─── List saved builds ───
+// ─── List saved loadouts ───
 
 #[tauri::command]
-fn list_builds() -> Vec<Value> {
-    let builds_dir = workspace_dir().join("builds");
-    if !builds_dir.exists() { return vec![]; }
+fn list_loadouts() -> Vec<Value> {
+    let loadouts_dir = workspace_dir().join("loadouts");
+    // Also check legacy builds/ dir for migration
+    let legacy_dir = workspace_dir().join("builds");
 
-    let mut builds = Vec::new();
-    if let Ok(entries) = fs::read_dir(&builds_dir) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if path.extension().and_then(|e| e.to_str()) == Some("json") {
-                if let Ok(content) = fs::read_to_string(&path) {
-                    if let Ok(loadout) = serde_json::from_str::<Value>(&content) {
-                        let name = loadout.pointer("/meta/name")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("unknown");
-                        let exported_at = loadout.pointer("/meta/exportedAt")
-                            .and_then(|v| v.as_str())
-                            .unwrap_or("");
-                        builds.push(serde_json::json!({
-                            "filename": path.file_name().unwrap_or_default().to_string_lossy(),
-                            "name": name,
-                            "exportedAt": exported_at,
-                            "path": path.to_string_lossy(),
-                            "slots": loadout.get("slots").and_then(|s| s.as_object()).map(|o| o.len()).unwrap_or(0),
-                            "mods": loadout.get("mods").and_then(|m| m.as_array()).map(|a| a.len()).unwrap_or(0),
-                        }));
+    let mut loadouts = Vec::new();
+    for dir in [&loadouts_dir, &legacy_dir] {
+        if !dir.exists() { continue; }
+        if let Ok(entries) = fs::read_dir(dir) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.extension().and_then(|e| e.to_str()) == Some("json") {
+                    if let Ok(content) = fs::read_to_string(&path) {
+                        if let Ok(loadout) = serde_json::from_str::<Value>(&content) {
+                            let name = loadout.pointer("/meta/name")
+                                .and_then(|v| v.as_str())
+                                .unwrap_or("unknown");
+                            let exported_at = loadout.pointer("/meta/exportedAt")
+                                .and_then(|v| v.as_str())
+                                .unwrap_or("");
+                            loadouts.push(serde_json::json!({
+                                "filename": path.file_name().unwrap_or_default().to_string_lossy(),
+                                "name": name,
+                                "exportedAt": exported_at,
+                                "path": path.to_string_lossy(),
+                                "slots": loadout.get("slots").and_then(|s| s.as_object()).map(|o| o.len()).unwrap_or(0),
+                                "mods": loadout.get("mods").and_then(|m| m.as_array()).map(|a| a.len()).unwrap_or(0),
+                            }));
+                        }
                     }
                 }
             }
         }
     }
-    builds
+    loadouts
 }
 
 #[tauri::command]
@@ -1028,7 +1032,7 @@ pub fn run() {
             export_loadout,
             export_loadout_safe,
             clone_loadout,
-            list_builds,
+            list_loadouts,
             read_file_absolute,
             nostr::nostr_get_keys,
             nostr::nostr_generate_keys,

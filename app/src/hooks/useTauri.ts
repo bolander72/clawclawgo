@@ -126,7 +126,7 @@ export function useCloneLoadout() {
   return { cloneLoadout, loading, result };
 }
 
-export function useBuilds() {
+export function useLoadouts() {
   return useTauriCommand<Array<{
     filename: string;
     name: string;
@@ -134,5 +134,5 @@ export function useBuilds() {
     path: string;
     slots: number;
     mods: number;
-  }>>('list_builds', []);
+  }>>('list_loadouts', []);
 }

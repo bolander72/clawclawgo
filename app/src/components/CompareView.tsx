@@ -194,7 +194,7 @@ export function CompareView({ currentSlots, currentMods, currentName, initialLoa
                     background: 'transparent',
                   }}
                 >
-                  Save as New Build
+                  Save as Loadout
                 </button>
               </>
             )}

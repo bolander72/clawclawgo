@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import { useBuilds } from '../hooks/useTauri';
+import { useLoadouts } from '../hooks/useTauri';
 
 interface Props {
   onCompare?: (loadout: unknown) => void;
@@ -8,11 +8,11 @@ interface Props {
 }
 
 export function LoadoutsView({ onCompare, onApply }: Props) {
-  const { data: builds, loading, refresh } = useBuilds();
+  const { data: loadouts, loading, refresh } = useLoadouts();
   const [saving, setSaving] = useState(false);
   const [saveName, setSaveName] = useState('');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [expandedBuild, setExpandedBuild] = useState<string | null>(null);
+  const [expandedLoadout, setExpandedLoadout] = useState<string | null>(null);
   const [loadoutCache, setLoadoutCache] = useState<Record<string, unknown>>({});
 
   const saveCurrentRig = async () => {
@@ -39,7 +39,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
     }
   };
 
-  const loadBuild = async (path: string) => {
+  const loadLoadout = async (path: string) => {
     if (loadoutCache[path]) return loadoutCache[path];
     try {
       const content = await invoke<string>('read_workspace_file', {
@@ -56,19 +56,19 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
         setLoadoutCache((prev) => ({ ...prev, [path]: parsed }));
         return parsed;
       } catch {
-        console.error('Failed to load build:', path);
+        console.error('Failed to load loadout:', path);
         return null;
       }
     }
   };
 
   const handleExpand = async (filename: string, path: string) => {
-    if (expandedBuild === filename) {
-      setExpandedBuild(null);
+    if (expandedLoadout === filename) {
+      setExpandedLoadout(null);
       return;
     }
-    await loadBuild(path);
-    setExpandedBuild(filename);
+    await loadLoadout(path);
+    setExpandedLoadout(filename);
   };
 
   return (
@@ -87,7 +87,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
               )}
             </h3>
             <p className="text-xs" style={{ color: 'var(--rc-text-dim)' }}>
-              {builds.length} build{builds.length !== 1 ? 's' : ''} saved
+              {loadouts.length} loadout{loadouts.length !== 1 ? 's' : ''} saved
             </p>
           </div>
           <button
@@ -112,7 +112,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
               className="text-xs font-semibold uppercase tracking-wider block mb-2"
               style={{ color: 'var(--rc-cyan)' }}
             >
-              Name this build
+              Name this loadout
             </label>
             <div className="flex gap-2">
               <input
@@ -152,27 +152,27 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
         )}
 
         {/* Empty state */}
-        {!loading && builds.length === 0 && (
+        {!loading && loadouts.length === 0 && (
           <div
             className="text-center py-16 rounded-lg border border-dashed"
             style={{ borderColor: 'var(--rc-border)' }}
           >
             <span className="text-3xl block mb-3" style={{ color: 'var(--rc-text-muted)' }}>⬡</span>
             <p className="text-xs" style={{ color: 'var(--rc-text-dim)' }}>
-              No saved builds yet. Save your current rig or clone one from the Feed.
+              No saved loadouts yet. Save your current config or grab one from the Feed.
             </p>
           </div>
         )}
 
-        {/* Builds list */}
+        {/* Loadouts list */}
         <div className="space-y-2">
-          {builds.map((build) => {
-            const expanded = expandedBuild === build.filename;
-            const cached = loadoutCache[build.path];
+          {loadouts.map((entry) => {
+            const expanded = expandedLoadout === entry.filename;
+            const cached = loadoutCache[entry.path];
 
             return (
               <div
-                key={build.filename}
+                key={entry.filename}
                 className="rounded-lg border transition-all"
                 style={{
                   borderColor: expanded ? 'var(--rc-cyan)' : 'var(--rc-border)',
@@ -181,7 +181,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
               >
                 {/* Build header */}
                 <button
-                  onClick={() => handleExpand(build.filename, build.path)}
+                  onClick={() => handleExpand(entry.filename, entry.path)}
                   className="w-full px-4 py-3 flex items-center justify-between text-left"
                 >
                   <div className="flex items-center gap-3">
@@ -200,12 +200,12 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
                         className="text-sm font-semibold block"
                         style={{ color: 'var(--rc-text)' }}
                       >
-                        {build.name}
+                        {entry.name}
                       </span>
                       <span className="text-[10px]" style={{ color: 'var(--rc-text-muted)' }}>
-                        {build.slots} slots · {build.mods} mods
-                        {build.exportedAt && (
-                          <> · {new Date(build.exportedAt).toLocaleDateString()}</>
+                        {entry.slots} slots · {entry.mods} mods
+                        {entry.exportedAt && (
+                          <> · {new Date(entry.exportedAt).toLocaleDateString()}</>
                         )}
                       </span>
                     </div>
@@ -260,7 +260,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
                             background: 'var(--rc-cyan)',
                           }}
                         >
-                          Apply to My Rig
+                          Apply to Agent
                         </button>
                       )}
                       {onCompare && (
@@ -281,7 +281,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
                         className="text-[10px] self-center font-mono"
                         style={{ color: 'var(--rc-text-muted)' }}
                       >
-                        {build.filename}
+                        {entry.filename}
                       </span>
                     </div>
                   </div>

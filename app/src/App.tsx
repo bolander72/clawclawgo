@@ -174,7 +174,7 @@ function App() {
                 const res = await cloneLoadout(json, mode);
                 if (res) {
                   const msg = mode === 'new'
-                    ? `Saved as new build: ${res.slot_changes[0] || 'done'}`
+                    ? `Saved as loadout: ${res.slot_changes[0] || 'done'}`
                     : `Cloned to your rig. ${res.applied_skills.length} skills matched, ${res.skipped_skills.length} skipped. Backup: ${res.backup_path || 'none'}`;
                   setCloneResult({ message: msg, type: 'success' });
                   setTimeout(() => setCloneResult(null), 6000);
