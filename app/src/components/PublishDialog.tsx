@@ -49,7 +49,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
     setStep('publishing');
     setPublishError(null);
     try {
-      const result = await publish(scrubbedJson, rigName || 'My Rig', [...tags, template]);
+      const result = await publish(scrubbedJson, rigName || 'My Loadout', [...tags, template]);
       setPublishResult(result);
       setStep('done');
     } catch (err) {
@@ -75,7 +75,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--rc-text)' }}>
-            {step === 'configure' && 'Publish Your Rig'}
+            {step === 'configure' && 'Publish Loadout'}
             {step === 'review' && 'Review & Confirm'}
             {step === 'publishing' && 'Publishing...'}
             {step === 'done' && 'Published!'}

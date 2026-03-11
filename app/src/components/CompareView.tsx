@@ -183,7 +183,7 @@ export function CompareView({ currentSlots, currentMods, currentName, initialLoa
                     background: 'var(--rc-cyan)',
                   }}
                 >
-                  Clone to My Rig
+                  Apply to Agent
                 </button>
                 <button
                   onClick={() => onClone(imported, 'new')}
@@ -218,7 +218,7 @@ export function CompareView({ currentSlots, currentMods, currentName, initialLoa
             Slot
           </div>
           <div className="text-xs font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--rc-cyan)' }}>
-            Your Rig
+            Active Loadout
           </div>
           <div className="text-xs font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--rc-magenta)' }}>
             Their Rig

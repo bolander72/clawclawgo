@@ -38,7 +38,7 @@ function App() {
   const dataSource = slotsError ? 'mock' : 'live';
 
   const navItems: { id: View; icon: string; label: string }[] = [
-    { id: 'rig', icon: '⬡', label: 'Your Rig' },
+    { id: 'rig', icon: '⬡', label: 'Active Loadout' },
     { id: 'mods', icon: '◆', label: 'Mods' },
     { id: 'loadouts', icon: '▤', label: 'Loadouts' },
     { id: 'compare', icon: '⊕', label: 'Compare' },
@@ -82,7 +82,7 @@ function App() {
               color: 'var(--rc-cyan)',
               border: '1px solid var(--rc-cyan-dim)',
             }}
-            title="Publish Your Rig"
+            title="Publish Loadout"
           >
             ▲
           </button>
