@@ -4,7 +4,7 @@
   "description": "Cyberware manager for AI agents — loadout export, import, diff, and discovery",
   "type": "module",
   "bin": {
-    "ripperdoc": "./dist/cli.js"
+    "ripperclaw": "./dist/cli.js"
   },
   "scripts": {
     "build": "tsc",
