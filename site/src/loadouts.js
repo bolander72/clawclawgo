@@ -1,0 +1,368 @@
+// Sample loadouts for the conveyor belt showcase
+// In production these would come from an API as agents are shared/published
+
+export const loadouts = [
+  {
+    id: 'quinn-personal',
+    name: 'Personal Assistant',
+    agentName: 'Quinn',
+    creator: '@Bolander72',
+    createdAt: '2026-03-11',
+    isNew: true,
+    slots: [
+      {
+        name: 'Model',
+        items: [
+          { name: 'Claude Opus', color: 'text-purple-400' },
+          { name: 'Claude Sonnet', color: 'text-blue-400' },
+          { name: 'Qwen 3.5:4b', color: 'text-rc-green' },
+          { name: 'Whisper', color: 'text-rc-text-dim' },
+        ],
+      },
+      {
+        name: 'Integrations',
+        items: [
+          { name: 'iMessage', color: 'text-green-400' },
+          { name: 'Calendar', color: 'text-rc-red' },
+          { name: 'Email', color: 'text-blue-400' },
+          { name: 'Smart Home', color: 'text-rc-yellow' },
+        ],
+      },
+      {
+        name: 'Skills',
+        items: [
+          { name: 'Voice Chat', color: 'text-pink-400' },
+          { name: 'Frontend Design', color: 'text-violet-400' },
+          { name: 'Coding Agent', color: 'text-rc-green' },
+          { name: 'Web Research', color: 'text-rc-cyan' },
+        ],
+      },
+      {
+        name: 'Personality',
+        items: [
+          { name: 'SOUL.md', color: 'text-rc-green' },
+          { name: 'IDENTITY.md', color: 'text-purple-400' },
+          { name: 'USER.md', color: 'text-blue-400' },
+        ],
+      },
+      {
+        name: 'Memory',
+        items: [
+          { name: 'MEMORY.md', color: 'text-rc-green' },
+          { name: 'Daily Notes', color: 'text-amber-400' },
+          { name: 'Handoff', color: 'text-rc-cyan' },
+          { name: 'Facts', color: 'text-rc-red' },
+        ],
+      },
+      {
+        name: 'Scheduling',
+        items: [
+          { name: 'Heartbeats', color: 'text-rose-400' },
+          { name: 'Cron Jobs', color: 'text-blue-400' },
+          { name: 'Reminders', color: 'text-rc-yellow' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'devbot-coder',
+    name: 'Full-Stack Dev',
+    agentName: 'Axon',
+    creator: '@synthwave_dev',
+    createdAt: '2026-03-10',
+    isNew: true,
+    slots: [
+      {
+        name: 'Model',
+        items: [
+          { name: 'Claude Sonnet', color: 'text-blue-400' },
+          { name: 'Codex', color: 'text-rc-green' },
+          { name: 'GPT-5.2', color: 'text-emerald-400' },
+        ],
+      },
+      {
+        name: 'Integrations',
+        items: [
+          { name: 'GitHub', color: 'text-rc-text' },
+          { name: 'Linear', color: 'text-violet-400' },
+          { name: 'Slack', color: 'text-purple-400' },
+          { name: 'Vercel', color: 'text-rc-text' },
+        ],
+      },
+      {
+        name: 'Skills',
+        items: [
+          { name: 'Coding Agent', color: 'text-rc-green' },
+          { name: 'PR Review', color: 'text-orange-400' },
+          { name: 'CI/CD Monitor', color: 'text-blue-400' },
+          { name: 'DB Migrations', color: 'text-rc-yellow' },
+        ],
+      },
+      {
+        name: 'Memory',
+        items: [
+          { name: 'Codebase Map', color: 'text-rc-cyan' },
+          { name: 'Architecture Decisions', color: 'text-amber-400' },
+          { name: 'Sprint History', color: 'text-rc-green' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'homeguard-smart',
+    name: 'Smart Home',
+    agentName: 'Sentinel',
+    creator: '@homelab_nick',
+    createdAt: '2026-03-08',
+    isNew: false,
+    slots: [
+      {
+        name: 'Model',
+        items: [
+          { name: 'Qwen 3.5:4b', color: 'text-rc-green' },
+          { name: 'Whisper', color: 'text-rc-text-dim' },
+        ],
+      },
+      {
+        name: 'Integrations',
+        items: [
+          { name: 'Home Assistant', color: 'text-blue-400' },
+          { name: 'HomeKit', color: 'text-rc-text' },
+          { name: 'Telegram', color: 'text-sky-400' },
+          { name: 'UniFi Protect', color: 'text-violet-400' },
+        ],
+      },
+      {
+        name: 'Skills',
+        items: [
+          { name: 'Security Alerts', color: 'text-rc-red' },
+          { name: 'Energy Monitor', color: 'text-rc-green' },
+          { name: 'Climate Control', color: 'text-rc-yellow' },
+          { name: 'Voice Control', color: 'text-pink-400' },
+        ],
+      },
+      {
+        name: 'Scheduling',
+        items: [
+          { name: 'Routines', color: 'text-rc-cyan' },
+          { name: 'Motion Alerts', color: 'text-rose-400' },
+          { name: 'Night Mode', color: 'text-purple-400' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'research-deep',
+    name: 'Research Analyst',
+    agentName: 'Iris',
+    creator: '@deep_research',
+    createdAt: '2026-03-06',
+    isNew: false,
+    slots: [
+      {
+        name: 'Model',
+        items: [
+          { name: 'Claude Opus', color: 'text-purple-400' },
+          { name: 'Perplexity', color: 'text-sky-400' },
+          { name: 'GPT-5.2', color: 'text-emerald-400' },
+        ],
+      },
+      {
+        name: 'Skills',
+        items: [
+          { name: 'Deep Research', color: 'text-rc-cyan' },
+          { name: 'PDF Analysis', color: 'text-rc-red' },
+          { name: 'Web Scraping', color: 'text-rc-green' },
+          { name: 'Citation Manager', color: 'text-amber-400' },
+        ],
+      },
+      {
+        name: 'Integrations',
+        items: [
+          { name: 'Notion', color: 'text-rc-text' },
+          { name: 'Zotero', color: 'text-rc-red' },
+          { name: 'Google Scholar', color: 'text-blue-400' },
+        ],
+      },
+      {
+        name: 'Memory',
+        items: [
+          { name: 'Source Index', color: 'text-rc-green' },
+          { name: 'Finding Logs', color: 'text-rc-cyan' },
+          { name: 'Paper Summaries', color: 'text-violet-400' },
+          { name: 'Knowledge Graph', color: 'text-rc-yellow' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'marketing-pro',
+    name: 'Growth Marketer',
+    agentName: 'Spark',
+    creator: '@growthcraft',
+    createdAt: '2026-03-05',
+    isNew: false,
+    slots: [
+      {
+        name: 'Model',
+        items: [
+          { name: 'Claude Sonnet', color: 'text-blue-400' },
+          { name: 'GPT-5.2', color: 'text-emerald-400' },
+        ],
+      },
+      {
+        name: 'Skills',
+        items: [
+          { name: 'Copywriting', color: 'text-pink-400' },
+          { name: 'SEO Audit', color: 'text-rc-green' },
+          { name: 'A/B Testing', color: 'text-rc-yellow' },
+          { name: 'Social Content', color: 'text-violet-400' },
+        ],
+      },
+      {
+        name: 'Integrations',
+        items: [
+          { name: 'Google Analytics', color: 'text-rc-yellow' },
+          { name: 'Stripe', color: 'text-purple-400' },
+          { name: 'Mailchimp', color: 'text-rc-yellow' },
+          { name: 'Twitter/X', color: 'text-rc-text' },
+        ],
+      },
+      {
+        name: 'Personality',
+        items: [
+          { name: 'Brand Voice', color: 'text-rc-cyan' },
+          { name: 'Tone Guide', color: 'text-orange-400' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'finance-tracker',
+    name: 'Finance Manager',
+    agentName: 'Ledger',
+    creator: '@money_moves',
+    createdAt: '2026-02-28',
+    isNew: false,
+    slots: [
+      {
+        name: 'Model',
+        items: [
+          { name: 'Claude Sonnet', color: 'text-blue-400' },
+          { name: 'Qwen 3.5:4b', color: 'text-rc-green' },
+        ],
+      },
+      {
+        name: 'Integrations',
+        items: [
+          { name: 'Stripe', color: 'text-purple-400' },
+          { name: 'Plaid', color: 'text-rc-green' },
+          { name: 'Google Sheets', color: 'text-rc-green' },
+          { name: 'Telegram', color: 'text-sky-400' },
+        ],
+      },
+      {
+        name: 'Skills',
+        items: [
+          { name: 'Expense Tracking', color: 'text-rc-red' },
+          { name: 'Receipt OCR', color: 'text-rc-yellow' },
+          { name: 'Budget Alerts', color: 'text-orange-400' },
+          { name: 'Tax Prep', color: 'text-rc-cyan' },
+        ],
+      },
+      {
+        name: 'Scheduling',
+        items: [
+          { name: 'Daily Summary', color: 'text-rc-cyan' },
+          { name: 'Bill Reminders', color: 'text-rc-yellow' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'pm-coordinator',
+    name: 'Project Manager',
+    agentName: 'Relay',
+    creator: '@pm_sarah',
+    createdAt: '2026-03-09',
+    isNew: true,
+    slots: [
+      {
+        name: 'Model',
+        items: [
+          { name: 'Claude Opus', color: 'text-purple-400' },
+          { name: 'Claude Sonnet', color: 'text-blue-400' },
+        ],
+      },
+      {
+        name: 'Integrations',
+        items: [
+          { name: 'Linear', color: 'text-violet-400' },
+          { name: 'Slack', color: 'text-purple-400' },
+          { name: 'Google Calendar', color: 'text-blue-400' },
+          { name: 'Notion', color: 'text-rc-text' },
+        ],
+      },
+      {
+        name: 'Skills',
+        items: [
+          { name: 'Standup Reports', color: 'text-rc-green' },
+          { name: 'Sprint Planning', color: 'text-rc-cyan' },
+          { name: 'Blocker Detection', color: 'text-rc-red' },
+          { name: 'Team Updates', color: 'text-rc-yellow' },
+        ],
+      },
+      {
+        name: 'Memory',
+        items: [
+          { name: 'Team Roster', color: 'text-rc-cyan' },
+          { name: 'Project Roadmap', color: 'text-rc-green' },
+          { name: 'Meeting Notes', color: 'text-amber-400' },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'content-creator',
+    name: 'Content Studio',
+    agentName: 'Muse',
+    creator: '@creative_ops',
+    createdAt: '2026-03-07',
+    isNew: false,
+    slots: [
+      {
+        name: 'Model',
+        items: [
+          { name: 'Claude Opus', color: 'text-purple-400' },
+          { name: 'GPT-5.2', color: 'text-emerald-400' },
+        ],
+      },
+      {
+        name: 'Skills',
+        items: [
+          { name: 'Blog Writing', color: 'text-rc-cyan' },
+          { name: 'Social Content', color: 'text-violet-400' },
+          { name: 'Newsletter', color: 'text-rc-yellow' },
+          { name: 'Video Scripts', color: 'text-pink-400' },
+        ],
+      },
+      {
+        name: 'Integrations',
+        items: [
+          { name: 'WordPress', color: 'text-blue-400' },
+          { name: 'Buffer', color: 'text-rc-text' },
+          { name: 'Figma', color: 'text-purple-400' },
+          { name: 'YouTube', color: 'text-rc-red' },
+        ],
+      },
+      {
+        name: 'Personality',
+        items: [
+          { name: 'Brand Voice', color: 'text-rc-cyan' },
+          { name: 'Style Guide', color: 'text-rc-green' },
+          { name: 'Audience Profile', color: 'text-orange-400' },
+        ],
+      },
+    ],
+  },
+]
