@@ -14,12 +14,12 @@ import {
   IconChevronDown, IconBook2, IconBrandDiscord,
   IconBrandApple, IconBrandWindows, IconBrandDebian,
 } from '@tabler/icons-react'
-import { loadouts } from './loadouts'
+import { builds } from './builds'
 import Explore from './Explore'
 
 // ─── Helpers ───────────────────────────────────────────────
 
-const slotColors = {
+const blockColors = {
   Model: 'from-purple-500/40 to-blue-500/40',
   Persona: 'from-cyan-500/40 to-emerald-500/40',
   Skills: 'from-pink-500/40 to-violet-500/40',
@@ -28,7 +28,7 @@ const slotColors = {
   Memory: 'from-amber-500/40 to-orange-500/40',
 }
 
-const slotIcons = {
+const blockIcons = {
   Model: IconCube,
   Persona: IconSparkles,
   Skills: IconBolt,
@@ -147,19 +147,19 @@ function Hero() {
         <h1 className="text-5xl md:text-7xl font-grotesk font-bold text-rc-text mb-6 leading-[1.1] tracking-tight">
           Your AI.{' '}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-rc-cyan via-rc-green to-rc-cyan">
-            Your loadout.
+            Your build.
           </span>
         </h1>
 
         {/* Subhead */}
         <p className="text-lg md:text-xl text-rc-text-dim max-w-2xl mx-auto mb-4 leading-relaxed">
-          OpenClaw agents are built from loadouts: the models, integrations, skills, and personality
+          OpenClaw agents are built from builds: the models, integrations, skills, and personality
           that make each one unique. Browse what others have built. Copy what works. Make it yours.
         </p>
 
         <p className="text-sm text-rc-text-muted max-w-lg mx-auto mb-10">
-          Every loadout below is a real agent configuration. Click any card to see the full build,
-          or copy the entire loadout to bootstrap your own.
+          Every build below is a real agent configuration. Click any card to see the full build,
+          or copy the entire build to bootstrap your own.
         </p>
 
         {/* CTA */}
@@ -169,7 +169,7 @@ function Hero() {
             to="/explore"
             className="w-full px-6 py-3 bg-white/5 text-rc-text font-grotesk font-semibold rounded-xl hover:bg-white/10 transition-colors border border-rc-border flex items-center justify-center gap-2"
           >
-            Browse Loadouts
+            Browse Builds
             <IconArrowDown size={16} />
           </Link>
         </div>
@@ -194,10 +194,10 @@ function Hero() {
   )
 }
 
-// ─── Loadout Card (Conveyor Item) ──────────────────────────
+// ─── Build Card (Conveyor Item) ──────────────────────────
 
-function LoadoutCard({ loadout, index, onClick, dropped }) {
-  const totalItems = loadout.slots.reduce((sum, s) => sum + s.items.length, 0)
+function BuildCard({ build, index, onClick, dropped }) {
+  const totalItems = build.slots.reduce((sum, s) => sum + s.items.length, 0)
 
   return (
     <motion.div
@@ -215,27 +215,27 @@ function LoadoutCard({ loadout, index, onClick, dropped }) {
       {/* Card */}
       <div className="bg-rc-surface rounded-2xl border border-rc-border group-hover:border-rc-cyan/40 transition-all duration-300 overflow-hidden">
         {/* NEW badge */}
-        {loadout.isNew && (
+        {build.isNew && (
           <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rc-cyan/15 border border-rc-cyan/30">
             <span className="w-1.5 h-1.5 rounded-full bg-rc-cyan animate-pulse" />
             <span className="text-[10px] font-mono font-bold text-rc-cyan tracking-wider">NEW</span>
-            <span className="text-[10px] font-mono text-rc-cyan/60">{formatDate(loadout.createdAt)}</span>
+            <span className="text-[10px] font-mono text-rc-cyan/60">{formatDate(build.createdAt)}</span>
           </div>
         )}
 
-        {/* Mini slot grid preview */}
+        {/* Mini block grid preview */}
         <div className="p-5 pt-12">
           <div className="grid grid-cols-3 gap-2 mb-4">
-            {loadout.slots.slice(0, 6).map((slot, si) => {
-              const Icon = slotIcons[slot.name] || IconCube
+            {build.slots.slice(0, 6).map((block, si) => {
+              const Icon = blockIcons[block.name] || IconCube
               return (
                 <div
                   key={si}
-                  className={`aspect-square rounded-xl bg-gradient-to-br ${slotColors[slot.name] || 'from-white/10 to-white/20'} border border-white/10 flex flex-col items-center justify-center gap-1.5 p-2`}
+                  className={`aspect-square rounded-xl bg-gradient-to-br ${blockColors[block.name] || 'from-white/10 to-white/20'} border border-white/10 flex flex-col items-center justify-center gap-1.5 p-2`}
                 >
                   <Icon size={22} stroke={1.5} className="text-rc-text" />
                   <span className="text-xs font-mono font-semibold text-rc-text-dim truncate w-full text-center">
-                    {slot.items.length}
+                    {block.items.length}
                   </span>
                 </div>
               )
@@ -245,15 +245,15 @@ function LoadoutCard({ loadout, index, onClick, dropped }) {
 
         {/* Card footer */}
         <div className="px-5 pb-5">
-          {/* Agent name + loadout type */}
+          {/* Agent name + build type */}
           <div className="mb-2">
             <div className="flex items-center gap-2">
               <h3 className="font-grotesk font-bold text-rc-text text-base truncate">
-                {loadout.agentName}
+                {build.agentName}
               </h3>
               <span className="text-rc-text-muted text-xs">·</span>
               <span className="text-rc-text-dim text-xs font-mono truncate">
-                {loadout.name}
+                {build.name}
               </span>
             </div>
           </div>
@@ -261,10 +261,10 @@ function LoadoutCard({ loadout, index, onClick, dropped }) {
           {/* Creator + stats */}
           <div className="flex items-center justify-between">
             <span className="text-rc-cyan/70 text-xs font-mono">
-              {loadout.creator}
+              {build.creator}
             </span>
             <span className="text-rc-text-muted text-[10px] font-mono">
-              {loadout.slots.length} slots · {totalItems} items
+              {build.slots.length} blocks · {totalItems} items
             </span>
           </div>
         </div>
@@ -278,7 +278,7 @@ function LoadoutCard({ loadout, index, onClick, dropped }) {
 
 // ─── Conveyor Belt ─────────────────────────────────────────
 
-function ConveyorBelt({ onSelectLoadout }) {
+function ConveyorBelt({ onSelectBuild }) {
   const [dropped, setDropped] = useState(false)
   const trackRef = useRef(null)
   const [isPaused, setIsPaused] = useState(false)
@@ -289,18 +289,18 @@ function ConveyorBelt({ onSelectLoadout }) {
     return () => clearTimeout(timer)
   }, [])
 
-  // Duplicate loadouts for seamless scroll
-  const displayLoadouts = [...loadouts, ...loadouts]
+  // Duplicate builds for seamless scroll
+  const displayBuilds = [...builds, ...builds]
 
   return (
     <section id="showcase" className="relative py-16 overflow-hidden max-w-[100vw]">
       {/* Section header */}
       <div className="text-center mb-12 px-6">
         <h2 className="text-2xl md:text-3xl font-grotesk font-bold text-rc-text mb-3">
-          Community Loadouts
+          Community Builds
         </h2>
         <p className="text-rc-text-dim text-sm max-w-md mx-auto">
-          Real agent configurations from the community. New loadouts drop in as they're shared.
+          Real agent configurations from the community. New builds drop in as they're shared.
         </p>
       </div>
 
@@ -320,18 +320,18 @@ function ConveyorBelt({ onSelectLoadout }) {
           ref={trackRef}
           className="flex gap-6 px-6"
           style={{
-            animation: `scroll ${loadouts.length * 3}s linear infinite`,
+            animation: `scroll ${builds.length * 3}s linear infinite`,
             animationPlayState: isPaused ? 'paused' : 'running',
           }}
         >
           {dropped &&
-            displayLoadouts.map((loadout, i) => (
-              <LoadoutCard
-                key={`${loadout.id}-${i}`}
-                loadout={loadout}
-                index={i % loadouts.length}
-                onClick={() => onSelectLoadout(loadout)}
-                dropped={i < loadouts.length}
+            displayBuilds.map((build, i) => (
+              <BuildCard
+                key={`${build.id}-${i}`}
+                build={build}
+                index={i % builds.length}
+                onClick={() => onSelectBuild(build)}
+                dropped={i < builds.length}
               />
             ))}
         </div>
@@ -345,10 +345,10 @@ function ConveyorBelt({ onSelectLoadout }) {
   )
 }
 
-// ─── Loadout Detail Modal ──────────────────────────────────
+// ─── Build Detail Modal ──────────────────────────────────
 
-function LoadoutDetail({ loadout, onClose }) {
-  const [expandedSlot, setExpandedSlot] = useState(null)
+function BuildDetail({ build, onClose }) {
+  const [expandedBlock, setExpandedBlock] = useState(null)
   const [toast, setToast] = useState(null)
 
   const showToast = (msg) => {
@@ -376,20 +376,20 @@ function LoadoutDetail({ loadout, onClose }) {
         <div className="p-6 md:p-8 border-b border-rc-border">
           <div className="flex items-start justify-between">
             <div>
-              {loadout.isNew && (
+              {build.isNew && (
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rc-cyan/15 border border-rc-cyan/30 mb-3">
                   <span className="w-1.5 h-1.5 rounded-full bg-rc-cyan animate-pulse" />
                   <span className="text-[10px] font-mono font-bold text-rc-cyan tracking-wider">NEW</span>
-                  <span className="text-[10px] font-mono text-rc-cyan/60">{formatDate(loadout.createdAt)}</span>
+                  <span className="text-[10px] font-mono text-rc-cyan/60">{formatDate(build.createdAt)}</span>
                 </div>
               )}
               <h2 className="text-3xl font-grotesk font-bold text-rc-text mb-1">
-                {loadout.agentName}
+                {build.agentName}
               </h2>
               <p className="text-rc-text-dim text-sm">
-                <span className="text-rc-cyan/70 font-mono">{loadout.creator}</span>
+                <span className="text-rc-cyan/70 font-mono">{build.creator}</span>
                 {' · '}
-                {loadout.name}
+                {build.name}
               </p>
             </div>
             <div className="flex items-center gap-3">
@@ -403,18 +403,18 @@ function LoadoutDetail({ loadout, onClose }) {
           </div>
         </div>
 
-        {/* Slots grid */}
+        {/* Blocks grid */}
         <div className="p-6 md:p-8">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {loadout.slots.map((slot, si) => {
-              const Icon = slotIcons[slot.name] || IconCube
-              const isExpanded = expandedSlot === si
+            {build.slots.map((block, si) => {
+              const Icon = blockIcons[block.name] || IconCube
+              const isExpanded = expandedBlock === si
 
               return (
                 <motion.div
                   key={si}
                   layout
-                  onClick={() => setExpandedSlot(isExpanded ? null : si)}
+                  onClick={() => setExpandedBlock(isExpanded ? null : si)}
                   className={`cursor-pointer rounded-2xl border transition-all duration-200 ${
                     isExpanded
                       ? 'col-span-2 md:col-span-3 bg-white/5 border-rc-cyan/30'
@@ -427,10 +427,10 @@ function LoadoutDetail({ loadout, onClose }) {
                         <Icon size={18} stroke={1.5} />
                       </div>
                       <span className="font-grotesk font-semibold text-rc-text text-sm">
-                        {slot.name}
+                        {block.name}
                       </span>
                       <span className="text-rc-text-muted text-xs ml-auto font-mono">
-                        {slot.items.length}
+                        {block.items.length}
                       </span>
                       <motion.div
                         animate={{ rotate: isExpanded ? 90 : 0 }}
@@ -442,7 +442,7 @@ function LoadoutDetail({ loadout, onClose }) {
 
                     {!isExpanded && (
                       <div className="flex flex-wrap gap-1">
-                        {slot.items.slice(0, 3).map((item, ii) => (
+                        {block.items.slice(0, 3).map((item, ii) => (
                           <span
                             key={ii}
                             className="px-2 py-0.5 bg-white/5 rounded-md text-[10px] font-mono text-rc-text-dim"
@@ -450,9 +450,9 @@ function LoadoutDetail({ loadout, onClose }) {
                             {item.name}
                           </span>
                         ))}
-                        {slot.items.length > 3 && (
+                        {block.items.length > 3 && (
                           <span className="px-2 py-0.5 text-[10px] font-mono text-rc-text-muted">
-                            +{slot.items.length - 3}
+                            +{block.items.length - 3}
                           </span>
                         )}
                       </div>
@@ -466,7 +466,7 @@ function LoadoutDetail({ loadout, onClose }) {
                           exit={{ opacity: 0, height: 0 }}
                           className="space-y-2 overflow-hidden"
                         >
-                          {slot.items.map((item, ii) => (
+                          {block.items.map((item, ii) => (
                             <motion.div
                               key={ii}
                               initial={{ opacity: 0, x: -10 }}
@@ -514,33 +514,33 @@ function WhatIsSection() {
   const features = [
     {
       icon: IconPuzzle,
-      title: 'Modular loadouts',
-      desc: 'Every agent is built from modular slots: model, persona, skills, integrations, automations, memory, and more. Mix and match to create something that fits exactly how you work.',
+      title: 'Modular builds',
+      desc: 'Every agent is built from modular blocks: model, persona, skills, integrations, automations, memory, and more. Mix and match to create something that fits exactly how you work.',
     },
     {
       icon: IconCopy,
       title: 'One-click copy',
-      desc: 'See a loadout you like? Copy the whole thing and bootstrap your agent in seconds. Swap out what doesn\'t fit, keep what does.',
+      desc: 'See a build you like? Copy the whole thing and bootstrap your agent in seconds. Swap out what doesn\'t fit, keep what does.',
     },
     {
       icon: IconMessages,
       title: 'Share your build',
-      desc: 'Publish your loadout for the community. Show how you\'ve wired up your agent: what model, which skills, what personality. Help others skip the setup grind.',
+      desc: 'Publish your build for the community. Show how you\'ve wired up your agent: what model, which skills, what personality. Help others skip the setup grind.',
     },
     {
       icon: IconBolt,
       title: 'Community-driven',
-      desc: 'New loadouts drop in as people share them. Browse what others have built, get inspired, and discover integrations and skills you didn\'t know existed.',
+      desc: 'New builds drop in as people share them. Browse what others have built, get inspired, and discover integrations and skills you didn\'t know existed.',
     },
     {
       icon: IconSparkles,
       title: 'Personality included',
-      desc: 'Loadouts aren\'t just technical configs. They capture the agent\'s voice, behavior, and style. The stuff that makes an AI assistant feel like yours.',
+      desc: 'Builds aren\'t just technical configs. They capture the agent\'s voice, behavior, and style. The stuff that makes an AI assistant feel like yours.',
     },
     {
       icon: IconRefresh,
       title: 'Always evolving',
-      desc: 'Update your loadout as you add skills, swap models, or change how your agent works. Your loadout grows with you.',
+      desc: 'Update your build as you add skills, swap models, or change how your agent works. Your build grows with you.',
     },
   ]
 
@@ -552,7 +552,7 @@ function WhatIsSection() {
             What is RipperClaw?
           </h2>
           <p className="text-rc-text-dim text-lg max-w-2xl mx-auto">
-            A place to build, share, and discover AI agent loadouts.
+            A place to build, share, and discover AI agent builds.
             Think dotfiles for your AI: modular, shareable, and endlessly remixable.
           </p>
         </div>
@@ -586,18 +586,18 @@ function HowItWorks() {
   const steps = [
     {
       num: '01',
-      title: 'Build your loadout',
-      desc: 'Pick your model, wire up integrations, install skills, write a personality. Every piece is a slot you can swap independently.',
+      title: 'Build your build',
+      desc: 'Pick your model, wire up integrations, install skills, write a personality. Every piece is a block you can swap independently.',
     },
     {
       num: '02',
       title: 'Share it',
-      desc: 'Publish your loadout to the community. Others can see exactly how your agent is configured. No black boxes.',
+      desc: 'Publish your build to the community. Others can see exactly how your agent is configured. No black boxes.',
     },
     {
       num: '03',
       title: 'Browse and remix',
-      desc: 'Find a loadout that fits your use case. Copy it, tweak the slots, make it yours. Skip the blank-page problem entirely.',
+      desc: 'Find a build that fits your use case. Copy it, tweak the blocks, make it yours. Skip the blank-page problem entirely.',
     },
   ]
 
@@ -610,7 +610,7 @@ function HowItWorks() {
             How it works
           </h2>
           <p className="text-rc-text-dim text-lg max-w-xl mx-auto">
-            Create a loadout, share it, or start from someone else's.
+            Create a build, share it, or start from someone else's.
           </p>
         </div>
 
@@ -639,10 +639,10 @@ function HowItWorks() {
   )
 }
 
-// ─── Anatomy of a Loadout ──────────────────────────────────
+// ─── Anatomy of a Build ──────────────────────────────────
 
 function AnatomySection() {
-  const slots = [
+  const blocks = [
     { name: 'Model', icon: IconCube, desc: 'Which LLMs power it. Route Opus for deep thinking, Sonnet for speed, local Qwen for free, or one model for everything.', color: 'from-purple-500/30 to-blue-500/30' },
     { name: 'Persona', icon: IconSparkles, desc: 'How it thinks, talks, and acts. Tone, opinions, boundaries, identity. The stuff that makes it feel like yours, not a chatbot.', color: 'from-cyan-500/30 to-emerald-500/30' },
     { name: 'Skills', icon: IconBolt, desc: 'What it can do. Voice chat, coding, web research, marketing, home automation. Install from ClawHub or build your own.', color: 'from-pink-500/30 to-violet-500/30' },
@@ -656,15 +656,15 @@ function AnatomySection() {
       <div className="max-w-5xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-grotesk font-bold text-rc-text mb-4">
-            Anatomy of a loadout
+            Anatomy of a build
           </h2>
           <p className="text-rc-text-dim text-lg max-w-xl mx-auto">
-            Modular slots. Infinite combinations. Every slot is independent. Swap one without touching the rest.
+            Modular slots. Infinite combinations. Every block is independent. Swap one without touching the rest.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {slots.map((slot, i) => (
+          {slots.map((block, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
@@ -673,11 +673,11 @@ function AnatomySection() {
               transition={{ delay: i * 0.08, duration: 0.5 }}
               className="p-5 rounded-2xl border border-rc-border hover:border-rc-cyan/20 transition-colors group"
             >
-              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${slot.color} flex items-center justify-center mb-4`}>
-                <slot.icon size={22} className="text-rc-text" stroke={1.5} />
+              <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${block.color} flex items-center justify-center mb-4`}>
+                <block.icon size={22} className="text-rc-text" stroke={1.5} />
               </div>
-              <h3 className="font-grotesk font-semibold text-rc-text text-base mb-1.5">{slot.name}</h3>
-              <p className="text-rc-text-dim text-sm leading-relaxed">{slot.desc}</p>
+              <h3 className="font-grotesk font-semibold text-rc-text text-base mb-1.5">{block.name}</h3>
+              <p className="text-rc-text-dim text-sm leading-relaxed">{block.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -693,24 +693,24 @@ function FAQSection() {
 
   const faqs = [
     {
-      q: 'What is a loadout?',
-      a: 'A loadout is a complete agent configuration: the model, integrations, skills, personality, memory, and scheduling that define how an AI agent works. Think of it like a character build in a game, or dotfiles for your AI.',
+      q: 'What is a build?',
+      a: 'A build is a complete agent configuration: the model, integrations, skills, personality, memory, and scheduling that define how an AI agent works. Think of it like a character build in a game, or dotfiles for your AI.',
     },
     {
-      q: 'Do I need OpenClaw to use a loadout?',
-      a: 'Loadouts are designed for OpenClaw agents, but the concepts are universal. The model choices, integration patterns, and personality approaches apply to any AI agent setup.',
+      q: 'Do I need OpenClaw to use a build?',
+      a: 'Builds are designed for OpenClaw agents, but the concepts are universal. The model choices, integration patterns, and personality approaches apply to any AI agent setup.',
     },
     {
-      q: 'How do I create a loadout?',
-      a: 'Set up your OpenClaw agent however you want. Pick models, connect integrations, install skills, write a personality file. Then export your config as a loadout and publish it here.',
+      q: 'How do I create a build?',
+      a: 'Set up your OpenClaw agent however you want. Pick models, connect integrations, install skills, write a personality file. Then export your config as a build and publish it here.',
     },
     {
-      q: 'Can I copy someone else\'s loadout?',
-      a: 'That\'s the whole point. Click any loadout card, hit "Copy Loadout," and you\'ve got their full configuration. Swap out what doesn\'t fit, keep what does.',
+      q: 'Can I copy someone else\'s build?',
+      a: 'That\'s the whole point. Click any build card, hit "Copy Build," and you\'ve got their full configuration. Swap out what doesn\'t fit, keep what does.',
     },
     {
-      q: 'What\'s in a typical loadout?',
-      a: 'Core slots include Model (which LLMs), Persona (how it thinks and talks), Skills (what it can do), Integrations (what it connects to), Automations (what it does on its own), and Memory (how it remembers). The system is extensible, so custom slot types can be added as needs evolve.',
+      q: 'What\'s in a typical build?',
+      a: 'Core blocks include Model (which LLMs), Persona (how it thinks and talks), Skills (what it can do), Integrations (what it connects to), Automations (what it does on its own), and Memory (how it remembers). The system is extensible, so custom block types can be added as needs evolve.',
     },
     {
       q: 'Is this free?',
@@ -722,7 +722,7 @@ function FAQSection() {
     },
     {
       q: 'How do I get started?',
-      a: 'Browse the loadouts above, find one that matches your use case, and copy it. Or install OpenClaw, build your own agent, and share your loadout with the community.',
+      a: 'Browse the builds above, find one that matches your use case, and copy it. Or install OpenClaw, build your own agent, and share your build with the community.',
     },
   ]
 
@@ -793,7 +793,7 @@ function Footer() {
             Build yours. Share it.
           </h3>
           <p className="text-rc-text-dim text-sm mb-8 max-w-md mx-auto">
-            Create your agent loadout, publish it for the community, and discover builds you never thought of.
+            Create your agent build, publish it for the community, and discover builds you never thought of.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-sm mx-auto">
             <DownloadDropdown className="w-full" />
@@ -812,7 +812,7 @@ function Footer() {
           <div>
             <h4 className="font-grotesk font-semibold text-rc-text text-sm mb-4">RipperClaw</h4>
             <ul className="space-y-2.5">
-              <li><Link to="/explore" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Explore Loadouts</Link></li>
+              <li><Link to="/explore" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Explore Builds</Link></li>
               <li><a href="/docs/" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Documentation</a></li>
               <li><a href={RELEASE_BASE} target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Download</a></li>
             </ul>
@@ -843,7 +843,7 @@ function Footer() {
         {/* Bottom bar */}
         <div className="flex items-center justify-between pt-8 border-t border-rc-border">
           <p className="text-rc-text-muted text-xs font-mono">
-            ripperclaw · agent loadouts for openclaw
+            ripperclaw · agent builds for openclaw
           </p>
           <div className="flex items-center gap-4">
             <a href="https://github.com/bolander72/ripperclaw" target="_blank" rel="noopener" className="text-rc-text-muted hover:text-rc-text transition-colors">
@@ -862,12 +862,12 @@ function Footer() {
 // ─── Landing Page ──────────────────────────────────────────
 
 function Landing() {
-  const [selectedLoadout, setSelectedLoadout] = useState(null)
+  const [selectedBuild, setSelectedBuild] = useState(null)
 
   return (
     <div className="min-h-screen bg-rc-bg overflow-x-hidden">
       <Hero />
-      <ConveyorBelt onSelectLoadout={setSelectedLoadout} />
+      <ConveyorBelt onSelectBuild={setSelectedBuild} />
       <WhatIsSection />
       <HowItWorks />
       <AnatomySection />
@@ -875,10 +875,10 @@ function Landing() {
       <Footer />
 
       <AnimatePresence>
-        {selectedLoadout && (
-          <LoadoutDetail
-            loadout={selectedLoadout}
-            onClose={() => setSelectedLoadout(null)}
+        {selectedBuild && (
+          <BuildDetail
+            build={selectedBuild}
+            onClose={() => setSelectedBuild(null)}
           />
         )}
       </AnimatePresence>

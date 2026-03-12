@@ -1,15 +1,15 @@
 import { useState, useEffect } from 'react';
-import { useNostrKeys, useNostrFeed, type FeedLoadout } from '../hooks/useNostr';
+import { useNostrKeys, useNostrFeed, type FeedBuild } from '../hooks/useNostr';
 
 // Mock feed data, shown when no real events exist yet
-const mockLoadouts: DisplayLoadout[] = [
+const mockBuilds: DisplayBuild[] = [
   {
     id: 'mock-1',
     name: 'Nighthawk',
     author: 'npub1cyb3r...punk',
     authorHex: 'abc123',
     template: 'homelab',
-    description: 'Full surveillance loadout with local LLMs, multi-camera vision, and voice control. Zero cloud dependency.',
+    description: 'Full surveillance build with local LLMs, multi-camera vision, and voice control. Zero cloud dependency.',
     tags: ['privacy', 'local-first', 'voice', 'cameras'],
     publishedAt: Date.now() / 1000 - 3600,
     model: 'llama-3.3-70b (local)',
@@ -37,7 +37,7 @@ const mockLoadouts: DisplayLoadout[] = [
     author: 'npub1wiz...ard',
     authorHex: 'ghi789',
     template: 'researcher',
-    description: 'Research-focused loadout with deep web search, PDF analysis, and academic citation tracking. 40+ custom skills.',
+    description: 'Research-focused build with deep web search, PDF analysis, and academic citation tracking. 40+ custom skills.',
     tags: ['research', 'academic', 'deep-web'],
     publishedAt: Date.now() / 1000 - 14400,
     model: 'claude-opus-4-6',
@@ -63,7 +63,7 @@ const mockLoadouts: DisplayLoadout[] = [
     author: 'npub1pen...ink',
     authorHex: 'mno345',
     template: 'creator',
-    description: 'Content creation loadout. Blog posts, social media, email sequences, SEO optimization. Writes in your voice.',
+    description: 'Content creation build. Blog posts, social media, email sequences, SEO optimization. Writes in your voice.',
     tags: ['content', 'writing', 'seo', 'social-media'],
     publishedAt: Date.now() / 1000 - 172800,
     model: 'claude-opus-4-6',
@@ -87,7 +87,7 @@ const mockLoadouts: DisplayLoadout[] = [
   },
 ];
 
-interface DisplayLoadout {
+interface DisplayBuild {
   id: string;
   name: string;
   author: string;
@@ -102,7 +102,7 @@ interface DisplayLoadout {
   forkAuthor?: string;
   remixCount: number;
   publishType?: string;
-  slotType?: string;
+  blockType?: string;
 }
 
 const templateColors: Record<string, string> = {
@@ -122,7 +122,7 @@ function timeAgo(ts: number): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-function parseFeedLoadout(entry: FeedLoadout, allEntries: FeedLoadout[]): DisplayLoadout {
+function parseFeedBuild(entry: FeedBuild, allEntries: FeedBuild[]): DisplayBuild {
   let parsed: Record<string, unknown> = {};
   try {
     parsed = JSON.parse(entry.content);
@@ -131,7 +131,7 @@ function parseFeedLoadout(entry: FeedLoadout, allEntries: FeedLoadout[]): Displa
   const template = entry.template || entry.tags.find((t) => templates.includes(t)) || 'ops';
   const meta = (parsed.meta || {}) as Record<string, unknown>;
 
-  // Count how many other loadouts fork from this one
+  // Count how many other builds fork from this one
   const remixCount = allEntries.filter((e) => e.fork_of === entry.id).length;
 
   return {
@@ -147,20 +147,20 @@ function parseFeedLoadout(entry: FeedLoadout, allEntries: FeedLoadout[]): Displa
     forkOf: entry.fork_of || undefined,
     forkAuthor: entry.fork_author || undefined,
     remixCount,
-    publishType: entry.publish_type || 'loadout',
-    slotType: entry.slot_type || undefined,
+    publishType: entry.publish_type || 'build',
+    blockType: entry.block_type || undefined,
   };
 }
 
 interface FeedViewProps {
-  onCompare?: (loadout: unknown) => void;
+  onCompare?: (build: unknown) => void;
 }
 
 export function FeedView({ onCompare }: FeedViewProps) {
   const [filter, setFilter] = useState<string | null>(null);
-  const [typeFilter, setTypeFilter] = useState<'all' | 'loadout' | 'slot'>('all');
+  const [typeFilter, setTypeFilter] = useState<'all' | 'build' | 'block'>('all');
   const [sortBy, setSortBy] = useState<'recent' | 'remixes'>('recent');
-  const [selectedLoadout, setSelectedLoadout] = useState<DisplayLoadout | null>(null);
+  const [selectedBuild, setSelectedBuild] = useState<DisplayBuild | null>(null);
   const [showKeySetup, setShowKeySetup] = useState(false);
   const [nsecInput, setNsecInput] = useState('');
 
@@ -174,17 +174,17 @@ export function FeedView({ onCompare }: FeedViewProps) {
     }
   }, [keys.has_keys]);
 
-  // Convert nostr events to display loadouts, fall back to mock
-  const realLoadouts = nostrFeed.map((entry) => parseFeedLoadout(entry, nostrFeed));
-  const displayLoadouts = realLoadouts.length > 0 ? realLoadouts : mockLoadouts;
-  const isUsingMock = realLoadouts.length === 0;
+  // Convert nostr events to display builds, fall back to mock
+  const realBuilds = nostrFeed.map((entry) => parseFeedBuild(entry, nostrFeed));
+  const displayBuilds = realBuilds.length > 0 ? realBuilds : mockBuilds;
+  const isUsingMock = realBuilds.length === 0;
 
   const typeFiltered = typeFilter === 'all'
-    ? displayLoadouts
-    : displayLoadouts.filter((r) => (r.publishType || 'loadout') === typeFilter);
+    ? displayBuilds
+    : displayBuilds.filter((r) => (r.publishType || 'build') === typeFilter);
   const filtered = (filter
     ? typeFiltered.filter((r) => r.template === filter || r.tags.includes(filter))
-    : displayLoadouts
+    : displayBuilds
   ).sort((a, b) =>
     sortBy === 'remixes'
       ? b.remixCount - a.remixCount
@@ -192,12 +192,12 @@ export function FeedView({ onCompare }: FeedViewProps) {
   );
 
   // Build a lookup for provenance tree in detail panel
-  const loadoutById = new Map(displayLoadouts.map((l) => [l.id, l]));
+  const buildById = new Map(displayBuilds.map((l) => [l.id, l]));
 
   return (
     <div className="flex-1 flex overflow-hidden">
       {/* Feed list */}
-      <div className={`${selectedLoadout ? 'w-1/2' : 'w-full'} p-6 overflow-y-auto transition-all`}>
+      <div className={`${selectedBuild ? 'w-1/2' : 'w-full'} p-6 overflow-y-auto transition-all`}>
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-2">
@@ -345,7 +345,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
 
           {/* Type + template filters + sort */}
           <div className="flex gap-2 mb-3 flex-wrap">
-            {(['all', 'loadout', 'slot'] as const).map((t) => (
+            {(['all', 'build', 'block'] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTypeFilter(t)}
@@ -356,7 +356,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
                   background: typeFilter === t ? 'rgba(255,0,170,0.1)' : 'transparent',
                 }}
               >
-                {t === 'all' ? '📋 All' : t === 'loadout' ? '📦 Loadouts' : '🧩 Slots'}
+                {t === 'all' ? '📋 All' : t === 'build' ? '📦 Builds' : '🧩 Blocks'}
               </button>
             ))}
           </div>
@@ -406,18 +406,18 @@ export function FeedView({ onCompare }: FeedViewProps) {
             </div>
           </div>
 
-          {/* Loadout cards */}
+          {/* Build cards */}
           <div className="space-y-3">
             {filtered.map((entry) => (
               <div
                 key={entry.id}
                 className="p-4 rounded-lg border cursor-pointer transition-all hover:border-opacity-80"
                 style={{
-                  background: selectedLoadout?.id === entry.id ? 'var(--rc-surface-hover)' : 'var(--rc-surface)',
-                  borderColor: selectedLoadout?.id === entry.id ? 'var(--rc-cyan)' : 'var(--rc-border)',
-                  boxShadow: selectedLoadout?.id === entry.id ? '0 0 12px var(--rc-cyan-dim)' : 'none',
+                  background: selectedBuild?.id === entry.id ? 'var(--rc-surface-hover)' : 'var(--rc-surface)',
+                  borderColor: selectedBuild?.id === entry.id ? 'var(--rc-cyan)' : 'var(--rc-border)',
+                  boxShadow: selectedBuild?.id === entry.id ? '0 0 12px var(--rc-cyan-dim)' : 'none',
                 }}
-                onClick={() => setSelectedLoadout(selectedLoadout?.id === entry.id ? null : entry)}
+                onClick={() => setSelectedBuild(selectedBuild?.id === entry.id ? null : entry)}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -433,7 +433,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
                     >
                       {entry.template}
                     </span>
-                    {entry.publishType === 'slot' && entry.slotType && (
+                    {entry.publishType === 'block' && entry.blockType && (
                       <span
                         className="text-[9px] px-1.5 py-0.5 rounded font-semibold"
                         style={{
@@ -442,7 +442,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
                           border: '1px solid rgba(0,240,255,0.2)',
                         }}
                       >
-                        🧩 {entry.slotType}
+                        🧩 {entry.blockType}
                       </span>
                     )}
                     {entry.remixCount > 0 && (
@@ -483,7 +483,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
                     <span>🔀</span>
                     <span>remixed from</span>
                     <span className="font-mono" style={{ color: 'var(--rc-cyan)' }}>
-                      {loadoutById.get(entry.forkOf)?.name || entry.forkOf.slice(0, 12) + '...'}
+                      {buildById.get(entry.forkOf)?.name || entry.forkOf.slice(0, 12) + '...'}
                     </span>
                     {entry.forkAuthor && (
                       <span className="font-mono">by {entry.forkAuthor.slice(0, 12)}...</span>
@@ -529,7 +529,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
       </div>
 
       {/* Detail panel */}
-      {selectedLoadout && (
+      {selectedBuild && (
         <div
           className="w-1/2 p-6 border-l overflow-y-auto"
           style={{ borderColor: 'var(--rc-border)' }}
@@ -538,45 +538,45 @@ export function FeedView({ onCompare }: FeedViewProps) {
             className="p-6 rounded-lg border"
             style={{
               background: 'var(--rc-surface)',
-              borderColor: templateColors[selectedLoadout.template] || 'var(--rc-border)',
-              boxShadow: `0 0 20px ${templateColors[selectedLoadout.template] || 'var(--rc-cyan)'}33`,
+              borderColor: templateColors[selectedBuild.template] || 'var(--rc-border)',
+              boxShadow: `0 0 20px ${templateColors[selectedBuild.template] || 'var(--rc-cyan)'}33`,
             }}
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold uppercase tracking-wider" style={{ color: 'var(--rc-text)' }}>
-                {selectedLoadout.name}
+                {selectedBuild.name}
               </h2>
               <span
                 className="text-xs px-2 py-1 rounded font-mono uppercase"
                 style={{
-                  color: templateColors[selectedLoadout.template],
-                  border: `1px solid ${templateColors[selectedLoadout.template]}66`,
+                  color: templateColors[selectedBuild.template],
+                  border: `1px solid ${templateColors[selectedBuild.template]}66`,
                 }}
               >
-                {selectedLoadout.template}
+                {selectedBuild.template}
               </span>
             </div>
 
             <p className="text-xs mb-1" style={{ color: 'var(--rc-text-muted)' }}>
-              by {selectedLoadout.author}
+              by {selectedBuild.author}
             </p>
             <p className="text-xs mb-6 leading-relaxed" style={{ color: 'var(--rc-text-dim)' }}>
-              {selectedLoadout.description}
+              {selectedBuild.description}
             </p>
 
-            {selectedLoadout.model && (
+            {selectedBuild.model && (
               <div className="mb-4 py-2 px-3 rounded" style={{ background: 'var(--rc-overlay-subtle)' }}>
                 <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--rc-text-muted)' }}>
                   Model
                 </div>
                 <div className="text-xs font-mono mt-0.5" style={{ color: 'var(--rc-text)' }}>
-                  {selectedLoadout.model}
+                  {selectedBuild.model}
                 </div>
               </div>
             )}
 
             {/* Provenance */}
-            {(selectedLoadout.forkOf || selectedLoadout.remixCount > 0) && (
+            {(selectedBuild.forkOf || selectedBuild.remixCount > 0) && (
               <div
                 className="mb-6 py-3 px-3 rounded border"
                 style={{ background: 'rgba(255,0,170,0.03)', borderColor: 'rgba(255,0,170,0.15)' }}
@@ -586,11 +586,11 @@ export function FeedView({ onCompare }: FeedViewProps) {
                 </div>
 
                 {/* Ancestry chain */}
-                {selectedLoadout.forkOf && (() => {
-                  const chain: DisplayLoadout[] = [];
-                  let current: DisplayLoadout | undefined = selectedLoadout;
+                {selectedBuild.forkOf && (() => {
+                  const chain: DisplayBuild[] = [];
+                  let current: DisplayBuild | undefined = selectedBuild;
                   while (current?.forkOf) {
-                    const parent = loadoutById.get(current.forkOf);
+                    const parent = buildById.get(current.forkOf);
                     if (parent) {
                       chain.unshift(parent);
                       current = parent;
@@ -619,8 +619,8 @@ export function FeedView({ onCompare }: FeedViewProps) {
                           className="flex items-center gap-2 text-[10px] cursor-pointer hover:opacity-80"
                           style={{ paddingLeft: `${i * 12}px` }}
                           onClick={() => {
-                            const full = displayLoadouts.find((l) => l.id === ancestor.id);
-                            if (full) setSelectedLoadout(full);
+                            const full = displayBuilds.find((l) => l.id === ancestor.id);
+                            if (full) setSelectedBuild(full);
                           }}
                         >
                           <span style={{ color: 'var(--rc-text-muted)' }}>
@@ -640,7 +640,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
                       >
                         <span style={{ color: 'var(--rc-cyan)' }}>↳</span>
                         <span className="font-semibold" style={{ color: 'var(--rc-cyan)' }}>
-                          {selectedLoadout.name}
+                          {selectedBuild.name}
                         </span>
                         <span className="text-[9px]" style={{ color: 'var(--rc-text-muted)' }}>(this)</span>
                       </div>
@@ -649,25 +649,25 @@ export function FeedView({ onCompare }: FeedViewProps) {
                 })()}
 
                 {/* Remix count */}
-                {selectedLoadout.remixCount > 0 && (
+                {selectedBuild.remixCount > 0 && (
                   <div className="flex items-center gap-2 text-[10px]" style={{ color: 'var(--rc-text-dim)' }}>
                     <span>🔀</span>
                     <span>
-                      Remixed <span style={{ color: 'var(--rc-magenta)' }}>{selectedLoadout.remixCount}</span> time{selectedLoadout.remixCount !== 1 ? 's' : ''}
+                      Remixed <span style={{ color: 'var(--rc-magenta)' }}>{selectedBuild.remixCount}</span> time{selectedBuild.remixCount !== 1 ? 's' : ''}
                     </span>
                   </div>
                 )}
 
                 {/* Direct forks list */}
-                {selectedLoadout.remixCount > 0 && (
+                {selectedBuild.remixCount > 0 && (
                   <div className="mt-2 space-y-1">
-                    {displayLoadouts
-                      .filter((l) => l.forkOf === selectedLoadout.id)
+                    {displayBuilds
+                      .filter((l) => l.forkOf === selectedBuild.id)
                       .map((fork) => (
                         <div
                           key={fork.id}
                           className="flex items-center gap-2 text-[10px] cursor-pointer hover:opacity-80 pl-3"
-                          onClick={() => setSelectedLoadout(fork)}
+                          onClick={() => setSelectedBuild(fork)}
                         >
                           <span style={{ color: 'var(--rc-text-muted)' }}>↳</span>
                           <span className="font-semibold" style={{ color: 'var(--rc-text)' }}>
@@ -696,28 +696,28 @@ export function FeedView({ onCompare }: FeedViewProps) {
                   background: 'var(--rc-overlay-active)',
                 }}
                 onClick={() => {
-                  if (!onCompare || !selectedLoadout) return;
-                  // Build a Loadout-shaped object from the feed entry
+                  if (!onCompare || !selectedBuild) return;
+                  // Build a Build-shaped object from the feed entry
                   let parsed: Record<string, unknown> = {};
                   try {
-                    // For real nostr events, content is the full loadout JSON
-                    const realEntry = nostrFeed.find((r) => r.id === selectedLoadout.id);
+                    // For real nostr events, content is the full build JSON
+                    const realEntry = nostrFeed.find((r) => r.id === selectedBuild.id);
                     if (realEntry) {
                       parsed = JSON.parse(realEntry.content);
                     }
                   } catch { /* use mock structure */ }
 
-                  const loadout = parsed.schema ? parsed : {
+                  const build = parsed.schema ? parsed : {
                     schema: 1,
                     meta: {
-                      name: selectedLoadout.name,
-                      author: selectedLoadout.author,
-                      template: selectedLoadout.template,
+                      name: selectedBuild.name,
+                      author: selectedBuild.author,
+                      template: selectedBuild.template,
                     },
                     slots: (parsed.slots as Record<string, unknown>) || {},
                     mods: (parsed.mods as unknown[]) || [],
                   };
-                  onCompare(loadout);
+                  onCompare(build);
                 }}
               >
                 Compare to Mine
@@ -730,7 +730,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
                   background: 'transparent',
                 }}
               >
-                Import Loadout
+                Import Build
               </button>
             </div>
           </div>

@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useState } from 'react';
-import type { SlotData, Mod } from '../types';
+import type { BlockData, Mod } from '../types';
 
 function useTauriCommand<T>(
   command: string,
@@ -38,9 +38,9 @@ function useTauriCommand<T>(
   return { data, loading, error, refresh: load };
 }
 
-export function useSlots(agentId?: string) {
-  return useTauriCommand<SlotData[]>(
-    'get_slots',
+export function useBlocks(agentId?: string) {
+  return useTauriCommand<BlockData[]>(
+    'get_blocks',
     [],
     agentId ? { agentId } : undefined,
     [agentId]
@@ -101,14 +101,14 @@ export function useConfig() {
   return useTauriCommand<Record<string, unknown>>('get_config', {});
 }
 
-export function useExportLoadout() {
+export function useExportBuild() {
   const [loading, setLoading] = useState(false);
 
-  const exportLoadout = async () => {
+  const exportBuild = async () => {
     setLoading(true);
     try {
-      const loadout = await invoke('export_loadout');
-      return loadout;
+      const build = await invoke('export_build');
+      return build;
     } catch (err) {
       console.error('Export failed:', err);
       return null;
@@ -117,23 +117,23 @@ export function useExportLoadout() {
     }
   };
 
-  return { exportLoadout, loading };
+  return { exportBuild, loading };
 }
 
-export function useCloneLoadout() {
+export function useCloneBuild() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     applied_skills: string[];
     skipped_skills: string[];
-    slot_changes: string[];
+    block_changes: string[];
     backup_path?: string;
   } | null>(null);
 
-  const cloneLoadout = async (loadoutJson: string, mode: 'overwrite' | 'new', agentId?: string) => {
+  const cloneBuild = async (buildJson: string, mode: 'overwrite' | 'new', agentId?: string) => {
     setLoading(true);
     try {
-      const res = await invoke<typeof result>('clone_loadout', {
-        loadoutJson,
+      const res = await invoke<typeof result>('clone_build', {
+        buildJson,
         mode,
         agentId: agentId || null,
       });
@@ -147,16 +147,16 @@ export function useCloneLoadout() {
     }
   };
 
-  return { cloneLoadout, loading, result };
+  return { cloneBuild, loading, result };
 }
 
-export function useLoadouts() {
+export function useBuilds() {
   return useTauriCommand<Array<{
     filename: string;
     name: string;
     exportedAt: string;
     path: string;
-    slots: number;
+    blocks: number;
     mods: number;
-  }>>('list_loadouts', []);
+  }>>('list_builds', []);
 }

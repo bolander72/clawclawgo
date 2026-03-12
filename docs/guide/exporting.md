@@ -1,10 +1,10 @@
 # Exporting
 
-Export your current agent configuration as a portable loadout file.
+Export your current agent configuration as a portable build file.
 
 ## What Gets Exported
 
-| Slot | Exported | Scrubbed |
+| Block | Exported | Scrubbed |
 |------|----------|----------|
 | Model | Tiers, providers, model names | (none) |
 | Persona | SOUL.md, IDENTITY.md, AGENTS.md | Phone numbers, emails, addresses |
@@ -27,9 +27,9 @@ You can review what was scrubbed in the export report.
 
 ## Using the App
 
-1. Go to **Loadouts** → **Save Current Loadout**
-2. Name your loadout
-3. The loadout is saved to your workspace's `loadouts/` directory
+1. Go to **Builds** → **Save Current Build**
+2. Name your build
+3. The build is saved to your workspace's `builds/` directory
 
 ## Using the CLI
 
@@ -38,12 +38,12 @@ You can review what was scrubbed in the export report.
 node ripperclaw.mjs export
 
 # Export to file
-node ripperclaw.mjs export > my-loadout.json
+node ripperclaw.mjs export > my-build.json
 ```
 
 ## Safe Export for Publishing
 
-When publishing to Nostr, RipperClaw uses `export_loadout_safe` which applies stricter scrubbing and returns a report of what was redacted:
+When publishing to Nostr, RipperClaw uses `export_build_safe` which applies stricter scrubbing and returns a report of what was redacted:
 
 ```json
 {
@@ -59,4 +59,4 @@ When publishing to Nostr, RipperClaw uses `export_loadout_safe` which applies st
 
 ## Export Format
 
-Exports use the [Loadout Schema](/reference/schema), a JSON format with `meta`, `slots`, and `mods` sections. See the reference for the full spec.
+Exports use the [Build Schema](/reference/schema), a JSON format with `meta`, `blocks`, and `mods` sections. See the reference for the full spec.

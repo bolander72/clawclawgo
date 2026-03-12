@@ -1,6 +1,6 @@
-# Slots
+# Blocks
 
-Every loadout is made up of **slots**. Each slot is independent. You can swap, remix, or skip any of them.
+Every build is made up of **blocks**. Each block is independent. You can swap, remix, or skip any of them.
 
 ## Model
 
@@ -20,11 +20,11 @@ The LLMs your agent uses and how it routes between them. Three tiers:
 }
 ```
 
-When applying, you can choose **"Use my models"** to remap tiers to your existing models instead of adopting the loadout's choices. This is useful when:
+When applying, you can choose **"Use my models"** to remap tiers to your existing models instead of adopting the build's choices. This is useful when:
 
-- The loadout uses paid models you don't have access to
+- The build uses paid models you don't have access to
 - You prefer local models over API-based ones
-- You want to test a loadout's structure without changing your model config
+- You want to test a build's structure without changing your model config
 
 ## Persona
 
@@ -60,7 +60,7 @@ External services the agent connects to.
 - Developer tools (GitHub, SSH)
 
 ::: warning
-Integrations are always manual setup. A loadout tells you what integrations the source agent used and links to setup docs, but never copies credentials or connection details.
+Integrations are always manual setup. A build tells you what integrations the source agent used and links to setup docs, but never copies credentials or connection details.
 :::
 
 ## Automations
@@ -84,12 +84,12 @@ The agent's context management system.
 Memory exports structure only, never actual content. Your agent's memories, conversations, and facts stay private.
 :::
 
-## Custom Slots
+## Custom Blocks
 
-The six slots above are the defaults, but the system is extensible. Custom slot types can use any string key in the loadout JSON. The schema accepts arbitrary slot keys alongside the known ones.
+The six blocks above are the defaults, but the system is extensible. Custom block types can use any string key in the build JSON. The schema accepts arbitrary block keys alongside the known ones.
 
-When a loadout contains a custom slot, RipperClaw renders it with a generic icon and auto-generated label. Custom slots follow the same publish, apply, and remix rules as built-in ones.
+When a build contains a custom block, RipperClaw renders it with a generic icon and auto-generated label. Custom blocks follow the same publish, apply, and remix rules as built-in ones.
 
 ::: tip
-Custom slots are fully supported in the schema and Nostr events today. User-facing creation tools are coming in a future release.
+Custom blocks are fully supported in the schema and Nostr events today. User-facing creation tools are coming in a future release.
 :::

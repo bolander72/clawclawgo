@@ -8,7 +8,7 @@ Go to **Settings → Identity** to manage your Nostr keys.
 
 ### View Your Public Key
 
-Your `npub` (public key) is your identity on Nostr. Share this when you want people to find your loadouts.
+Your `npub` (public key) is your identity on Nostr. Share this when you want people to find your builds.
 
 Example: `npub1h8nk2hyp8p98dek8kuq9ysjn7d7h58qd8gkttl73x8qlg0z9gkyqnmw3e0`
 
@@ -19,7 +19,7 @@ Your `nsec` (private key) is used to sign events. Keep it secret.
 Click **Reveal** to view and copy your `nsec`. This is the only way to recover your identity if you lose access to the machine.
 
 ::: warning
-Anyone with your `nsec` can publish loadouts as you. Store it securely. Never share it publicly.
+Anyone with your `nsec` can publish builds as you. Store it securely. Never share it publicly.
 :::
 
 ### Import a Key
@@ -41,7 +41,7 @@ Destroy your current key pair and generate a new one:
 3. A new `npub` and `nsec` are created
 
 ::: danger
-This is irreversible. Loadouts published under the old key remain on relays but you can't update or delete them without the old `nsec`.
+This is irreversible. Builds published under the old key remain on relays but you can't update or delete them without the old `nsec`.
 :::
 
 ## Profile Metadata
@@ -57,10 +57,10 @@ Set your public profile information (NIP-01 kind 0 metadata).
 | Website | Your homepage or portfolio |
 | NIP-05 | Verification identifier (e.g., `you@yourdomain.com`) |
 
-Click **Publish Profile** to broadcast changes to relays. This is a separate event from loadout publishes.
+Click **Publish Profile** to broadcast changes to relays. This is a separate event from build publishes.
 
 ::: info
-Profile metadata is optional. If you skip it, your loadouts will show your truncated `npub` instead of a display name.
+Profile metadata is optional. If you skip it, your builds will show your truncated `npub` instead of a display name.
 :::
 
 ## Relay Management
@@ -79,7 +79,7 @@ Relays are Nostr servers that store and distribute events. RipperClaw uses a def
 2. Enter the WebSocket URL (must start with `wss://`)
 3. Click **Add**
 
-Your loadouts will be published to all configured relays.
+Your builds will be published to all configured relays.
 
 ### Remove a Relay
 
@@ -113,7 +113,7 @@ Custom relays are saved to `~/.ripperclaw/relays.json`:
 
 ## Backup Recommendations
 
-Your identity is your `nsec`. If you lose it, you lose the ability to update loadouts published under that key.
+Your identity is your `nsec`. If you lose it, you lose the ability to update builds published under that key.
 
 To back up your identity:
 

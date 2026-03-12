@@ -1,37 +1,37 @@
 import { useState, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
-import { useLoadouts } from '../hooks/useTauri';
+import { useBuilds } from '../hooks/useTauri';
 
 interface Props {
-  onCompare?: (loadout: unknown) => void;
-  onApply?: (loadout: unknown) => void;
+  onCompare?: (build: unknown) => void;
+  onApply?: (build: unknown) => void;
 }
 
-export function LoadoutsView({ onCompare, onApply }: Props) {
-  const { data: loadouts, loading, refresh } = useLoadouts();
+export function BuildsView({ onCompare, onApply }: Props) {
+  const { data: builds, loading, refresh } = useBuilds();
   const [saving, setSaving] = useState(false);
   const [saveName, setSaveName] = useState('');
   const [showSaveDialog, setShowSaveDialog] = useState(false);
-  const [expandedLoadout, setExpandedLoadout] = useState<string | null>(null);
-  const [loadoutCache, setLoadoutCache] = useState<Record<string, unknown>>({});
+  const [expandedBuild, setExpandedBuild] = useState<string | null>(null);
+  const [buildCache, setBuildCache] = useState<Record<string, unknown>>({});
   const [importError, setImportError] = useState<string | null>(null);
   const [importSuccess, setImportSuccess] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropZoneRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
 
-  const saveCurrentLoadout = async () => {
+  const saveCurrentBuild = async () => {
     if (!saveName.trim()) return;
     setSaving(true);
     try {
-      const loadout = await invoke<Record<string, unknown>>('export_loadout');
+      const build = await invoke<Record<string, unknown>>('export_build');
       // Override the name
       const named = {
-        ...loadout,
-        meta: { ...(loadout.meta as Record<string, unknown> || {}), name: saveName.trim() },
+        ...build,
+        meta: { ...(build.meta as Record<string, unknown> || {}), name: saveName.trim() },
       };
-      await invoke('clone_loadout', {
-        loadoutJson: JSON.stringify(named),
+      await invoke('clone_build', {
+        buildJson: JSON.stringify(named),
         mode: 'new',
       });
       setShowSaveDialog(false);
@@ -44,36 +44,36 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
     }
   };
 
-  const loadLoadout = async (path: string) => {
-    if (loadoutCache[path]) return loadoutCache[path];
+  const loadBuild = async (path: string) => {
+    if (buildCache[path]) return buildCache[path];
     try {
       const content = await invoke<string>('read_workspace_file', {
         relativePath: path,
       });
       const parsed = JSON.parse(content);
-      setLoadoutCache((prev) => ({ ...prev, [path]: parsed }));
+      setBuildCache((prev) => ({ ...prev, [path]: parsed }));
       return parsed;
     } catch {
       // Try absolute path read
       try {
         const content = await invoke<string>('read_file_absolute', { path });
         const parsed = JSON.parse(content);
-        setLoadoutCache((prev) => ({ ...prev, [path]: parsed }));
+        setBuildCache((prev) => ({ ...prev, [path]: parsed }));
         return parsed;
       } catch {
-        console.error('Failed to load loadout:', path);
+        console.error('Failed to load build:', path);
         return null;
       }
     }
   };
 
   const handleExpand = async (filename: string, path: string) => {
-    if (expandedLoadout === filename) {
-      setExpandedLoadout(null);
+    if (expandedBuild === filename) {
+      setExpandedBuild(null);
       return;
     }
-    await loadLoadout(path);
-    setExpandedLoadout(filename);
+    await loadBuild(path);
+    setExpandedBuild(filename);
   };
 
   const handleFileImport = async (file: File) => {
@@ -83,13 +83,13 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
       const text = await file.text();
       // Validate JSON
       const parsed = JSON.parse(text);
-      if (!parsed.slots && !parsed.mods) {
-        setImportError("File doesn't look like a valid loadout (missing slots/mods)");
+      if (!parsed.blocks && !parsed.mods) {
+        setImportError("File doesn't look like a valid build (missing blocks/mods)");
         return;
       }
-      // Save via clone_loadout in "new" mode
-      await invoke('clone_loadout', {
-        loadoutJson: text,
+      // Save via clone_build in "new" mode
+      await invoke('clone_build', {
+        buildJson: text,
         mode: 'new',
         agentId: null,
       });
@@ -108,7 +108,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
     if (file && (file.name.endsWith('.json') || file.type === 'application/json')) {
       handleFileImport(file);
     } else {
-      setImportError('Please drop a .json loadout file');
+      setImportError('Please drop a .json build file');
     }
   };
 
@@ -132,13 +132,13 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
               className="text-xs font-semibold uppercase tracking-widest mb-1"
               style={{ color: 'var(--rc-text-muted)' }}
             >
-              Saved Loadouts
+              Saved Builds
               {loading && (
                 <span className="ml-2 animate-pulse" style={{ color: 'var(--rc-cyan)' }}>●</span>
               )}
             </h3>
             <p className="text-xs" style={{ color: 'var(--rc-text-dim)' }}>
-              {loadouts.length} loadout{loadouts.length !== 1 ? 's' : ''} saved
+              {builds.length} build{builds.length !== 1 ? 's' : ''} saved
             </p>
           </div>
           <div className="flex gap-2">
@@ -172,7 +172,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
                 color: 'var(--rc-bg)',
               }}
             >
-              + Save Current Loadout
+              + Save Current Build
             </button>
           </div>
         </div>
@@ -197,7 +197,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
           >
             <span className="text-2xl block mb-2" style={{ color: 'var(--rc-cyan)' }}>⬡</span>
             <p className="text-xs font-semibold" style={{ color: 'var(--rc-cyan)' }}>
-              Drop loadout file here
+              Drop build file here
             </p>
           </div>
         )}
@@ -212,14 +212,14 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
               className="text-xs font-semibold uppercase tracking-wider block mb-2"
               style={{ color: 'var(--rc-cyan)' }}
             >
-              Name this loadout
+              Name this build
             </label>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={saveName}
                 onChange={(e) => setSaveName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && saveCurrentLoadout()}
+                onKeyDown={(e) => e.key === 'Enter' && saveCurrentBuild()}
                 placeholder="e.g. Production, Experimental, Lean Ops..."
                 className="flex-1 px-3 py-2 rounded text-xs border"
                 style={{
@@ -230,7 +230,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
                 autoFocus
               />
               <button
-                onClick={saveCurrentLoadout}
+                onClick={saveCurrentBuild}
                 disabled={saving || !saveName.trim()}
                 className="px-4 py-2 rounded text-xs font-semibold uppercase tracking-wider transition-all hover:opacity-80 disabled:opacity-30"
                 style={{
@@ -252,26 +252,26 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
         )}
 
         {/* Empty state */}
-        {!loading && loadouts.length === 0 && (
+        {!loading && builds.length === 0 && (
           <div
             className="text-center py-16 rounded-lg border border-dashed"
             style={{ borderColor: 'var(--rc-border)' }}
           >
             <span className="text-3xl block mb-3" style={{ color: 'var(--rc-text-muted)' }}>⬡</span>
             <p className="text-xs" style={{ color: 'var(--rc-text-dim)' }}>
-              No saved loadouts yet. Save your current config, import a file, or grab one from the Feed.
+              No saved builds yet. Save your current config, import a file, or grab one from the Feed.
             </p>
             <p className="text-[10px] mt-2" style={{ color: 'var(--rc-text-muted)' }}>
-              Drag & drop a .json loadout file anywhere on this page
+              Drag & drop a .json build file anywhere on this page
             </p>
           </div>
         )}
 
-        {/* Loadouts list */}
+        {/* Builds list */}
         <div className="space-y-2">
-          {loadouts.map((entry) => {
-            const expanded = expandedLoadout === entry.filename;
-            const cached = loadoutCache[entry.path];
+          {builds.map((entry) => {
+            const expanded = expandedBuild === entry.filename;
+            const cached = buildCache[entry.path];
 
             return (
               <div
@@ -306,7 +306,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
                         {entry.name}
                       </span>
                       <span className="text-[10px]" style={{ color: 'var(--rc-text-muted)' }}>
-                        {entry.slots} slots · {entry.mods} mods
+                        {entry.blocks} blocks · {entry.mods} mods
                         {entry.exportedAt && (
                           <> · {new Date(entry.exportedAt).toLocaleDateString()}</>
                         )}
@@ -327,12 +327,12 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
                 {/* Expanded detail */}
                 {expanded && cached != null && (
                   <div className="px-4 pb-4 border-t" style={{ borderColor: 'var(--rc-border)' }}>
-                    {/* Slot summary */}
+                    {/* Block summary */}
                     <div className="mt-3 mb-4">
                       <div className="flex flex-wrap gap-2">
-                        {Object.entries((cached as Record<string, unknown>).slots || {}).map(
-                          ([id, slot]) => {
-                            const s = slot as Record<string, unknown>;
+                        {Object.entries((cached as Record<string, unknown>).blocks || {}).map(
+                          ([id, block]) => {
+                            const s = block as Record<string, unknown>;
                             return (
                               <span
                                 key={id}

@@ -170,7 +170,7 @@ export function SettingsView() {
                   style={{ borderColor: 'var(--rc-red)', background: 'rgba(255,50,50,0.05)' }}
                 >
                   <div style={{ color: 'var(--rc-red)' }}>
-                    This will create a new identity. Your old npub will no longer be linked to your loadouts.
+                    This will create a new identity. Your old npub will no longer be linked to your builds.
                     {' '}Make sure you've backed up your current key if you want to keep it.
                   </div>
                   <div className="flex gap-2">
@@ -251,7 +251,7 @@ export function SettingsView() {
           </h3>
           <div className="text-[10px] mb-4" style={{ color: 'var(--rc-text-muted)' }}>
             Optional. This is your public Nostr profile (kind 0 metadata). Other Nostr clients and
-            the RipperClaw feed will show this info alongside your loadouts.
+            the RipperClaw feed will show this info alongside your builds.
           </div>
 
           <div className="space-y-3">
@@ -330,7 +330,7 @@ export function SettingsView() {
           Relays
         </h3>
         <div className="text-[10px] mb-4" style={{ color: 'var(--rc-text-muted)' }}>
-          Nostr relays used for publishing and fetching loadouts from the feed.
+          Nostr relays used for publishing and fetching builds from the feed.
         </div>
 
         <div className="space-y-2 mb-4">

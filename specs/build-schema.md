@@ -1,12 +1,12 @@
-# Loadout Schema v2
+# Build Schema v2
 
-The canonical format for exporting, sharing, and applying OpenClaw agent loadouts.
+The canonical format for exporting, sharing, and applying OpenClaw agent builds.
 
 ## Design Principles
 
 1. **Human-readable**: JSON with clear field names, no encoded blobs
 2. **Apply-safe**: no credentials, no PII, no absolute paths
-3. **Slot-independent**: each slot is self-contained, can be applied/skipped individually
+3. **Block-independent**: each block is self-contained, can be applied/skipped individually
 4. **Version-aware**: skills pin versions, models specify providers
 
 ---
@@ -26,7 +26,7 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
     "openclawVersion": "1.4.2",
     "tags": ["personal", "voice", "smart-home", "coding"]
   },
-  "slots": {
+  "blocks": {
     "model": { ... },
     "persona": { ... },
     "skills": { ... },
@@ -41,18 +41,18 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
 
 | Field | Type | Required | Description |
 |---|---|---|---|
-| `name` | string | ✅ | Display name for the loadout |
+| `name` | string | ✅ | Display name for the build |
 | `agentName` | string | ✅ | Name of the agent this was exported from |
 | `description` | string | ❌ | One-liner about what this agent does |
 | `author` | string | ✅ | Creator handle (e.g., `@Bolander72`) |
-| `version` | integer | ✅ | Loadout revision number (bumps on re-export) |
-| `exportedAt` | ISO 8601 | ✅ | When this loadout was created |
+| `version` | integer | ✅ | Build revision number (bumps on re-export) |
+| `exportedAt` | ISO 8601 | ✅ | When this build was created |
 | `openclawVersion` | string | ❌ | OpenClaw version at export time |
 | `tags` | string[] | ❌ | Searchable tags |
 
 ---
 
-## Slot: `model`
+## Block: `model`
 
 ```json
 {
@@ -104,7 +104,7 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
 
 ---
 
-## Slot: `persona`
+## Block: `persona`
 
 ```json
 {
@@ -136,12 +136,12 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
 **Apply behavior:**
 - ⚠️ Always confirm: "This will change your agent's persona. Are you sure?"
 - Show diff of current vs incoming SOUL.md, IDENTITY.md, AGENTS.md
-- USER.md never included in loadouts, never overwritten
+- USER.md never included in builds, never overwritten
 - Merge mode: appends non-conflicting sections. Replace mode: overwrites files.
 
 ---
 
-## Slot: `skills`
+## Block: `skills`
 
 ```json
 {
@@ -177,13 +177,13 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
 **Apply behavior:**
 - Auto-install from ClawHub via `clawhub install <name>@<version>`
 - If already installed at same version: ✅ skip
-- If already installed at different version: show "weather v1.2.0 installed (loadout uses v1.4.0) [Update →]": default: keep user's version
+- If already installed at different version: show "weather v1.2.0 installed (build uses v1.4.0) [Update →]": default: keep user's version
 - If `requiresConfig: true`: flag after install with `configHint`
 - Skills not on ClawHub (`source: "local"` or `source: "custom"`): show "manual install needed" with description
 
 ---
 
-## Slot: `integrations`
+## Block: `integrations`
 
 ```json
 {
@@ -229,14 +229,14 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
 
 **Apply behavior:**
 - ❌ Never auto-applied: credentials, OAuth, device pairing all manual
-- Show checklist: "This loadout uses these integrations:"
+- Show checklist: "This build uses these integrations:"
 - Each item shows setup status (✅ already configured / ⚙️ setup needed)
 - Link to docs where available
 - Detection: check if provider CLI exists, config has channel entry, etc.
 
 ---
 
-## Slot: `automations`
+## Block: `automations`
 
 ```json
 {
@@ -272,7 +272,7 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
 
 ---
 
-## Slot: `memory`
+## Block: `memory`
 
 ```json
 {
@@ -309,19 +309,19 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
 - Create directory structure if missing
 - Write template files only if they don't already exist (never overwrite memory)
 - In replace mode: still never overwrite: memory is sacred
-- `engine` field is informational only (LCM is an OpenClaw feature, not configurable per-loadout)
+- `engine` field is informational only (LCM is an OpenClaw feature, not configurable per-build)
 
 ---
 
 ## Apply Flow Summary
 
 ```
-1. Load loadout JSON
+1. Load build JSON
 2. Select target agent(s)
 3. Choose global mode: Merge (default) | Replace
-4. Per-slot review:
+4. Per-block review:
    ┌─────────────────┬──────────┬─────────────────────────────────┐
-   │ Slot            │ Action   │ Notes                           │
+   │ Block            │ Action   │ Notes                           │
    ├─────────────────┼──────────┼─────────────────────────────────┤
    │ Model           │ Apply    │ "Use my models" toggle          │
    │ Persona         │ Confirm  │ "Change persona? Are you sure?" │
@@ -339,7 +339,7 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
 
 ## Scrubbing Rules (export)
 
-Before a loadout is shared, the PII scrubber (`scrub::scrub_loadout`) must:
+Before a build is shared, the PII scrubber (`scrub::scrub_build`) must:
 - Remove all phone numbers, email addresses, physical addresses
 - Remove API keys, tokens, passwords
 - Remove USER.md content entirely
@@ -352,10 +352,10 @@ Before a loadout is shared, the PII scrubber (`scrub::scrub_loadout`) must:
 ## Migration
 
 Schema v1 (current Tauri export) → v2:
-- Map 9 diagnostic slots to 6 core slots (extensible, custom slot types supported)
-- Restructure flat `details` into typed slot objects
-- Add `tiers` to model slot
+- Map 9 diagnostic blocks to 6 core blocks (extensible, custom block types supported)
+- Restructure flat `details` into typed block objects
+- Add `tiers` to model block
 - Add `items` array to skills/integrations
 - Preserve `meta` fields, bump `schema: 2`
 
-A `migrate_v1_to_v2(loadout)` function handles this automatically.
+A `migrate_v1_to_v2(build)` function handles this automatically.

@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useNostrKeys, useNostrPublish, useSafeExport, type ScrubReport } from '../hooks/useNostr';
-import { getSlotMeta } from '../slotMeta';
-import type { SlotData } from '../types';
+import { getBlockMeta } from '../blockMeta';
+import type { BlockData } from '../types';
 
 const TEMPLATES = [
   { id: 'homelab', label: 'Homelab', color: 'var(--rc-cyan)', desc: 'Self-hosted, privacy-first' },
@@ -15,7 +15,7 @@ const TEMPLATES = [
 type Step = 'identity' | 'configure' | 'review' | 'publishing' | 'done';
 
 export function PublishDialog({ onClose }: { onClose: () => void }) {
-  const [loadoutName, setLoadoutName] = useState('');
+  const [buildName, setBuildName] = useState('');
   const [template, setTemplate] = useState('ops');
   const [description, setDescription] = useState('');
   const [tagInput, setTagInput] = useState('');
@@ -25,14 +25,14 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
   const [publishResult, setPublishResult] = useState<{ event_id: string; relays_sent: number } | null>(null);
   const [nsecInput, setNsecInput] = useState('');
   const [importError, setImportError] = useState<string | null>(null);
-  const [publishMode, setPublishMode] = useState<'loadout' | 'slot'>('loadout');
-  const [selectedSlot, setSelectedSlot] = useState<string>('');
-  const [slotValidationError, setSlotValidationError] = useState<string | null>(null);
-  const [agentSlots, setAgentSlots] = useState<SlotData[]>([]);
+  const [publishMode, setPublishMode] = useState<'build' | 'block'>('build');
+  const [selectedBlock, setSelectedSlot] = useState<string>('');
+  const [blockValidationError, setBlockValidationError] = useState<string | null>(null);
+  const [agentBlocks, setAgentSlots] = useState<BlockData[]>([]);
 
   // Fetch actual slots from the agent
   useEffect(() => {
-    invoke<SlotData[]>('get_slots', { agentId: null })
+    invoke<BlockData[]>('get_blocks', { agentId: null })
       .then(setAgentSlots)
       .catch(() => {});
   }, []);
@@ -51,35 +51,35 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
 
   const handleReview = async () => {
     try {
-      const [loadout, report] = await exportSafe(template, description, [...tags, template]);
+      const [build, report] = await exportSafe(template, description, [...tags, template]);
 
-      if (publishMode === 'slot') {
-        if (!selectedSlot) {
-          setSlotValidationError('Select a slot to publish');
+      if (publishMode === 'block') {
+        if (!selectedBlock) {
+          setBlockValidationError('Select a block to publish');
           return;
         }
-        // Extract the selected slot from the loadout
-        const parsed = typeof loadout === 'string' ? JSON.parse(loadout) : loadout;
+        // Extract the selected block from the build
+        const parsed = typeof build === 'string' ? JSON.parse(build) : build;
         const slots = parsed.slots || {};
-        const slotData = slots[selectedSlot];
-        if (!slotData) {
-          setSlotValidationError(`Slot "${selectedSlot}" not found in your loadout`);
+        const blockData = slots[selectedBlock];
+        if (!blockData) {
+          setBlockValidationError(`Block "${selectedBlock}" not found in your build`);
           return;
         }
         // Count items (sub_components or items array)
-        const items = slotData.items || slotData.sub_components || [];
+        const items = blockData.items || blockData.sub_components || [];
         if (items.length < 2) {
-          setSlotValidationError(`This slot has ${items.length} item${items.length === 1 ? '' : 's'}. Minimum 2 required.`);
+          setBlockValidationError(`This slot has ${items.length} item${items.length === 1 ? '' : 's'}. Minimum 2 required.`);
           return;
         }
-        // Publish just the slot content
+        // Publish just the block content
         const slotPublish = {
-          meta: { ...parsed.meta, slot_type: selectedSlot },
-          slot: slotData,
+          meta: { ...parsed.meta, block_type: selectedBlock },
+          block: blockData,
         };
         setScrubbedJson(JSON.stringify(slotPublish, null, 2));
       } else {
-        setScrubbedJson(JSON.stringify(loadout, null, 2));
+        setScrubbedJson(JSON.stringify(build, null, 2));
       }
 
       setScrubReport(report);
@@ -98,12 +98,12 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
     try {
       const result = await publish(
         scrubbedJson,
-        loadoutName || (publishMode === 'slot' ? `${selectedSlot} slot` : 'My Loadout'),
-        [...tags, template, ...(publishMode === 'slot' ? [selectedSlot] : [])],
+        buildName || (publishMode === 'block' ? `${selectedBlock} block` : 'My Build'),
+        [...tags, template, ...(publishMode === 'block' ? [selectedBlock] : [])],
         undefined,
         undefined,
         publishMode,
-        publishMode === 'slot' ? selectedSlot : undefined,
+        publishMode === 'block' ? selectedBlock : undefined,
       );
       setPublishResult(result);
       setStep('done');
@@ -131,7 +131,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--rc-text)' }}>
             {step === 'identity' && 'Your Identity'}
-            {step === 'configure' && (publishMode === 'slot' ? 'Publish Slot' : 'Publish Loadout')}
+            {step === 'configure' && (publishMode === 'block' ? 'Publish Block' : 'Publish Build')}
             {step === 'review' && 'Review & Confirm'}
             {step === 'publishing' && 'Publishing...'}
             {step === 'done' && 'Published!'}
@@ -157,8 +157,8 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
               }}
             >
               <p className="mb-3">
-                Your loadout will be signed with a <strong style={{ color: 'var(--rc-text)' }}>Nostr keypair</strong> so others
-                can verify it's yours. This is your publishing identity. It stays with your loadouts.
+                Your build will be signed with a <strong style={{ color: 'var(--rc-text)' }}>Nostr keypair</strong> so others
+                can verify it's yours. This is your publishing identity. It stays with your builds.
               </p>
               <p style={{ color: 'var(--rc-text-muted)' }}>
                 You can update your identity anytime in <strong>Settings</strong>.
@@ -277,7 +277,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
                 color: 'var(--rc-text-dim)',
               }}
             >
-              <span style={{ color: 'var(--rc-magenta)' }}>⚠ Privacy:</span> Your loadout will be scrubbed of phone numbers, emails, IP addresses, API keys, file paths, and other PII before publishing. You'll review the scrubbed version before it goes live.
+              <span style={{ color: 'var(--rc-magenta)' }}>⚠ Privacy:</span> Your build will be scrubbed of phone numbers, emails, IP addresses, API keys, file paths, and other PII before publishing. You'll review the scrubbed version before it goes live.
             </div>
 
             {/* Publish mode toggle */}
@@ -286,10 +286,10 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
                 What to publish
               </label>
               <div className="flex gap-2">
-                {(['loadout', 'slot'] as const).map((mode) => (
+                {(['build', 'block'] as const).map((mode) => (
                   <button
                     key={mode}
-                    onClick={() => { setPublishMode(mode); setSlotValidationError(null); }}
+                    onClick={() => { setPublishMode(mode); setBlockValidationError(null); }}
                     className="flex-1 py-2 rounded border text-xs font-semibold transition-all"
                     style={{
                       borderColor: publishMode === mode ? 'var(--rc-cyan)' : 'var(--rc-border)',
@@ -297,37 +297,37 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
                       color: publishMode === mode ? 'var(--rc-cyan)' : 'var(--rc-text-dim)',
                     }}
                   >
-                    {mode === 'loadout' ? '📦 Full Loadout' : '🧩 Single Slot'}
+                    {mode === 'build' ? '📦 Full Build' : '🧩 Single Block'}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Slot picker (only when publishing a slot) */}
-            {publishMode === 'slot' && (
+            {/* Block picker (only when publishing a block) */}
+            {publishMode === 'block' && (
               <div>
                 <label className="text-[10px] uppercase tracking-wider block mb-2" style={{ color: 'var(--rc-text-muted)' }}>
-                  Select Slot
+                  Select Block
                 </label>
                 <div className="grid grid-cols-3 gap-2">
-                  {agentSlots.map((s) => {
-                    const meta = getSlotMeta(s.id);
+                  {agentBlocks.map((s) => {
+                    const meta = getBlockMeta(s.id);
                     const itemCount = s.subComponents?.length || 0;
                     return (
                       <button
                         key={s.id}
-                        onClick={() => { setSelectedSlot(s.id); setSlotValidationError(null); }}
+                        onClick={() => { setSelectedSlot(s.id); setBlockValidationError(null); }}
                         className="p-2 rounded border text-center transition-all"
                         style={{
-                          borderColor: selectedSlot === s.id ? meta.color : 'var(--rc-border)',
-                          background: selectedSlot === s.id ? `${meta.color}1a` : 'transparent',
+                          borderColor: selectedBlock === s.id ? meta.color : 'var(--rc-border)',
+                          background: selectedBlock === s.id ? `${meta.color}1a` : 'transparent',
                           opacity: itemCount < 2 ? 0.4 : 1,
                         }}
                         disabled={itemCount < 2}
                         title={itemCount < 2 ? `${itemCount} item${itemCount === 1 ? '' : 's'} (min 2)` : `${itemCount} items`}
                       >
                         <div className="text-base">{meta.emoji}</div>
-                        <div className="text-[10px] mt-0.5" style={{ color: selectedSlot === s.id ? meta.color : 'var(--rc-text-dim)' }}>
+                        <div className="text-[10px] mt-0.5" style={{ color: selectedBlock === s.id ? meta.color : 'var(--rc-text-dim)' }}>
                           {meta.label}
                         </div>
                         <div className="text-[9px]" style={{ color: 'var(--rc-text-muted)' }}>
@@ -337,24 +337,24 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
                     );
                   })}
                 </div>
-                {slotValidationError && (
-                  <div className="text-[10px] mt-1 px-1" style={{ color: 'var(--rc-red)' }}>{slotValidationError}</div>
+                {blockValidationError && (
+                  <div className="text-[10px] mt-1 px-1" style={{ color: 'var(--rc-red)' }}>{blockValidationError}</div>
                 )}
                 <div className="text-[10px] mt-1 px-1" style={{ color: 'var(--rc-text-muted)' }}>
-                  Minimum 2 items required per slot
+                  Minimum 2 items required per block
                 </div>
               </div>
             )}
 
-            {/* Loadout name */}
+            {/* Build name */}
             <div>
               <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: 'var(--rc-text-muted)' }}>
-                {publishMode === 'slot' ? 'Slot Name' : 'Loadout Name'}
+                {publishMode === 'block' ? 'Block Name' : 'Build Name'}
               </label>
               <input
                 type="text"
-                value={loadoutName}
-                onChange={(e) => setLoadoutName(e.target.value)}
+                value={buildName}
+                onChange={(e) => setBuildName(e.target.value)}
                 placeholder="e.g. Nighthawk, Mercury, Athena..."
                 className="w-full px-3 py-2 rounded text-xs border outline-none"
                 style={{
@@ -398,7 +398,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="What makes your loadout unique?"
+                placeholder="What makes your build unique?"
                 rows={3}
                 className="w-full px-3 py-2 rounded text-xs border outline-none resize-none"
                 style={{
@@ -449,7 +449,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
 
             <button
               onClick={handleReview}
-              disabled={exporting || !loadoutName.trim() || (publishMode === 'slot' && !selectedSlot)}
+              disabled={exporting || !buildName.trim() || (publishMode === 'block' && !selectedBlock)}
               className="w-full py-2.5 rounded text-xs font-semibold uppercase tracking-wider border transition-all hover:opacity-80 disabled:opacity-40"
               style={{
                 borderColor: 'var(--rc-cyan)',
@@ -508,7 +508,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
             {/* Preview */}
             <div>
               <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: 'var(--rc-text-muted)' }}>
-                Scrubbed Loadout Preview
+                Scrubbed Build Preview
               </label>
               <pre
                 className="p-3 rounded border text-[10px] font-mono overflow-auto max-h-60"
@@ -567,7 +567,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
           <div className="text-center py-6 space-y-4">
             <div className="text-3xl" style={{ color: 'var(--rc-green)' }}>✓</div>
             <div className="text-sm font-bold" style={{ color: 'var(--rc-text)' }}>
-              Loadout Published
+              Build Published
             </div>
             <div className="text-[10px] font-mono p-2 rounded" style={{
               background: 'var(--rc-overlay-subtle)',

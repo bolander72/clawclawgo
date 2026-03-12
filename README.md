@@ -1,6 +1,6 @@
 # RipperClaw
 
-Modular loadouts for AI agents. Build, share, and remix how your agent is configured.
+Modular builds for AI agents. Build, share, and remix how your agent is configured.
 
 **[ripperclaw.com](https://ripperclaw.com)**
 
@@ -10,11 +10,11 @@ Modular loadouts for AI agents. Build, share, and remix how your agent is config
 
 ## What is it?
 
-Your AI agent is more than config files. It's a combination of models, skills, integrations, personality, memory, and automations that work together. RipperClaw lets you package all of that as a **loadout**. Then export it, share it, or apply someone else's to a new agent.
+Your AI agent is more than config files. It's a combination of models, skills, integrations, personality, memory, and automations that work together. RipperClaw lets you package all of that as a **build**. Then export it, share it, or apply someone else's to a new agent.
 
-### The 6 Slots
+### The 6 Blocks
 
-| Slot | What It Maps To |
+| Block | What It Maps To |
 |---|---|
 | **Model** | LLM routing: primary, sub-agent, local (Ollama), image models |
 | **Persona** | Personality, identity, behavioral rules (SOUL.md, IDENTITY.md, USER.md) |
@@ -35,21 +35,21 @@ npm run tauri dev
 
 ### Features
 
-- **Live slot visualization**: reads your OpenClaw config in real-time
+- **Live block visualization**: reads your OpenClaw config in real-time
 - **Multi-agent support**: switch between agents if you run more than one
-- **The Feed**: browse and clone loadouts published on Nostr
-- **Compare view**: side-by-side diff of any loadout against yours
-- **Apply wizard**: slot-by-slot review with safety guards, model remapping, and skill installs
+- **The Feed**: browse and clone builds published on Nostr
+- **Compare view**: side-by-side diff of any build against yours
+- **Apply wizard**: block-by-block review with safety guards, model remapping, and skill installs
 - **PII scrubber**: strips 12+ pattern types before publishing
 - **Publish flow**: review scrubbed output, sign with Nostr keys, push to relays
 
 ## Apply Flow
 
-Apply a loadout to create a new agent or configure an existing one:
+Apply a build to create a new agent or configure an existing one:
 
-1. **Select loadout**: from the Feed, a file, or a saved loadout
+1. **Select build**: from the Feed, a file, or a saved build
 2. **Choose target**: pick an agent ID and name
-3. **Review slots**: slot-by-slot preview with warnings and options
+3. **Review blocks**: block-by-block preview with warnings and options
 4. **Apply**: workspace created, skills installed, config wired up
 
 Safety rules:
@@ -57,27 +57,27 @@ Safety rules:
 - Protects your default agent when adding to `agents.list`
 - Credentials and integrations are never copied: always manual setup
 - Automatic backup of config before changes
-- `--use-my-models` remaps loadout models to your existing tiers
+- `--use-my-models` remaps build models to your existing tiers
 
 ## CLI
 
 ```bash
-# Export your current loadout
+# Export your current build
 node cli/ripperclaw.mjs export
 
 # Preview what applying would do
-node cli/ripperclaw.mjs apply loadout.json --agent my-bot --dry-run
+node cli/ripperclaw.mjs apply build.json --agent my-bot --dry-run
 
-# Apply a loadout to create a new agent
-node cli/ripperclaw.mjs apply loadout.json --agent my-bot --name "My Bot"
+# Apply a build to create a new agent
+node cli/ripperclaw.mjs apply build.json --agent my-bot --name "My Bot"
 
-# Use your own models instead of the loadout's
-node cli/ripperclaw.mjs apply loadout.json --agent my-bot --use-my-models
+# Use your own models instead of the build's
+node cli/ripperclaw.mjs apply build.json --agent my-bot --use-my-models
 ```
 
 ## The Feed
 
-Share your loadout on [Nostr](https://nostr.com/) using kind 38333. Your loadout is JSON, signed with your keys, and published to relays. Update it anytime and the old version gets replaced.
+Share your build on [Nostr](https://nostr.com/) using kind 38333. Your build is JSON, signed with your keys, and published to relays. Update it anytime and the old version gets replaced.
 
 | Mode | How It Works |
 |---|---|
@@ -108,15 +108,15 @@ ripperclaw/
 ├── cli/              # CLI tool (ripperclaw.mjs)
 ├── app/              # Desktop app (Tauri v2 + React)
 │   ├── src/          # React frontend
-│   │   ├── components/   # SlotCard, FeedView, CompareView, ApplyWizard
+│   │   ├── components/   # BlockCard, FeedView, CompareView, ApplyWizard
 │   │   └── hooks/        # useTauri, useNostr
 │   └── src-tauri/    # Rust backend
 │       └── src/
-│           ├── lib.rs    # OpenClaw data reading, slot detection, apply
+│           ├── lib.rs    # OpenClaw data reading, block detection, apply
 │           ├── nostr.rs  # Nostr protocol (keys, publish, subscribe)
 │           └── scrub.rs  # PII scrubber
 ├── site/             # Landing page (ripperclaw.com)
-├── specs/            # Loadout schema and spec
+├── specs/            # Build schema and spec
 ├── plugin/           # OpenClaw relay plugin (ripperclaw-relay)
 └── PLAN.md           # Roadmap
 ```

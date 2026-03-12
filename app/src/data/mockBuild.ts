@@ -1,6 +1,6 @@
-import type { SlotData, Mod } from '../types';
+import type { BlockData, Mod } from '../types';
 
-export const slots: SlotData[] = [
+export const blocks: BlockData[] = [
   {
     id: 'soul',
     label: 'Soul',

@@ -4,7 +4,7 @@ import type { AgentInfo } from '../hooks/useTauri';
 
 // ── Types ──
 
-interface LoadoutSlot {
+interface BuildBlock {
   items?: Array<{
     name: string;
     source?: string;
@@ -34,7 +34,7 @@ interface LoadoutSlot {
   engine?: { type?: string; description?: string };
 }
 
-interface Loadout {
+interface Build {
   schema: number;
   meta: {
     name: string;
@@ -44,12 +44,12 @@ interface Loadout {
     version: number;
     exportedAt: string;
   };
-  slots: Record<string, LoadoutSlot>;
+  blocks: Record<string, BuildBlock>;
 }
 
 interface ApplyAction {
   type: string;
-  slot: string;
+  block: string;
   description: string;
   status: 'pending' | 'applying' | 'done' | 'error' | 'skipped';
   error?: string;
@@ -58,21 +58,21 @@ interface ApplyAction {
 
 type Step = 'target' | 'review' | 'applying' | 'done';
 
-import { getSlotMeta } from '../slotMeta';
+import { getBlockMeta } from '../blockMeta';
 
 // ── Component ──
 
 interface Props {
-  loadout: Loadout;
+  build: Build;
   agents: AgentInfo[];
   onClose: () => void;
   onComplete: () => void;
 }
 
-export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
+export function ApplyWizard({ build, agents, onClose, onComplete }: Props) {
   const [step, setStep] = useState<Step>('target');
   const [agentId, setAgentId] = useState('');
-  const [agentName, setAgentName] = useState(loadout.meta.agentName || '');
+  const [agentName, setAgentName] = useState(build.meta.agentName || '');
   const [useMyModels, setUseMyModels] = useState(true);
   const [actions, setActions] = useState<ApplyAction[]>([]);
   const [applyError, setApplyError] = useState<string | null>(null);
@@ -82,12 +82,12 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
     const acts: ApplyAction[] = [];
 
     // Model
-    const modelSlot = loadout.slots?.model;
+    const modelSlot = build.blocks?.model;
     if (modelSlot?.tiers) {
       const tierCount = Object.keys(modelSlot.tiers).length;
       acts.push({
         type: 'set-model',
-        slot: 'model',
+        block: 'model',
         description: useMyModels
           ? `Use your existing models (${tierCount} tiers)`
           : `Set ${tierCount} model tier${tierCount > 1 ? 's' : ''}: ${Object.entries(modelSlot.tiers).map(([t, v]) => `${t}=${v.alias || v.model}`).join(', ')}`,
@@ -96,12 +96,12 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
     }
 
     // Persona
-    const personaSlot = loadout.slots?.persona;
+    const personaSlot = build.blocks?.persona;
     if (personaSlot) {
       if (personaSlot.identity) {
         acts.push({
           type: 'write-identity',
-          slot: 'persona',
+          block: 'persona',
           description: `Create IDENTITY.md (${personaSlot.identity.name || 'unnamed'})`,
           status: 'pending',
         });
@@ -109,7 +109,7 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
       if (personaSlot.soul?.included) {
         acts.push({
           type: 'write-soul',
-          slot: 'persona',
+          block: 'persona',
           description: `Write SOUL.md (~${personaSlot.soul.tokenEstimate || '?'} tokens)`,
           status: 'pending',
           detail: '⚠️ This defines the agent\'s personality and behavior',
@@ -118,7 +118,7 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
       if (personaSlot.agents?.included) {
         acts.push({
           type: 'write-agents',
-          slot: 'persona',
+          block: 'persona',
           description: 'Write AGENTS.md (workspace instructions)',
           status: 'pending',
         });
@@ -126,14 +126,14 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
     }
 
     // Skills
-    const skillsSlot = loadout.slots?.skills;
+    const skillsSlot = build.blocks?.skills;
     if (skillsSlot?.items?.length) {
       const bundled = skillsSlot.items.filter(s => s.source === 'bundled');
       const clawhub = skillsSlot.items.filter(s => s.source === 'clawhub');
       if (bundled.length) {
         acts.push({
           type: 'enable-skills',
-          slot: 'skills',
+          block: 'skills',
           description: `Enable ${bundled.length} bundled skill${bundled.length > 1 ? 's' : ''}`,
           status: 'pending',
         });
@@ -141,7 +141,7 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
       if (clawhub.length) {
         acts.push({
           type: 'install-skills',
-          slot: 'skills',
+          block: 'skills',
           description: `Install ${clawhub.length} skill${clawhub.length > 1 ? 's' : ''} from ClawHub`,
           status: 'pending',
           detail: clawhub.map(s => s.name).join(', '),
@@ -150,11 +150,11 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
     }
 
     // Integrations
-    const intSlot = loadout.slots?.integrations;
+    const intSlot = build.blocks?.integrations;
     if (intSlot?.items?.length) {
       acts.push({
         type: 'flag-integrations',
-        slot: 'integrations',
+        block: 'integrations',
         description: `${intSlot.items.length} integration${intSlot.items.length > 1 ? 's' : ''} require manual setup`,
         status: 'pending',
         detail: intSlot.items.map(i => i.name).join(', '),
@@ -162,31 +162,31 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
     }
 
     // Automations
-    const autoSlot = loadout.slots?.automations;
+    const autoSlot = build.blocks?.automations;
     if (autoSlot?.heartbeat?.included) {
       acts.push({
         type: 'write-heartbeat',
-        slot: 'automations',
+        block: 'automations',
         description: `Write HEARTBEAT.md (${autoSlot.heartbeat.taskCount || 0} tasks)`,
         status: 'pending',
       });
     }
 
     // Memory
-    const memSlot = loadout.slots?.memory;
+    const memSlot = build.blocks?.memory;
     if (memSlot?.structure) {
       const dirs = memSlot.structure.directories?.length || 0;
       const files = memSlot.structure.templateFiles?.length || 0;
       acts.push({
         type: 'create-memory',
-        slot: 'memory',
+        block: 'memory',
         description: `Create memory structure (${dirs} dirs, ${files} templates)`,
         status: 'pending',
       });
     }
 
     return acts;
-  }, [loadout, useMyModels]);
+  }, [build, useMyModels]);
 
   // Validate agent id
   const agentIdValid = agentId.length >= 2 && /^[a-z0-9_-]+$/.test(agentId);
@@ -206,8 +206,8 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
         results: Array<{ type: string; status: string; error?: string }>;
         warnings: string[];
         workspace: string;
-      }>('apply_loadout', {
-        loadoutJson: JSON.stringify(loadout),
+      }>('apply_build', {
+        buildJson: JSON.stringify(build),
         agentId,
         agentName: agentName || agentId,
         useMyModels,
@@ -256,10 +256,10 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
         >
           <div>
             <h2 className="text-sm font-bold uppercase tracking-wider" style={{ color: 'var(--rc-cyan)' }}>
-              Apply Loadout
+              Apply Build
             </h2>
             <p className="text-xs mt-0.5" style={{ color: 'var(--rc-text-muted)' }}>
-              {loadout.meta.name} {loadout.meta.author !== 'local' && `by ${loadout.meta.author}`}
+              {build.meta.name} {build.meta.author !== 'local' && `by ${build.meta.author}`}
             </p>
           </div>
           <button
@@ -351,7 +351,7 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
                       Use my models
                     </span>
                     <p className="text-[10px]" style={{ color: 'var(--rc-text-dim)' }}>
-                      Map loadout tiers to your existing model config
+                      Map build tiers to your existing model config
                     </p>
                   </div>
                 </label>
@@ -364,10 +364,10 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
                   />
                   <div>
                     <span className="text-xs font-semibold" style={{ color: 'var(--rc-text)' }}>
-                      Use loadout models
+                      Use build models
                     </span>
                     <p className="text-[10px]" style={{ color: 'var(--rc-text-dim)' }}>
-                      Copy exact model config from loadout (may require API keys)
+                      Copy exact model config from build (may require API keys)
                     </p>
                   </div>
                 </label>
@@ -404,14 +404,14 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
               </p>
             </div>
 
-            {/* Slot-by-slot action list */}
-            {Object.keys(actions.reduce((acc: Record<string, boolean>, a: { slot?: string }) => { if (a.slot) acc[a.slot] = true; return acc; }, {})).map(slotKey => {
-              const slotActions = previewActions.filter(a => a.slot === slotKey);
-              if (slotActions.length === 0) return null;
-              const meta = getSlotMeta(slotKey);
+            {/* Block-by-block action list */}
+            {Object.keys(actions.reduce((acc: Record<string, boolean>, a: { block?: string }) => { if (a.block) acc[a.block] = true; return acc; }, {})).map(blockKey => {
+              const blockActions = previewActions.filter(a => a.block === blockKey);
+              if (blockActions.length === 0) return null;
+              const meta = getBlockMeta(blockKey);
 
               return (
-                <div key={slotKey}>
+                <div key={blockKey}>
                   <div className="flex items-center gap-2 mb-2">
                     <span style={{ color: meta.color }}>{meta.icon}</span>
                     <span
@@ -422,7 +422,7 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
                     </span>
                   </div>
                   <div className="space-y-1 ml-5">
-                    {slotActions.map((action, i) => (
+                    {blockActions.map((action, i) => (
                       <div key={i} className="text-xs" style={{ color: 'var(--rc-text)' }}>
                         <span className="mr-2" style={{ color: 'var(--rc-text-dim)' }}>→</span>
                         {action.description}
@@ -458,7 +458,7 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
                   color: 'var(--rc-bg)',
                 }}
               >
-                Apply Loadout
+                Apply Build
               </button>
             </div>
           </div>
@@ -470,7 +470,7 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
             <div className="text-center py-4">
               <span className="text-2xl animate-pulse" style={{ color: 'var(--rc-cyan)' }}>⬡</span>
               <p className="text-xs mt-3 font-semibold" style={{ color: 'var(--rc-cyan)' }}>
-                Applying loadout...
+                Applying build...
               </p>
             </div>
             <div className="space-y-1">

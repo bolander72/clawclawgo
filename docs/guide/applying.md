@@ -1,6 +1,6 @@
-# Applying a Loadout
+# Applying a Build
 
-Apply a loadout to create a new agent or update an existing one.
+Apply a build to create a new agent or update an existing one.
 
 ## Safety Rules
 
@@ -28,7 +28,7 @@ Creates a fresh agent workspace at `~/.openclaw/agents/<id>/`.
 
 ### Update Existing Agent
 
-Merges loadout changes into an existing agent:
+Merges build changes into an existing agent:
 
 - Writes/overwrites persona files (with confirmation)
 - Installs missing skills (keeps existing versions)
@@ -40,18 +40,18 @@ Merges loadout changes into an existing agent:
 
 When applying, you choose how to handle models:
 
-- **Use loadout's models**: adopts exactly what the loadout specifies
-- **Use my models**: remaps loadout tiers to your existing model configuration
+- **Use build's models**: adopts exactly what the build specifies
+- **Use my models**: remaps build tiers to your existing model configuration
 
-This is useful when a loadout uses paid models you don't have access to, or when you prefer local models.
+This is useful when a build uses paid models you don't have access to, or when you prefer local models.
 
 ## Using the App
 
-1. Find a loadout (Loadouts view, Feed, or import a file)
+1. Find a build (Builds view, Feed, or import a file)
 2. Click **Apply to Agent**
 3. Enter an agent ID and display name
 4. Choose your model strategy
-5. Review the slot-by-slot action plan
+5. Review the block-by-block action plan
 6. Confirm and apply
 7. Restart OpenClaw to activate the new agent
 
@@ -59,16 +59,16 @@ This is useful when a loadout uses paid models you don't have access to, or when
 
 ```bash
 # Preview what would happen (dry run)
-node ripperclaw.mjs apply loadout.json --agent my-bot --dry-run
+node ripperclaw.mjs apply build.json --agent my-bot --dry-run
 
 # Apply for real
-node ripperclaw.mjs apply loadout.json --agent my-bot
+node ripperclaw.mjs apply build.json --agent my-bot
 
-# Use your own models instead of the loadout's
-node ripperclaw.mjs apply loadout.json --agent my-bot --use-my-models
+# Use your own models instead of the build's
+node ripperclaw.mjs apply build.json --agent my-bot --use-my-models
 
 # Combine dry run with model remapping
-node ripperclaw.mjs apply loadout.json --agent my-bot --dry-run --use-my-models
+node ripperclaw.mjs apply build.json --agent my-bot --dry-run --use-my-models
 ```
 
 ### Dry Run Mode
@@ -77,10 +77,10 @@ The `--dry-run` flag previews all actions without making any changes:
 
 - Shows which files would be created or modified
 - Lists skills that would be installed
-- Displays the full action plan for each slot
+- Displays the full action plan for each block
 - No files are written, no skills are installed, no config is modified
 
-Use this to inspect a loadout before committing to the apply.
+Use this to inspect a build before committing to the apply.
 
 ## After Applying
 

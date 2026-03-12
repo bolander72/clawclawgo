@@ -1,22 +1,22 @@
 import { useState, useEffect } from 'react';
-import type { Loadout, SlotData } from '../types';
+import type { Build, BlockData } from '../types';
 
 interface Props {
-  currentSlots: SlotData[];
+  currentBlocks: BlockData[];
   currentMods: { name: string; source: string; enabled: boolean; version?: string }[];
   currentName: string;
-  initialLoadout?: unknown;
+  initialBuild?: unknown;
   onClear?: () => void;
-  onClone?: (loadout: Loadout, mode: 'overwrite' | 'new') => void;
+  onClone?: (build_entry: Build, mode: 'overwrite' | 'new') => void;
 }
 
-// Build a diff between current loadout and imported loadout
+// Build a diff between current build_entry and imported build_entry
 function buildDiff(
-  currentSlots: SlotData[],
+  currentBlocks: BlockData[],
   currentMods: { name: string; source: string }[],
-  imported: Loadout
+  imported: Build
 ) {
-  const slotDiffs: {
+  const blockDiffs: {
     id: string;
     label: string;
     yours: { component: string; status: string; details: Record<string, unknown> } | null;
@@ -24,21 +24,21 @@ function buildDiff(
     match: boolean;
   }[] = [];
 
-  // All slot IDs from both
-  const allSlotIds = new Set([
-    ...currentSlots.map((s) => s.id),
-    ...Object.keys(imported.slots || {}),
+  // All block IDs from both
+  const allBlockIds = new Set([
+    ...currentBlocks.map((s) => s.id),
+    ...Object.keys(imported.blocks || {}),
   ]);
 
-  for (const id of allSlotIds) {
-    const mine = currentSlots.find((s) => s.id === id);
-    const theirs = imported.slots?.[id];
+  for (const id of allBlockIds) {
+    const mine = currentBlocks.find((s) => s.id === id);
+    const theirs = imported.blocks?.[id];
 
     const match = mine && theirs
       ? mine.component === theirs.component && mine.status === theirs.status
       : !mine && !theirs;
 
-    slotDiffs.push({
+    blockDiffs.push({
       id,
       label: mine?.label || theirs?.label || id,
       yours: mine ? { component: mine.component, status: mine.status, details: mine.details } : null,
@@ -54,7 +54,7 @@ function buildDiff(
   const onlyTheirs = [...theirModNames].filter((n) => !myModNames.has(n));
   const shared = [...myModNames].filter((n) => theirModNames.has(n));
 
-  return { slotDiffs, onlyYours, onlyTheirs, shared };
+  return { blockDiffs, onlyYours, onlyTheirs, shared };
 }
 
 const statusColor: Record<string, string> = {
@@ -64,18 +64,18 @@ const statusColor: Record<string, string> = {
   empty: 'var(--rc-text-muted)',
 };
 
-export function CompareView({ currentSlots, currentMods, currentName, initialLoadout, onClear, onClone }: Props) {
-  const [imported, setImported] = useState<Loadout | null>(
-    initialLoadout ? (initialLoadout as Loadout) : null
+export function CompareView({ currentBlocks, currentMods, currentName, initialBuild, onClear, onClone }: Props) {
+  const [imported, setImported] = useState<Build | null>(
+    initialBuild ? (initialBuild as Build) : null
   );
   const [dragOver, setDragOver] = useState(false);
 
-  // Sync when a Feed loadout gets passed in
+  // Sync when a Feed build_entry gets passed in
   useEffect(() => {
-    if (initialLoadout) {
-      setImported(initialLoadout as Loadout);
+    if (initialBuild) {
+      setImported(initialBuild as Build);
     }
-  }, [initialLoadout]);
+  }, [initialBuild]);
 
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
@@ -84,29 +84,29 @@ export function CompareView({ currentSlots, currentMods, currentName, initialLoa
     if (!file) return;
     const text = await file.text();
     try {
-      const loadout = JSON.parse(text) as Loadout;
-      if (!loadout.schema || !loadout.slots) {
-        throw new Error('Invalid loadout format');
+      const build_entry = JSON.parse(text) as Build;
+      if (!build_entry.schema || !build_entry.blocks) {
+        throw new Error('Invalid build_entry format');
       }
-      setImported(loadout);
+      setImported(build_entry);
     } catch {
-      console.error('Failed to parse loadout file');
+      console.error('Failed to parse build_entry file');
     }
   };
 
   const handleFileSelect = async () => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.json,.loadout';
+    input.accept = '.json,.build_entry';
     input.onchange = async (e) => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
       const text = await file.text();
       try {
-        const loadout = JSON.parse(text) as Loadout;
-        setImported(loadout);
+        const build_entry = JSON.parse(text) as Build;
+        setImported(build_entry);
       } catch {
-        console.error('Failed to parse loadout file');
+        console.error('Failed to parse build_entry file');
       }
     };
     input.click();
@@ -130,10 +130,10 @@ export function CompareView({ currentSlots, currentMods, currentName, initialLoa
             className="text-sm font-semibold uppercase tracking-wider mb-2"
             style={{ color: 'var(--rc-text)' }}
           >
-            Compare Loadouts
+            Compare Builds
           </h3>
           <p className="text-xs mb-4" style={{ color: 'var(--rc-text-dim)' }}>
-            Drop a .loadout.json file here or click to browse
+            Drop a .build_entry.json file here or click to browse
           </p>
           <button
             onClick={handleFileSelect}
@@ -151,7 +151,7 @@ export function CompareView({ currentSlots, currentMods, currentName, initialLoa
     );
   }
 
-  const diff = buildDiff(currentSlots, currentMods, imported);
+  const diff = buildDiff(currentBlocks, currentMods, imported);
 
   return (
     <div className="flex-1 p-6 overflow-y-auto">
@@ -163,7 +163,7 @@ export function CompareView({ currentSlots, currentMods, currentName, initialLoa
               className="text-xs font-semibold uppercase tracking-widest mb-1"
               style={{ color: 'var(--rc-text-muted)' }}
             >
-              Loadout Comparison
+              Build Comparison
             </h3>
             <p className="text-sm" style={{ color: 'var(--rc-text-dim)' }}>
               <span style={{ color: 'var(--rc-cyan)' }}>{currentName}</span>
@@ -194,7 +194,7 @@ export function CompareView({ currentSlots, currentMods, currentName, initialLoa
                     background: 'transparent',
                   }}
                 >
-                  Save as Loadout
+                  Save as Build
                 </button>
               </>
             )}
@@ -215,19 +215,19 @@ export function CompareView({ currentSlots, currentMods, currentName, initialLoa
         {/* Column headers */}
         <div className="grid grid-cols-[1fr_1fr_1fr] gap-4 mb-4">
           <div className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--rc-text-muted)' }}>
-            Slot
+            Block
           </div>
           <div className="text-xs font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--rc-cyan)' }}>
-            Active Loadout
+            Active Build
           </div>
           <div className="text-xs font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--rc-magenta)' }}>
-            Their Loadout
+            Their Build
           </div>
         </div>
 
-        {/* Slot comparisons */}
+        {/* Block comparisons */}
         <div className="space-y-2 mb-8">
-          {diff.slotDiffs.map((sd) => (
+          {diff.blockDiffs.map((sd) => (
             <div
               key={sd.id}
               className="grid grid-cols-[1fr_1fr_1fr] gap-4 py-3 px-4 rounded"

@@ -95,8 +95,8 @@ const SANITIZE_DETAIL_KEYS: &[&str] = &[
     "heartbeat_tasks",
 ];
 
-pub fn scrub_loadout(
-    mut loadout: Value,
+pub fn scrub_build(
+    mut build_data: Value,
     template: Option<String>,
     description: Option<String>,
     tags: Option<Vec<String>>,
@@ -106,7 +106,7 @@ pub fn scrub_loadout(
     let mut warnings: Vec<String> = Vec::new();
 
     // Scrub meta
-    if let Some(meta) = loadout.get_mut("meta").and_then(|m| m.as_object_mut()) {
+    if let Some(meta) = build_data.get_mut("meta").and_then(|m| m.as_object_mut()) {
         if meta.contains_key("author") {
             meta.insert("author".into(), Value::String("anonymous".into()));
             scrubbed_fields.push("meta.author".into());
@@ -128,7 +128,7 @@ pub fn scrub_loadout(
     }
 
     // Scrub slot details
-    if let Some(slots) = loadout.get_mut("slots").and_then(|s| s.as_object_mut()) {
+    if let Some(slots) = build_data.get_mut("blocks").and_then(|s| s.as_object_mut()) {
         let slot_ids: Vec<String> = slots.keys().cloned().collect();
         for slot_id in slot_ids {
             if let Some(slot_val) = slots.get_mut(&slot_id) {
@@ -170,7 +170,7 @@ pub fn scrub_loadout(
     }
 
     // Scrub mod descriptions
-    if let Some(mods) = loadout.get_mut("mods").and_then(|m| m.as_array_mut()) {
+    if let Some(mods) = build_data.get_mut("mods").and_then(|m| m.as_array_mut()) {
         for (i, mod_val) in mods.iter_mut().enumerate() {
             if let Some(desc) = mod_val.get("description").and_then(|d| d.as_str()).map(String::from) {
                 let scrubbed = scrub_string(&desc, &patterns);
@@ -185,7 +185,7 @@ pub fn scrub_loadout(
     }
 
     // Final deep scan
-    let json_str = serde_json::to_string(&loadout).unwrap_or_default();
+    let json_str = serde_json::to_string(&build_data).unwrap_or_default();
     for pattern in &patterns {
         if pattern.regex.is_match(&json_str) {
             if !scrubbed_fields.iter().any(|f| f.contains(&pattern.name)) {
@@ -203,7 +203,7 @@ pub fn scrub_loadout(
         final_str = pattern.regex.replace_all(&final_str, pattern.replacement.as_str()).to_string();
     }
 
-    let final_value: Value = serde_json::from_str(&final_str).unwrap_or(loadout);
+    let final_value: Value = serde_json::from_str(&final_str).unwrap_or(build_data);
 
     (
         final_value,

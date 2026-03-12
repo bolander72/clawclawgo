@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   title: 'RipperClaw',
-  description: 'Build, share, and remix AI agent loadouts',
+  description: 'Build, share, and remix AI agent builds',
   base: '/docs/',
   head: [
     ['link', { rel: 'icon', href: '/docs/favicon.svg' }],
@@ -15,7 +15,7 @@ export default defineConfig({
     logo: '/logo.svg',
     nav: [
       { text: 'Guide', link: '/guide/what-is-ripperclaw' },
-      { text: 'Loadouts', link: '/loadouts/overview' },
+      { text: 'Builds', link: '/builds/overview' },
       { text: 'Reference', link: '/reference/schema' },
       { text: 'App', link: 'https://ripperclaw.com' },
     ],
@@ -32,7 +32,7 @@ export default defineConfig({
         {
           text: 'Core Concepts',
           items: [
-            { text: 'Slots', link: '/guide/slots' },
+            { text: 'Blocks', link: '/guide/blocks' },
             { text: 'Exporting', link: '/guide/exporting' },
             { text: 'Applying', link: '/guide/applying' },
             { text: 'Publishing', link: '/guide/publishing' },
@@ -41,14 +41,14 @@ export default defineConfig({
           ],
         },
       ],
-      '/loadouts/': [
+      '/builds/': [
         {
-          text: 'Loadouts',
+          text: 'Builds',
           items: [
-            { text: 'Overview', link: '/loadouts/overview' },
-            { text: 'Creating', link: '/loadouts/creating' },
-            { text: 'Sharing', link: '/loadouts/sharing' },
-            { text: 'Browsing', link: '/loadouts/browsing' },
+            { text: 'Overview', link: '/builds/overview' },
+            { text: 'Creating', link: '/builds/creating' },
+            { text: 'Sharing', link: '/builds/sharing' },
+            { text: 'Browsing', link: '/builds/browsing' },
           ],
         },
       ],
@@ -56,7 +56,7 @@ export default defineConfig({
         {
           text: 'Reference',
           items: [
-            { text: 'Loadout Schema', link: '/reference/schema' },
+            { text: 'Build Schema', link: '/reference/schema' },
             { text: 'CLI', link: '/reference/cli' },
             { text: 'Nostr Protocol', link: '/reference/nostr' },
           ],

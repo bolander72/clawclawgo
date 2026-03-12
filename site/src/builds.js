@@ -1,7 +1,7 @@
-// Sample loadouts for the conveyor belt showcase
+// Sample builds for the conveyor belt showcase
 // In production these would come from an API as agents are shared/published
 
-export const loadouts = [
+export const builds = [
   {
     id: 'quinn-personal',
     name: 'Personal Assistant',
@@ -9,7 +9,7 @@ export const loadouts = [
     creator: '@Bolander72',
     createdAt: '2026-03-11',
     isNew: true,
-    slots: [
+    blocks: [
       {
         name: 'Model',
         items: [
@@ -72,7 +72,7 @@ export const loadouts = [
     creator: '@synthwave_dev',
     createdAt: '2026-03-10',
     isNew: true,
-    slots: [
+    blocks: [
       {
         name: 'Model',
         items: [
@@ -130,7 +130,7 @@ export const loadouts = [
     creator: '@homelab_nick',
     createdAt: '2026-03-08',
     isNew: false,
-    slots: [
+    blocks: [
       {
         name: 'Model',
         items: [
@@ -187,7 +187,7 @@ export const loadouts = [
     creator: '@deep_research',
     createdAt: '2026-03-06',
     isNew: false,
-    slots: [
+    blocks: [
       {
         name: 'Model',
         items: [
@@ -245,7 +245,7 @@ export const loadouts = [
     creator: '@growthcraft',
     createdAt: '2026-03-05',
     isNew: false,
-    slots: [
+    blocks: [
       {
         name: 'Model',
         items: [
@@ -301,7 +301,7 @@ export const loadouts = [
     creator: '@money_moves',
     createdAt: '2026-02-28',
     isNew: false,
-    slots: [
+    blocks: [
       {
         name: 'Model',
         items: [
@@ -357,7 +357,7 @@ export const loadouts = [
     creator: '@pm_sarah',
     createdAt: '2026-03-09',
     isNew: true,
-    slots: [
+    blocks: [
       {
         name: 'Model',
         items: [
@@ -414,7 +414,7 @@ export const loadouts = [
     creator: '@creative_ops',
     createdAt: '2026-03-07',
     isNew: false,
-    slots: [
+    blocks: [
       {
         name: 'Model',
         items: [

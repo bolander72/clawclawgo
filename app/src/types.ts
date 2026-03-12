@@ -5,7 +5,7 @@ export interface SubComponent {
   icon?: string;
 }
 
-export interface SlotData {
+export interface BlockData {
   id: string;
   label: string;
   icon: string;
@@ -16,7 +16,7 @@ export interface SlotData {
   subComponents: SubComponent[];
 }
 
-export interface Loadout {
+export interface Build {
   schema: number;
   meta: {
     name: string;
@@ -27,7 +27,7 @@ export interface Loadout {
     tags?: string[];
     description?: string;
   };
-  slots: Record<string, {
+  blocks: Record<string, {
     label: string;
     status: string;
     component: string;
@@ -45,8 +45,8 @@ export interface Mod {
   description?: string;
 }
 
-export interface SlotDiff {
-  slotId: string;
+export interface BlockDiff {
+  blockId: string;
   label: string;
   yours: {
     component: string;
@@ -61,12 +61,12 @@ export interface SlotDiff {
   differences: { field: string; yours: unknown; theirs: unknown }[];
 }
 
-export interface LoadoutComparison {
+export interface BuildComparison {
   meta: {
     yourName: string;
     theirName: string;
   };
-  slotDiffs: SlotDiff[];
+  blockDiffs: BlockDiff[];
   modsOnlyYours: string[];
   modsOnlyTheirs: string[];
   modVersionDiffs: { name: string; yours?: string; theirs?: string }[];

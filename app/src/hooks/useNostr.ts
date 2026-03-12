@@ -28,7 +28,7 @@ export interface PublishResult {
   relays_failed: number;
 }
 
-export interface FeedLoadout {
+export interface FeedBuild {
   id: string;
   name: string;
   author: string;
@@ -40,7 +40,7 @@ export interface FeedLoadout {
   fork_of: string | null;
   fork_author: string | null;
   publish_type: string;
-  slot_type: string | null;
+  block_type: string | null;
 }
 
 export interface RelayInfo {
@@ -122,7 +122,7 @@ export function useNostrProfile() {
 }
 
 export function useNostrFeed() {
-  const [feed, setFeed] = useState<FeedLoadout[]>([]);
+  const [feed, setFeed] = useState<FeedBuild[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -130,7 +130,7 @@ export function useNostrFeed() {
     setLoading(true);
     setError(null);
     try {
-      const items = await invoke<FeedLoadout[]>('nostr_fetch_feed', { limit, relayUrls });
+      const items = await invoke<FeedBuild[]>('nostr_fetch_feed', { limit, relayUrls });
       setFeed(items);
     } catch (err) {
       const msg = String(err);
@@ -148,24 +148,24 @@ export function useNostrPublish() {
   const [publishing, setPublishing] = useState(false);
 
   const publish = async (
-    loadoutJson: string,
-    loadoutName: string,
+    buildJson: string,
+    buildName: string,
     tags: string[],
     forkOf?: string,
     forkAuthor?: string,
     publishType?: string,
-    slotType?: string,
+    blockType?: string,
   ) => {
     setPublishing(true);
     try {
-      const result = await invoke<PublishResult>('nostr_publish_loadout', {
-        loadoutJson,
-        loadoutName,
+      const result = await invoke<PublishResult>('nostr_publish_build', {
+        buildJson,
+        buildName,
         tags,
         forkOf: forkOf || null,
         forkAuthor: forkAuthor || null,
-        publishType: publishType || 'loadout',
-        slotType: slotType || null,
+        publishType: publishType || 'build',
+        blockType: blockType || null,
       });
       return result;
     } catch (err) {
@@ -194,7 +194,7 @@ export function useSafeExport() {
   ): Promise<[unknown, ScrubReport]> => {
     setExporting(true);
     try {
-      const result = await invoke<[unknown, ScrubReport]>('export_loadout_safe', {
+      const result = await invoke<[unknown, ScrubReport]>('export_build_safe', {
         template: template || null,
         description: description || null,
         tags: tags || null,

@@ -6,7 +6,7 @@ The RipperClaw CLI is a standalone Node.js script at `cli/ripperclaw.mjs`.
 
 ### `export`
 
-Export the current agent's configuration as a loadout JSON document.
+Export the current agent's configuration as a build JSON document.
 
 ```bash
 node ripperclaw.mjs export
@@ -15,7 +15,7 @@ node ripperclaw.mjs export
 Outputs to stdout. Pipe to a file to save:
 
 ```bash
-node ripperclaw.mjs export > my-loadout.json
+node ripperclaw.mjs export > my-build.json
 ```
 
 **What it captures:**
@@ -28,10 +28,10 @@ node ripperclaw.mjs export > my-loadout.json
 
 ### `apply`
 
-Apply a loadout file to create a new agent.
+Apply a build file to create a new agent.
 
 ```bash
-node ripperclaw.mjs apply <loadout.json> --agent <agent-id> [options]
+node ripperclaw.mjs apply <build.json> --agent <agent-id> [options]
 ```
 
 **Options:**
@@ -40,19 +40,19 @@ node ripperclaw.mjs apply <loadout.json> --agent <agent-id> [options]
 |------|-------------|
 | `--agent <id>` | Agent ID (required, lowercase alphanumeric + hyphens) |
 | `--dry-run` | Preview actions without making changes |
-| `--use-my-models` | Remap loadout model tiers to your existing config |
+| `--use-my-models` | Remap build model tiers to your existing config |
 
 **Example:**
 
 ```bash
 # Preview
-node ripperclaw.mjs apply quinn-loadout.json --agent test-bot --dry-run
+node ripperclaw.mjs apply quinn-build.json --agent test-bot --dry-run
 
 # Apply
-node ripperclaw.mjs apply quinn-loadout.json --agent test-bot
+node ripperclaw.mjs apply quinn-build.json --agent test-bot
 
 # Apply with your own models
-node ripperclaw.mjs apply quinn-loadout.json --agent test-bot --use-my-models
+node ripperclaw.mjs apply quinn-build.json --agent test-bot --use-my-models
 ```
 
 **Safety:**

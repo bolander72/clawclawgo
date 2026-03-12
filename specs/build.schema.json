@@ -1,10 +1,10 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://ripperclaw.com/schemas/loadout-v2.json",
-  "title": "Ripperclaw Loadout v2",
-  "description": "Canonical format for OpenClaw agent loadouts: export, share, and apply.",
+  "$id": "https://ripperclaw.com/schemas/build-v2.json",
+  "title": "Ripperclaw Build v2",
+  "description": "Canonical format for OpenClaw agent builds: export, share, and apply.",
   "type": "object",
-  "required": ["schema", "meta", "slots"],
+  "required": ["schema", "meta", "blocks"],
   "properties": {
     "schema": {
       "const": 2,
@@ -16,7 +16,7 @@
       "properties": {
         "name": {
           "type": "string",
-          "description": "Display name for this loadout"
+          "description": "Display name for this build"
         },
         "agentName": {
           "type": "string",
@@ -33,7 +33,7 @@
         "version": {
           "type": "integer",
           "minimum": 1,
-          "description": "Loadout revision number, bumps on re-export"
+          "description": "Build revision number, bumps on re-export"
         },
         "exportedAt": {
           "type": "string",
@@ -51,19 +51,19 @@
         }
       }
     },
-    "slots": {
+    "blocks": {
       "type": "object",
       "properties": {
         "model": { "$ref": "#/definitions/modelSlot" },
-        "persona": { "$ref": "#/definitions/personaSlot" },
-        "skills": { "$ref": "#/definitions/skillsSlot" },
-        "integrations": { "$ref": "#/definitions/integrationsSlot" },
-        "automations": { "$ref": "#/definitions/automationsSlot" },
-        "memory": { "$ref": "#/definitions/memorySlot" }
+        "persona": { "$ref": "#/definitions/personaBlock" },
+        "skills": { "$ref": "#/definitions/skillsBlock" },
+        "integrations": { "$ref": "#/definitions/integrationsBlock" },
+        "automations": { "$ref": "#/definitions/automationsBlock" },
+        "memory": { "$ref": "#/definitions/memoryBlock" }
       },
       "additionalProperties": {
         "type": "object",
-        "description": "Custom slot types beyond the six defaults. Any string key is valid.",
+        "description": "Custom block types beyond the six defaults. Any string key is valid.",
         "properties": {
           "label": { "type": "string" },
           "status": { "type": "string" },
@@ -130,7 +130,7 @@
         }
       }
     },
-    "personaSlot": {
+    "personaBlock": {
       "type": "object",
       "properties": {
         "identity": {
@@ -161,7 +161,7 @@
           "properties": {
             "included": {
               "const": false,
-              "description": "USER.md is never included in shared loadouts"
+              "description": "USER.md is never included in shared builds"
             },
             "note": { "type": "string" }
           }
@@ -207,7 +207,7 @@
         }
       }
     },
-    "skillsSlot": {
+    "skillsBlock": {
       "type": "object",
       "required": ["items"],
       "properties": {
@@ -245,7 +245,7 @@
         }
       }
     },
-    "integrationsSlot": {
+    "integrationsBlock": {
       "type": "object",
       "required": ["items"],
       "properties": {
@@ -285,7 +285,7 @@
         }
       }
     },
-    "automationsSlot": {
+    "automationsBlock": {
       "type": "object",
       "properties": {
         "heartbeat": {
@@ -319,7 +319,7 @@
         }
       }
     },
-    "memorySlot": {
+    "memoryBlock": {
       "type": "object",
       "properties": {
         "structure": {

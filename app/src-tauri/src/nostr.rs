@@ -4,7 +4,7 @@ use std::borrow::Cow;
 use std::fs;
 use std::path::PathBuf;
 
-/// RipperClaw loadout event kind (NIP-33 parameterized replaceable)
+/// RipperClaw build_cfg event kind (NIP-33 parameterized replaceable)
 const LOADOUT_KIND: u16 = 38333;
 
 /// Default relays
@@ -228,14 +228,14 @@ pub struct PublishResult {
 }
 
 #[tauri::command]
-pub async fn nostr_publish_loadout(
-    loadout_json: String,
-    loadout_name: String,
+pub async fn nostr_publish_build_cfg(
+    build_json: String,
+    build_name: String,
     tags: Vec<String>,
     #[allow(unused_variables)] fork_of: Option<String>,
     #[allow(unused_variables)] fork_author: Option<String>,
     publish_type: Option<String>,
-    slot_type: Option<String>,
+    block_type: Option<String>,
 ) -> Result<PublishResult, String> {
     let keys = load_keys().ok_or("No keys found. Generate or import keys first.")?;
     let client = Client::new(keys);
@@ -247,8 +247,8 @@ pub async fn nostr_publish_loadout(
 
     // Build event
     let kind = Kind::from(LOADOUT_KIND);
-    let mut builder = EventBuilder::new(kind, &loadout_json)
-        .tag(Tag::identifier(&loadout_name));
+    let mut builder = EventBuilder::new(kind, &build_json)
+        .tag(Tag::identifier(&build_name));
 
     for t in &tags {
         builder = builder.tag(Tag::hashtag(t));
@@ -259,8 +259,8 @@ pub async fn nostr_publish_loadout(
         vec!["0.1.0"],
     ));
 
-    // Publish type: "loadout" (full, default) or "slot" (single slot)
-    let ptype = publish_type.as_deref().unwrap_or("loadout");
+    // Publish type: "build" (full, default) or "slot" (single slot)
+    let ptype = publish_type.as_deref().unwrap_or("build");
     builder = builder.tag(Tag::custom(
         TagKind::Custom(Cow::Borrowed("publish_type")),
         vec![ptype],
@@ -268,9 +268,9 @@ pub async fn nostr_publish_loadout(
 
     // If slot publish, tag which slot (model, persona, skills, integrations, automations, memory)
     if ptype == "slot" {
-        if let Some(ref st) = slot_type {
+        if let Some(ref st) = block_type {
             builder = builder.tag(Tag::custom(
-                TagKind::Custom(Cow::Borrowed("slot_type")),
+                TagKind::Custom(Cow::Borrowed("block_type")),
                 vec![st.as_str()],
             ));
         }
@@ -309,7 +309,7 @@ pub async fn nostr_publish_loadout(
 // ─── Subscribing / Feed ───
 
 #[derive(Serialize, Clone)]
-pub struct FeedLoadout {
+pub struct FeedBuild {
     pub id: String,
     pub name: String,
     pub author: String,
@@ -321,14 +321,14 @@ pub struct FeedLoadout {
     pub fork_of: Option<String>,
     pub fork_author: Option<String>,
     pub publish_type: String,
-    pub slot_type: Option<String>,
+    pub block_type: Option<String>,
 }
 
 #[tauri::command]
 pub async fn nostr_fetch_feed(
     limit: Option<usize>,
     relay_urls: Option<Vec<String>>,
-) -> Result<Vec<FeedLoadout>, String> {
+) -> Result<Vec<FeedBuild>, String> {
     let keys = load_keys().unwrap_or_else(Keys::generate);
     let client = Client::new(keys);
 
@@ -354,7 +354,7 @@ pub async fn nostr_fetch_feed(
 
     let template_names = ["homelab", "ops", "researcher", "smart-home", "creator"];
 
-    let mut feed: Vec<FeedLoadout> = Vec::new();
+    let mut feed: Vec<FeedBuild> = Vec::new();
 
     for event in events.iter() {
         let name = event
@@ -406,21 +406,21 @@ pub async fn nostr_fetch_feed(
             None
         };
 
-        // Extract publish_type and slot_type from custom tags
+        // Extract publish_type and block_type from custom tags
         let publish_type = event
             .tags
             .iter()
             .find(|t| t.as_slice().first().map(|s| s.as_str()) == Some("publish_type"))
             .and_then(|t| t.as_slice().get(1).map(|s| s.to_string()))
-            .unwrap_or_else(|| "loadout".to_string());
+            .unwrap_or_else(|| "build".to_string());
 
-        let slot_type = event
+        let block_type = event
             .tags
             .iter()
-            .find(|t| t.as_slice().first().map(|s| s.as_str()) == Some("slot_type"))
+            .find(|t| t.as_slice().first().map(|s| s.as_str()) == Some("block_type"))
             .and_then(|t| t.as_slice().get(1).map(|s| s.to_string()));
 
-        feed.push(FeedLoadout {
+        feed.push(FeedBuild {
             id: event.id.to_hex(),
             name,
             author: npub_short(&author_npub),
@@ -432,7 +432,7 @@ pub async fn nostr_fetch_feed(
             fork_of,
             fork_author,
             publish_type,
-            slot_type,
+            block_type,
         });
     }
 

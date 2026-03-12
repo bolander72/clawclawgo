@@ -1,6 +1,6 @@
-# Loadout Schema
+# Build Schema
 
-The loadout format is a JSON document with three top-level sections.
+The build format is a JSON document with three top-level sections.
 
 ## Structure
 
@@ -8,7 +8,7 @@ The loadout format is a JSON document with three top-level sections.
 {
   "schema": 1,
   "meta": { ... },
-  "slots": { ... },
+  "blocks": { ... },
   "mods": [ ... ]
 }
 ```
@@ -28,16 +28,16 @@ The loadout format is a JSON document with three top-level sections.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `name` | string | yes | Human-readable loadout name |
+| `name` | string | yes | Human-readable build name |
 | `author` | string | no | Author identifier |
-| `version` | number | no | Loadout version (bump on significant changes) |
+| `version` | number | no | Build version (bump on significant changes) |
 | `exportedAt` | string | yes | ISO 8601 timestamp |
 | `description` | string | no | Short description |
 | `tags` | string[] | no | Categorization tags |
 
-## Slots
+## Blocks
 
-All 6 slots have typed structures. Here's the complete schema for each.
+All 6 blocks have typed structures. Here's the complete schema for each.
 
 ### `model`
 
@@ -234,8 +234,8 @@ The `mods` array is a flat list of skills for backward compatibility with schema
 }
 ```
 
-New exports use `slots.skills.items` instead.
+New exports use `blocks.skills.items` instead.
 
 ## Validation
 
-The formal JSON Schema is at [`specs/loadout-v2.schema.json`](https://github.com/bolander72/ripperclaw/blob/main/specs/loadout-v2.schema.json) in the repo.
+The formal JSON Schema is at [`specs/build-v2.schema.json`](https://github.com/bolander72/ripperclaw/blob/main/specs/build-v2.schema.json) in the repo.

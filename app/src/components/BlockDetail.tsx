@@ -1,7 +1,7 @@
-import type { SlotData } from '../types';
+import type { BlockData } from '../types';
 
 interface Props {
-  slot: SlotData;
+  block: BlockData;
 }
 
 const statusColor: Record<string, string> = {
@@ -14,8 +14,8 @@ const statusColor: Record<string, string> = {
   minimal: 'var(--rc-yellow)',
 };
 
-export function SlotDetail({ slot }: Props) {
-  const subs = slot.subComponents || [];
+export function BlockDetail({ block }: Props) {
+  const subs = block.subComponents || [];
 
   return (
     <div
@@ -29,19 +29,19 @@ export function SlotDetail({ slot }: Props) {
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
         <span className="text-3xl" style={{ color: 'var(--rc-cyan)' }}>
-          {slot.icon}
+          {block.icon}
         </span>
         <div>
           <h2
             className="text-xl font-bold uppercase tracking-wider"
             style={{ color: 'var(--rc-text)' }}
           >
-            {slot.label}
+            {block.label}
           </h2>
           <p className="text-sm" style={{ color: 'var(--rc-cyan)' }}>
-            {slot.component}
-            {slot.version && (
-              <span style={{ color: 'var(--rc-text-dim)' }}> v{slot.version}</span>
+            {block.component}
+            {block.version && (
+              <span style={{ color: 'var(--rc-text-dim)' }}> v{block.version}</span>
             )}
           </p>
         </div>
@@ -92,7 +92,7 @@ export function SlotDetail({ slot }: Props) {
         >
           Raw Data
         </h3>
-        {Object.entries(slot.details)
+        {Object.entries(block.details)
           .filter(([, v]) => v !== null && v !== undefined)
           .map(([key, value]) => (
           <div

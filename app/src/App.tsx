@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Header } from './components/Header';
-import { SlotCard } from './components/SlotCard';
-import { SlotDetail } from './components/SlotDetail';
+import { BlockCard } from './components/BlockCard';
+import { BlockDetail } from './components/BlockDetail';
 import { ModList } from './components/ModList';
 import { CompareView } from './components/CompareView';
 import { FeedView } from './components/FeedView';
-import { LoadoutsView } from './components/LoadoutsView';
+import { BuildsView } from './components/BuildsView';
 import { PublishDialog } from './components/PublishDialog';
 import { ApplyWizard } from './components/ApplyWizard';
 import { SettingsView } from './components/SettingsView';
-import { useSlots, useSkills, useSystemStatus, useCloneLoadout, useAgents } from './hooks/useTauri';
-import { slots as mockSlots, mods as mockMods } from './data/mockLoadout';
+import { useBlocks, useSkills, useSystemStatus, useCloneBuild, useAgents } from './hooks/useTauri';
+import { blocks as mockBlocks, mods as mockMods } from './data/mockBuild';
 
-type View = 'loadout' | 'mods' | 'loadouts' | 'compare' | 'feed' | 'settings';
+type View = 'build' | 'mods' | 'builds' | 'compare' | 'feed' | 'settings';
 
 function CloneToast({ result }: { result: { message: string; type: 'success' | 'error' } | null }) {
   if (!result) return null;
@@ -30,17 +30,17 @@ function CloneToast({ result }: { result: { message: string; type: 'success' | '
 }
 
 function App() {
-  const [selectedSlot, setSelectedSlot] = useState('soul');
-  const [view, setView] = useState<View>('loadout');
+  const [selectedBlock, setSelectedBlock] = useState('soul');
+  const [view, setView] = useState<View>('build');
   const [showPublish, setShowPublish] = useState(false);
   const [compareTarget, setCompareTarget] = useState<Record<string, unknown> | null>(null);
   const [cloneResult, setCloneResult] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [activeAgent, setActiveAgent] = useState<string | undefined>(undefined);
   const [applyTarget, setApplyTarget] = useState<Record<string, unknown> | null>(null);
-  const { cloneLoadout } = useCloneLoadout();
+  const { cloneBuild } = useCloneBuild();
 
   const { data: agents } = useAgents();
-  const { data: realSlots, loading: slotsLoading, error: slotsError } = useSlots(activeAgent);
+  const { data: realBlocks, loading: blocksLoading, error: blocksError } = useBlocks(activeAgent);
   const { data: realMods, loading: modsLoading } = useSkills();
   const { data: status } = useSystemStatus();
 
@@ -52,23 +52,23 @@ function App() {
     }
   }, [agents]);
 
-  const slots = realSlots.length > 0 ? realSlots : mockSlots;
+  const blocks = realBlocks.length > 0 ? realBlocks : mockBlocks;
   const mods = realMods.length > 0 ? realMods : mockMods;
 
-  const activeSlot = slots.find((s) => s.id === selectedSlot) ?? slots[0];
+  const activeBlock = blocks.find((s) => s.id === selectedBlock) ?? blocks[0];
 
   useEffect(() => {
-    if (slots.length > 0 && !slots.find((s) => s.id === selectedSlot)) {
-      setSelectedSlot(slots[0].id);
+    if (blocks.length > 0 && !blocks.find((s) => s.id === selectedBlock)) {
+      setSelectedBlock(blocks[0].id);
     }
-  }, [slots]);
+  }, [blocks]);
 
-  const dataSource = slotsError ? 'mock' : 'live';
+  const dataSource = blocksError ? 'mock' : 'live';
 
   const navItems: { id: View; icon: string; label: string }[] = [
-    { id: 'loadout', icon: '⬡', label: 'Active Loadout' },
+    { id: 'build', icon: '⬡', label: 'Active Build' },
     { id: 'mods', icon: '◆', label: 'Mods' },
-    { id: 'loadouts', icon: '▤', label: 'Loadouts' },
+    { id: 'builds', icon: '▤', label: 'Builds' },
     { id: 'compare', icon: '⊕', label: 'Compare' },
     { id: 'feed', icon: '◎', label: 'The Feed' },
     { id: 'settings', icon: '⚙', label: 'Settings' },
@@ -132,7 +132,7 @@ function App() {
               color: 'var(--rc-cyan)',
               border: '1px solid var(--rc-cyan-dim)',
             }}
-            title="Publish Loadout"
+            title="Publish Build"
           >
             ▲
           </button>
@@ -140,26 +140,26 @@ function App() {
 
         {/* Main content */}
         <main className="flex-1 flex overflow-hidden">
-          {view === 'loadout' && (
+          {view === 'build' && (
             <>
-              {/* Slot grid */}
+              {/* Block grid */}
               <div className="w-[340px] p-4 overflow-y-auto border-r" style={{ borderColor: 'var(--rc-border)' }}>
                 <h3
                   className="text-xs font-semibold uppercase tracking-widest mb-4 px-1"
                   style={{ color: 'var(--rc-text-muted)' }}
                 >
-                  Slots
-                  {slotsLoading && (
+                  Blocks
+                  {blocksLoading && (
                     <span className="ml-2 animate-pulse" style={{ color: 'var(--rc-cyan)' }}>●</span>
                   )}
                 </h3>
                 <div className="space-y-2">
-                  {slots.map((slot) => (
-                    <SlotCard
-                      key={slot.id}
-                      slot={slot}
-                      selected={selectedSlot === slot.id}
-                      onClick={() => setSelectedSlot(slot.id)}
+                  {blocks.map((block) => (
+                    <BlockCard
+                      key={block.id}
+                      block={block}
+                      selected={selectedBlock === block.id}
+                      onClick={() => setSelectedBlock(block.id)}
                     />
                   ))}
                 </div>
@@ -167,7 +167,7 @@ function App() {
 
               {/* Detail panel */}
               <div className="flex-1 p-4 overflow-y-auto">
-                <SlotDetail slot={activeSlot} />
+                <BlockDetail block={activeBlock} />
               </div>
             </>
           )}
@@ -192,32 +192,32 @@ function App() {
             </div>
           )}
 
-          {view === 'loadouts' && (
-            <LoadoutsView
-              onCompare={(loadout) => {
-                setCompareTarget(loadout as Record<string, unknown>);
+          {view === 'builds' && (
+            <BuildsView
+              onCompare={(build) => {
+                setCompareTarget(build as Record<string, unknown>);
                 setView('compare');
               }}
-              onApply={(loadout) => {
-                setApplyTarget(loadout as Record<string, unknown>);
+              onApply={(build) => {
+                setApplyTarget(build as Record<string, unknown>);
               }}
             />
           )}
 
           {view === 'compare' && (
             <CompareView
-              currentSlots={slots}
+              currentBlocks={blocks}
               currentMods={mods}
               currentName="Quinn"
-              initialLoadout={compareTarget}
+              initialBuild={compareTarget}
               onClear={() => setCompareTarget(null)}
-              onClone={async (loadout, mode) => {
-                const json = JSON.stringify(loadout);
-                const res = await cloneLoadout(json, mode, activeAgent);
+              onClone={async (build, mode) => {
+                const json = JSON.stringify(build);
+                const res = await cloneBuild(json, mode, activeAgent);
                 if (res) {
                   const msg = mode === 'new'
-                    ? `Saved as loadout: ${res.slot_changes[0] || 'done'}`
-                    : `Applied to ${activeAgent || 'agent'}. ${res.applied_skills.length} skills, ${res.skipped_skills.length} skipped. ${res.slot_changes.length} changes.`;
+                    ? `Saved as build: ${res.block_changes[0] || 'done'}`
+                    : `Applied to ${activeAgent || 'agent'}. ${res.applied_skills.length} skills, ${res.skipped_skills.length} skipped. ${res.block_changes.length} changes.`;
                   setCloneResult({ message: msg, type: 'success' });
                   setTimeout(() => setCloneResult(null), 6000);
                 } else {
@@ -230,8 +230,8 @@ function App() {
 
           {view === 'feed' && (
             <FeedView
-              onCompare={(loadout) => {
-                setCompareTarget(loadout as Record<string, unknown>);
+              onCompare={(build) => {
+                setCompareTarget(build as Record<string, unknown>);
                 setView('compare');
               }}
             />
@@ -260,7 +260,7 @@ function App() {
             <span style={{ color: 'var(--rc-green)' }}> · GW ✓</span>
           )}
         </span>
-        <span>LOADOUT: QUINN · {slots.length} SLOTS · {mods.length} MODS</span>
+        <span>LOADOUT: QUINN · {blocks.length} SLOTS · {mods.length} MODS</span>
       </footer>
 
       {/* Clone result toast */}
@@ -272,7 +272,7 @@ function App() {
       {/* Apply wizard */}
       {applyTarget != null ? (
         <ApplyWizard
-          loadout={applyTarget as any}
+          build={applyTarget as any}
           agents={agents}
           onClose={() => setApplyTarget(null)}
           onComplete={() => {

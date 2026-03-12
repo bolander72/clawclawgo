@@ -1,11 +1,11 @@
 # Publishing to Nostr
 
-Share your loadout with the community by publishing it to the decentralized [Nostr](https://nostr.com) network.
+Share your build with the community by publishing it to the decentralized [Nostr](https://nostr.com) network.
 
 ## Why Nostr?
 
 - **No accounts**: your identity is a cryptographic key pair
-- **No platform lock-in**: loadouts are stored across multiple relays
+- **No platform lock-in**: builds are stored across multiple relays
 - **No moderation bottleneck**: anyone can publish, anyone can relay
 - **Censorship resistant**: no single point of failure
 
@@ -16,18 +16,18 @@ The first time you publish, RipperClaw generates a Nostr key pair:
 1. Click **Publish** (▲ button in the sidebar)
 2. An identity screen shows your generated `npub` (public key)
 3. Optionally import an existing key if you already use Nostr
-4. Continue to configure your loadout for publishing
+4. Continue to configure your build for publishing
 
 Keys are stored locally at `~/.ripperclaw/keys.json` with restricted permissions (0600).
 
 ## Publishing Flow
 
 1. Click the **▲ Publish** button
-2. Name your loadout and add tags
+2. Name your build and add tags
 3. Review the safe export (PII scrubbed)
-4. Publish: the loadout is sent to your configured relays
+4. Publish: the build is sent to your configured relays
 
-Published loadouts use **NIP-33** (parameterized replaceable events) with kind `38333`. This means publishing again with the same name updates the existing event rather than creating a duplicate.
+Published builds use **NIP-33** (parameterized replaceable events) with kind `38333`. This means publishing again with the same name updates the existing event rather than creating a duplicate.
 
 ### PII Scrubbing
 
@@ -70,7 +70,7 @@ Optionally set your profile (NIP-01 kind 0):
 - Website
 - NIP-05 verification
 
-This info is published to relays and shown alongside your loadouts.
+This info is published to relays and shown alongside your builds.
 
 ## Relay Configuration
 
@@ -87,9 +87,9 @@ Add or remove relays in **Settings → Relays**. Custom relays are saved to `~/.
 ```json
 {
   "kind": 38333,
-  "content": "<loadout JSON>",
+  "content": "<build JSON>",
   "tags": [
-    ["d", "<loadout-name>"],
+    ["d", "<build-name>"],
     ["t", "<tag1>"],
     ["t", "<tag2>"],
     ["ripperclaw", "0.1.0"]

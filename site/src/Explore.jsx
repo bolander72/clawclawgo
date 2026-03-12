@@ -15,7 +15,7 @@ const RELAYS = [
   'wss://relay.nostr.band',
 ]
 
-const slotColors = {
+const blockColors = {
   Model: 'from-purple-500/40 to-blue-500/40',
   model: 'from-purple-500/40 to-blue-500/40',
   Persona: 'from-cyan-500/40 to-emerald-500/40',
@@ -30,7 +30,7 @@ const slotColors = {
   memory: 'from-amber-500/40 to-orange-500/40',
 }
 
-const slotIcons = {
+const blockIcons = {
   Model: IconCube,
   model: IconCube,
   Persona: IconSparkles,
@@ -46,8 +46,8 @@ const slotIcons = {
 }
 
 // Fallback for custom/unknown slot types
-const defaultSlotColor = 'from-white/10 to-white/20'
-const DefaultSlotIcon = IconCube
+const defaultBlockColor = 'from-white/10 to-white/20'
+const DefaultBlockIcon = IconCube
 
 // ─── Helpers ───────────────────────────────────────────────
 
@@ -61,7 +61,7 @@ function formatDate(timestamp) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-function parseLoadoutEvent(event) {
+function parseBuildEvent(event) {
   try {
     const content = JSON.parse(event.content)
     const dTag = event.tags.find(t => t[0] === 'd')?.[1] || 'Unnamed'
@@ -70,7 +70,7 @@ function parseLoadoutEvent(event) {
     const authorTag = event.tags.find(t => t[0] === 'p')
 
     const publishTypeTag = event.tags.find(t => t[0] === 'publish_type')
-    const slotTypeTag = event.tags.find(t => t[0] === 'slot_type')
+    const blockTypeTag = event.tags.find(t => t[0] === 'block_type')
 
     return {
       id: event.id,
@@ -80,26 +80,26 @@ function parseLoadoutEvent(event) {
       createdAt: event.created_at,
       isNew: (Date.now() / 1000 - event.created_at) < 7 * 24 * 60 * 60, // 7 days
       tags: tTags,
-      slots: content.slots || (content.slot ? { [slotTypeTag?.[1] || 'unknown']: content.slot } : []),
+      slots: content.slots || (content.slot ? { [blockTypeTag?.[1] || 'unknown']: content.slot } : []),
       fork: forkTag ? {
         eventId: forkTag[1],
         relay: forkTag[2],
       } : null,
       originalAuthor: authorTag ? nip19.npubEncode(authorTag[1]).slice(0, 12) + '...' : null,
       remixCount: 0,
-      publishType: publishTypeTag?.[1] || 'loadout',
-      slotType: slotTypeTag?.[1] || null,
+      publishType: publishTypeTag?.[1] || 'build',
+      blockType: blockTypeTag?.[1] || null,
     }
   } catch (e) {
-    console.error('Failed to parse loadout event:', e)
+    console.error('Failed to parse build event:', e)
     return null
   }
 }
 
-// ─── Loadout Card ──────────────────────────────────────────
+// ─── Build Card ──────────────────────────────────────────
 
-function LoadoutCard({ loadout, index, onClick, dropped }) {
-  const totalItems = loadout.slots.reduce((sum, s) => sum + s.items?.length || 0, 0)
+function BuildCard({ build, index, onClick, dropped }) {
+  const totalItems = build.slots.reduce((sum, s) => sum + s.items?.length || 0, 0)
 
   return (
     <motion.div
@@ -118,20 +118,20 @@ function LoadoutCard({ loadout, index, onClick, dropped }) {
       <div className="bg-rc-surface rounded-2xl border border-rc-border group-hover:border-rc-cyan/40 transition-all duration-300 overflow-hidden">
         {/* NEW badge + Fork badge */}
         <div className="absolute top-3 left-3 z-10 flex flex-col gap-2">
-          {loadout.isNew && (
+          {build.isNew && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rc-cyan/15 border border-rc-cyan/30">
               <span className="w-1.5 h-1.5 rounded-full bg-rc-cyan animate-pulse" />
               <span className="text-[10px] font-mono font-bold text-rc-cyan tracking-wider">NEW</span>
-              <span className="text-[10px] font-mono text-rc-cyan/60">{formatDate(loadout.createdAt)}</span>
+              <span className="text-[10px] font-mono text-rc-cyan/60">{formatDate(build.createdAt)}</span>
             </div>
           )}
-          {loadout.publishType === 'slot' && loadout.slotType && (
+          {build.publishType === 'block' && build.blockType && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rc-cyan/15 border border-rc-cyan/30">
               <span className="text-[10px]">🧩</span>
-              <span className="text-[10px] font-mono font-bold text-rc-cyan tracking-wider uppercase">{loadout.slotType}</span>
+              <span className="text-[10px] font-mono font-bold text-rc-cyan tracking-wider uppercase">{build.blockType}</span>
             </div>
           )}
-          {loadout.fork && (
+          {build.fork && (
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rc-magenta/15 border border-rc-magenta/30">
               <IconGitFork size={12} className="text-rc-magenta" />
               <span className="text-[10px] font-mono font-bold text-rc-magenta tracking-wider">FORK</span>
@@ -142,12 +142,12 @@ function LoadoutCard({ loadout, index, onClick, dropped }) {
         {/* Mini slot grid preview */}
         <div className="p-5 pt-12">
           <div className="grid grid-cols-3 gap-2 mb-4">
-            {loadout.slots.slice(0, 6).map((slot, si) => {
-              const Icon = slotIcons[slot.name] || IconCube
+            {build.slots.slice(0, 6).map((slot, si) => {
+              const Icon = blockIcons[slot.name] || IconCube
               return (
                 <div
                   key={si}
-                  className={`aspect-square rounded-xl bg-gradient-to-br ${slotColors[slot.name] || 'from-white/10 to-white/20'} border border-white/10 flex flex-col items-center justify-center gap-1.5 p-2`}
+                  className={`aspect-square rounded-xl bg-gradient-to-br ${blockColors[slot.name] || 'from-white/10 to-white/20'} border border-white/10 flex flex-col items-center justify-center gap-1.5 p-2`}
                 >
                   <Icon size={22} stroke={1.5} className="text-rc-text" />
                   <span className="text-xs font-mono font-semibold text-rc-text-dim truncate w-full text-center">
@@ -161,15 +161,15 @@ function LoadoutCard({ loadout, index, onClick, dropped }) {
 
         {/* Card footer */}
         <div className="px-5 pb-5">
-          {/* Agent name + loadout type */}
+          {/* Agent name + build type */}
           <div className="mb-2">
             <div className="flex items-center gap-2">
               <h3 className="font-grotesk font-bold text-rc-text text-base truncate">
-                {loadout.agentName}
+                {build.agentName}
               </h3>
               <span className="text-rc-text-muted text-xs">·</span>
               <span className="text-rc-text-dim text-xs font-mono truncate">
-                {loadout.name}
+                {build.name}
               </span>
             </div>
           </div>
@@ -177,17 +177,17 @@ function LoadoutCard({ loadout, index, onClick, dropped }) {
           {/* Creator + stats */}
           <div className="flex items-center justify-between">
             <span className="text-rc-cyan/70 text-xs font-mono">
-              {loadout.creator}
+              {build.creator}
             </span>
             <span className="text-rc-text-muted text-[10px] font-mono">
-              {loadout.slots.length} slots · {totalItems} items
+              {build.slots.length} slots · {totalItems} items
             </span>
           </div>
 
           {/* Tags */}
-          {loadout.tags && loadout.tags.length > 0 && (
+          {build.tags && build.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-2">
-              {loadout.tags.slice(0, 3).map((tag, i) => (
+              {build.tags.slice(0, 3).map((tag, i) => (
                 <span
                   key={i}
                   className="px-2 py-0.5 bg-white/5 rounded-md text-[9px] font-mono text-rc-text-muted flex items-center gap-1"
@@ -207,9 +207,9 @@ function LoadoutCard({ loadout, index, onClick, dropped }) {
   )
 }
 
-// ─── Loadout Detail Modal ──────────────────────────────────
+// ─── Build Detail Modal ──────────────────────────────────
 
-function LoadoutDetail({ loadout, onClose }) {
+function BuildDetail({ build, onClose }) {
   const [expandedSlot, setExpandedSlot] = useState(null)
 
   return (
@@ -233,33 +233,33 @@ function LoadoutDetail({ loadout, onClose }) {
           <div className="flex items-start justify-between">
             <div>
               <div className="flex items-center gap-2 mb-3 flex-wrap">
-                {loadout.isNew && (
+                {build.isNew && (
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rc-cyan/15 border border-rc-cyan/30">
                     <span className="w-1.5 h-1.5 rounded-full bg-rc-cyan animate-pulse" />
                     <span className="text-[10px] font-mono font-bold text-rc-cyan tracking-wider">NEW</span>
-                    <span className="text-[10px] font-mono text-rc-cyan/60">{formatDate(loadout.createdAt)}</span>
+                    <span className="text-[10px] font-mono text-rc-cyan/60">{formatDate(build.createdAt)}</span>
                   </div>
                 )}
-                {loadout.fork && (
+                {build.fork && (
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rc-magenta/15 border border-rc-magenta/30">
                     <IconGitFork size={14} className="text-rc-magenta" />
                     <span className="text-[10px] font-mono font-bold text-rc-magenta tracking-wider">
-                      Forked from {loadout.originalAuthor || 'unknown'}
+                      Forked from {build.originalAuthor || 'unknown'}
                     </span>
                   </div>
                 )}
               </div>
               <h2 className="text-3xl font-grotesk font-bold text-rc-text mb-1">
-                {loadout.agentName}
+                {build.agentName}
               </h2>
               <p className="text-rc-text-dim text-sm">
-                <span className="text-rc-cyan/70 font-mono">{loadout.creator}</span>
+                <span className="text-rc-cyan/70 font-mono">{build.creator}</span>
                 {' · '}
-                {loadout.name}
+                {build.name}
               </p>
-              {loadout.tags && loadout.tags.length > 0 && (
+              {build.tags && build.tags.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mt-3">
-                  {loadout.tags.map((tag, i) => (
+                  {build.tags.map((tag, i) => (
                     <span
                       key={i}
                       className="px-2.5 py-1 bg-white/5 rounded-lg text-xs font-mono text-rc-text-dim flex items-center gap-1"
@@ -280,11 +280,11 @@ function LoadoutDetail({ loadout, onClose }) {
           </div>
         </div>
 
-        {/* Slots grid */}
+        {/* Blocks grid */}
         <div className="p-6 md:p-8">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {loadout.slots.map((slot, si) => {
-              const Icon = slotIcons[slot.name] || IconCube
+            {build.slots.map((slot, si) => {
+              const Icon = blockIcons[slot.name] || IconCube
               const isExpanded = expandedSlot === si
 
               return (
@@ -374,8 +374,8 @@ function LoadoutDetail({ loadout, onClose }) {
 // ─── Explore Page ──────────────────────────────────────────
 
 export default function Explore() {
-  const [loadouts, setLoadouts] = useState([])
-  const [selectedLoadout, setSelectedLoadout] = useState(null)
+  const [builds, setBuilds] = useState([])
+  const [selectedBuild, setSelectedBuild] = useState(null)
   const [isConnecting, setIsConnecting] = useState(true)
   const [sortBy, setSortBy] = useState('newest') // newest, most-remixed
   const poolRef = useRef(null)
@@ -400,13 +400,13 @@ export default function Explore() {
         if (seenIds.current.has(event.id)) return
         seenIds.current.add(event.id)
 
-        const loadout = parseLoadoutEvent(event)
-        if (loadout) {
-          setLoadouts(prev => {
+        const build = parseBuildEvent(event)
+        if (build) {
+          setBuilds(prev => {
             // Check if already exists
-            if (prev.find(l => l.id === loadout.id)) return prev
+            if (prev.find(l => l.id === build.id)) return prev
             // Add to beginning (newest first)
-            return [loadout, ...prev]
+            return [build, ...prev]
           })
         }
       },
@@ -421,8 +421,8 @@ export default function Explore() {
     }
   }, [])
 
-  // Sort loadouts
-  const sortedLoadouts = [...loadouts].sort((a, b) => {
+  // Sort builds
+  const sortedBuilds = [...builds].sort((a, b) => {
     if (sortBy === 'newest') {
       return b.createdAt - a.createdAt
     } else if (sortBy === 'most-remixed') {
@@ -460,7 +460,7 @@ export default function Explore() {
               <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-rc-surface border border-rc-border">
                 <div className={`w-2 h-2 rounded-full ${isConnecting ? 'bg-rc-yellow animate-pulse' : 'bg-rc-green'}`} />
                 <span className="text-xs font-mono text-rc-text-dim">
-                  {isConnecting ? 'Connecting...' : `${loadouts.length} loadouts`}
+                  {isConnecting ? 'Connecting...' : `${builds.length} builds`}
                 </span>
               </div>
             </div>
@@ -473,10 +473,10 @@ export default function Explore() {
         {/* Hero section */}
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-grotesk font-bold text-rc-text mb-4">
-            Community Loadouts
+            Community Builds
           </h2>
           <p className="text-rc-text-dim text-lg max-w-2xl mx-auto mb-2">
-            Real-time feed of agent loadouts from Nostr. Every loadout is a NIP-33 event (kind 38333)
+            Real-time feed of agent builds from Nostr. Every build is a NIP-33 event (kind 38333)
             published to the decentralized network.
           </p>
           <p className="text-rc-text-muted text-sm">
@@ -485,7 +485,7 @@ export default function Explore() {
         </div>
 
         {/* Loading state */}
-        {isConnecting && loadouts.length === 0 && (
+        {isConnecting && builds.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-12 h-12 border-2 border-rc-cyan/20 border-t-rc-cyan rounded-full animate-spin mb-4" />
             <p className="text-rc-text-dim text-sm font-mono">Connecting to relays...</p>
@@ -493,27 +493,27 @@ export default function Explore() {
         )}
 
         {/* Empty state */}
-        {!isConnecting && loadouts.length === 0 && (
+        {!isConnecting && builds.length === 0 && (
           <div className="flex flex-col items-center justify-center py-20">
             <div className="w-16 h-16 rounded-2xl bg-rc-surface border border-rc-border flex items-center justify-center mb-4">
               <IconUsers size={32} className="text-rc-text-muted" />
             </div>
-            <p className="text-rc-text text-lg font-grotesk font-medium mb-2">No loadouts yet</p>
+            <p className="text-rc-text text-lg font-grotesk font-medium mb-2">No builds yet</p>
             <p className="text-rc-text-dim text-sm max-w-md text-center">
-              Be the first to publish a loadout! Share your agent configuration with the community.
+              Be the first to publish a build! Share your agent configuration with the community.
             </p>
           </div>
         )}
 
-        {/* Loadouts grid */}
-        {loadouts.length > 0 && (
+        {/* Builds grid */}
+        {builds.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {sortedLoadouts.map((loadout, i) => (
-              <LoadoutCard
-                key={loadout.id}
-                loadout={loadout}
+            {sortedBuilds.map((build, i) => (
+              <BuildCard
+                key={build.id}
+                build={build}
                 index={i}
-                onClick={() => setSelectedLoadout(loadout)}
+                onClick={() => setSelectedBuild(build)}
                 dropped={true}
               />
             ))}
@@ -523,10 +523,10 @@ export default function Explore() {
 
       {/* Detail modal */}
       <AnimatePresence>
-        {selectedLoadout && (
-          <LoadoutDetail
-            loadout={selectedLoadout}
-            onClose={() => setSelectedLoadout(null)}
+        {selectedBuild && (
+          <BuildDetail
+            build={selectedBuild}
+            onClose={() => setSelectedBuild(null)}
           />
         )}
       </AnimatePresence>

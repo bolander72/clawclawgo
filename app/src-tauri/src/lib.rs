@@ -295,7 +295,7 @@ fn get_cron_jobs() -> Result<Vec<CronJob>, String> {
 // ─── Rich Slot Builder ───
 
 #[derive(Serialize, Clone)]
-struct SlotData {
+struct BlockData {
     id: String,
     label: String,
     icon: String,
@@ -316,7 +316,7 @@ struct SubComponent {
 }
 
 #[tauri::command]
-fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
+fn get_blocks(agent_id: Option<String>) -> Vec<BlockData> {
     let config = read_config();
     let ws = agent_id.as_ref()
         .map(|id| resolve_agent_workspace(id))
@@ -370,7 +370,7 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
         });
     }
 
-    slots.push(SlotData {
+    slots.push(BlockData {
         id: "model".to_string(),
         label: "Model".to_string(),
         icon: "⬢".to_string(),
@@ -427,7 +427,7 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
         });
     }
 
-    slots.push(SlotData {
+    slots.push(BlockData {
         id: "persona".to_string(),
         label: "Persona".to_string(),
         icon: "◈".to_string(),
@@ -484,7 +484,7 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
         });
     }
 
-    slots.push(SlotData {
+    slots.push(BlockData {
         id: "skills".to_string(),
         label: "Skills".to_string(),
         icon: "⚡".to_string(),
@@ -699,7 +699,7 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
         });
     }
 
-    slots.push(SlotData {
+    slots.push(BlockData {
         id: "integrations".to_string(),
         label: "Integrations".to_string(),
         icon: "⚡".to_string(),
@@ -758,7 +758,7 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
         });
     }
 
-    slots.push(SlotData {
+    slots.push(BlockData {
         id: "automations".to_string(),
         label: "Automations".to_string(),
         icon: "⏱".to_string(),
@@ -839,7 +839,7 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
         });
     }
 
-    slots.push(SlotData {
+    slots.push(BlockData {
         id: "memory".to_string(),
         label: "Memory".to_string(),
         icon: "◉".to_string(),
@@ -860,27 +860,27 @@ fn get_slots(agent_id: Option<String>) -> Vec<SlotData> {
     slots
 }
 
-// ─── Loadout import for diff ───
+// ─── Build import for diff ───
 
 #[tauri::command]
-fn import_loadout(path: String) -> Result<Value, String> {
+fn import_build(path: String) -> Result<Value, String> {
     let content = fs::read_to_string(&path)
-        .map_err(|e| format!("Failed to read loadout: {}", e))?;
+        .map_err(|e| format!("Failed to read build_cfg: {}", e))?;
     serde_json::from_str(&content)
-        .map_err(|e| format!("Failed to parse loadout: {}", e))
+        .map_err(|e| format!("Failed to parse build_cfg: {}", e))
 }
 
 #[tauri::command]
-fn export_loadout() -> Result<Value, String> {
-    // Build a loadout from current state
+fn export_build() -> Result<Value, String> {
+    // Build a build_cfg from current state
     let _config = read_config();
-    let slots_data = get_slots(None);
+    let blocks_data = get_blocks(None);
     let skills = get_skills();
     let _status = get_system_status();
 
-    let mut slots_json = serde_json::Map::new();
-    for slot in &slots_data {
-        slots_json.insert(slot.id.clone(), serde_json::json!({
+    let mut blocks_json = serde_json::Map::new();
+    for slot in &blocks_data {
+        blocks_json.insert(slot.id.clone(), serde_json::json!({
             "label": slot.label,
             "status": slot.status,
             "component": slot.component,
@@ -907,7 +907,7 @@ fn export_loadout() -> Result<Value, String> {
         })
         .unwrap_or_else(|| "Agent".to_string());
 
-    let loadout = serde_json::json!({
+    let build_cfg = serde_json::json!({
         "schema": 1,
         "meta": {
             "name": identity_name,
@@ -915,11 +915,11 @@ fn export_loadout() -> Result<Value, String> {
             "version": 1,
             "exportedAt": chrono_now(),
         },
-        "slots": slots_json,
+        "blocks": blocks_json,
         "mods": mods,
     });
 
-    Ok(loadout)
+    Ok(build_cfg)
 }
 
 // ─── PII-safe export for publishing ───
@@ -931,58 +931,58 @@ struct ScrubReport {
 }
 
 #[tauri::command]
-fn export_loadout_safe(
+fn export_build_safe(
     template: Option<String>,
     description: Option<String>,
     tags: Option<Vec<String>>,
 ) -> Result<(Value, ScrubReport), String> {
-    let raw = export_loadout()?;
-    let (scrubbed, report) = scrub::scrub_loadout(raw, template, description, tags);
+    let raw = export_build()?;
+    let (scrubbed, report) = scrub::scrub_build(raw, template, description, tags);
     Ok((scrubbed, report))
 }
 
-// ─── Clone loadout (apply another loadout) ───
+// ─── Clone build_cfg (apply another build_cfg) ───
 
 #[derive(Serialize)]
 struct CloneResult {
     applied_skills: Vec<String>,
     skipped_skills: Vec<String>,
-    slot_changes: Vec<String>,
+    block_changes: Vec<String>,
     backup_path: Option<String>,
 }
 
 #[tauri::command]
-fn clone_loadout(loadout_json: String, mode: String, agent_id: Option<String>) -> Result<CloneResult, String> {
-    let loadout: Value = serde_json::from_str(&loadout_json)
-        .map_err(|e| format!("Invalid loadout JSON: {}", e))?;
+fn clone_build(build_json: String, mode: String, agent_id: Option<String>) -> Result<CloneResult, String> {
+    let build_cfg: Value = serde_json::from_str(&build_json)
+        .map_err(|e| format!("Invalid build_cfg JSON: {}", e))?;
 
-    let loadouts_dir = workspace_dir().join("loadouts");
-    let _ = fs::create_dir_all(&loadouts_dir);
+    let builds_dir = workspace_dir().join("builds");
+    let _ = fs::create_dir_all(&builds_dir);
 
     if mode == "new" {
-        // Save as a new named loadout file
-        let name = loadout.pointer("/meta/name")
+        // Save as a new named build_cfg file
+        let name = build_cfg.pointer("/meta/name")
             .and_then(|v| v.as_str())
-            .unwrap_or("imported-loadout");
+            .unwrap_or("imported-build_cfg");
         let safe_name: String = name.chars()
             .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '-' })
             .collect();
         let timestamp = chrono_now().replace(':', "-").replace('T', "_");
-        let filename = format!("{}-{}.loadout.json", safe_name, timestamp);
-        let path = loadouts_dir.join(&filename);
+        let filename = format!("{}-{}.build_cfg.json", safe_name, timestamp);
+        let path = builds_dir.join(&filename);
 
-        fs::write(&path, serde_json::to_string_pretty(&loadout).unwrap_or_default())
-            .map_err(|e| format!("Failed to write loadout: {}", e))?;
+        fs::write(&path, serde_json::to_string_pretty(&build_cfg).unwrap_or_default())
+            .map_err(|e| format!("Failed to write build_cfg: {}", e))?;
 
         return Ok(CloneResult {
             applied_skills: vec![],
             skipped_skills: vec![],
-            slot_changes: vec![format!("Saved as {}", filename)],
+            block_changes: vec![format!("Saved as {}", filename)],
             backup_path: Some(path.to_string_lossy().to_string()),
         });
     }
 
-    // Mode: "overwrite" - apply loadout to an existing agent
+    // Mode: "overwrite" - apply build_cfg to an existing agent
     let target_workspace = match &agent_id {
         Some(id) => resolve_agent_workspace(id),
         None => workspace_dir(),
@@ -998,10 +998,10 @@ fn clone_loadout(loadout_json: String, mode: String, agent_id: Option<String>) -
 
     let mut applied_skills: Vec<String> = Vec::new();
     let mut skipped_skills: Vec<String> = Vec::new();
-    let mut slot_changes: Vec<String> = Vec::new();
+    let mut block_changes: Vec<String> = Vec::new();
 
     // ── Persona: write SOUL.md, IDENTITY.md, AGENTS.md if included ──
-    if let Some(persona) = loadout.pointer("/slots/persona") {
+    if let Some(persona) = build_cfg.pointer("/slots/persona") {
         if let Some(identity) = persona.get("identity") {
             let name = identity.get("name").and_then(|v| v.as_str()).unwrap_or("Agent");
             let creature = identity.get("creature").and_then(|v| v.as_str()).unwrap_or("AI assistant");
@@ -1012,7 +1012,7 @@ fn clone_loadout(loadout_json: String, mode: String, agent_id: Option<String>) -
             );
             fs::write(target_workspace.join("IDENTITY.md"), &content)
                 .map_err(|e| format!("Write IDENTITY.md: {}", e))?;
-            slot_changes.push(format!("persona: wrote IDENTITY.md ({})", name));
+            block_changes.push(format!("persona: wrote IDENTITY.md ({})", name));
         }
 
         if let Some(soul) = persona.get("soul") {
@@ -1020,7 +1020,7 @@ fn clone_loadout(loadout_json: String, mode: String, agent_id: Option<String>) -
                 if let Some(content) = soul.get("content").and_then(|v| v.as_str()) {
                     fs::write(target_workspace.join("SOUL.md"), content)
                         .map_err(|e| format!("Write SOUL.md: {}", e))?;
-                    slot_changes.push("persona: wrote SOUL.md".to_string());
+                    block_changes.push("persona: wrote SOUL.md".to_string());
                 }
             }
         }
@@ -1030,14 +1030,14 @@ fn clone_loadout(loadout_json: String, mode: String, agent_id: Option<String>) -
                 if let Some(content) = agents_md.get("content").and_then(|v| v.as_str()) {
                     fs::write(target_workspace.join("AGENTS.md"), content)
                         .map_err(|e| format!("Write AGENTS.md: {}", e))?;
-                    slot_changes.push("persona: wrote AGENTS.md".to_string());
+                    block_changes.push("persona: wrote AGENTS.md".to_string());
                 }
             }
         }
     }
 
     // ── Skills: install from ClawHub, track bundled ──
-    if let Some(skills) = loadout.pointer("/slots/skills/items").and_then(|v| v.as_array()) {
+    if let Some(skills) = build_cfg.pointer("/slots/skills/items").and_then(|v| v.as_array()) {
         let skills_dir = target_workspace.join("skills");
         let _ = fs::create_dir_all(&skills_dir);
 
@@ -1072,9 +1072,9 @@ fn clone_loadout(loadout_json: String, mode: String, agent_id: Option<String>) -
             }
         }
         if !applied_skills.is_empty() || !skipped_skills.is_empty() {
-            slot_changes.push(format!("skills: {} installed, {} skipped", applied_skills.len(), skipped_skills.len()));
+            block_changes.push(format!("skills: {} installed, {} skipped", applied_skills.len(), skipped_skills.len()));
         }
-    } else if let Some(mods) = loadout.get("mods").and_then(|m| m.as_array()) {
+    } else if let Some(mods) = build_cfg.get("mods").and_then(|m| m.as_array()) {
         // Legacy format: check mods array
         let skills_dir = target_workspace.join("skills");
         let _ = fs::create_dir_all(&skills_dir);
@@ -1109,18 +1109,18 @@ fn clone_loadout(loadout_json: String, mode: String, agent_id: Option<String>) -
     }
 
     // ── Automations: write HEARTBEAT.md ──
-    if let Some(hb) = loadout.pointer("/slots/automations/heartbeat") {
+    if let Some(hb) = build_cfg.pointer("/slots/automations/heartbeat") {
         if hb.get("included").and_then(|v| v.as_bool()).unwrap_or(false) {
             if let Some(content) = hb.get("content").and_then(|v| v.as_str()) {
                 fs::write(target_workspace.join("HEARTBEAT.md"), content)
                     .map_err(|e| format!("Write HEARTBEAT.md: {}", e))?;
-                slot_changes.push("automations: wrote HEARTBEAT.md".to_string());
+                block_changes.push("automations: wrote HEARTBEAT.md".to_string());
             }
         }
     }
 
     // ── Memory: create directory structure and templates ──
-    if let Some(structure) = loadout.pointer("/slots/memory/structure") {
+    if let Some(structure) = build_cfg.pointer("/slots/memory/structure") {
         if let Some(dirs) = structure.get("directories").and_then(|v| v.as_array()) {
             for dir in dirs {
                 if let Some(d) = dir.as_str() {
@@ -1143,11 +1143,11 @@ fn clone_loadout(loadout_json: String, mode: String, agent_id: Option<String>) -
                 }
             }
         }
-        slot_changes.push("memory: created directory structure".to_string());
+        block_changes.push("memory: created directory structure".to_string());
     }
 
-    // ── Model: update agent config if loadout has model tiers ──
-    if let Some(tiers) = loadout.pointer("/slots/model/tiers") {
+    // ── Model: update agent config if build_cfg has model tiers ──
+    if let Some(tiers) = build_cfg.pointer("/slots/model/tiers") {
         if let Some(main_tier) = tiers.get("main") {
             let model = format!(
                 "{}/{}",
@@ -1168,7 +1168,7 @@ fn clone_loadout(loadout_json: String, mode: String, agent_id: Option<String>) -
                                 "model".to_string(),
                                 serde_json::json!({ "primary": model }),
                             );
-                            slot_changes.push(format!("model: set primary to {}", model));
+                            block_changes.push(format!("model: set primary to {}", model));
                             break;
                         }
                     }
@@ -1179,20 +1179,20 @@ fn clone_loadout(loadout_json: String, mode: String, agent_id: Option<String>) -
         }
     }
 
-    // Save the loadout to loadouts dir for reference
-    let ref_name = format!("cloned-{}.loadout.json", chrono_now().replace(':', "-"));
-    let ref_path = loadouts_dir.join(&ref_name);
-    let _ = fs::write(&ref_path, serde_json::to_string_pretty(&loadout).unwrap_or_default());
+    // Save the build_cfg to builds dir for reference
+    let ref_name = format!("cloned-{}.build_cfg.json", chrono_now().replace(':', "-"));
+    let ref_path = builds_dir.join(&ref_name);
+    let _ = fs::write(&ref_path, serde_json::to_string_pretty(&build_cfg).unwrap_or_default());
 
     Ok(CloneResult {
         applied_skills,
         skipped_skills,
-        slot_changes,
+        block_changes,
         backup_path: Some(backup_path.to_string_lossy().to_string()),
     })
 }
 
-// ─── Apply loadout to new agent ───
+// ─── Apply build_cfg to new agent ───
 
 #[derive(Serialize)]
 struct ApplyResult {
@@ -1203,14 +1203,14 @@ struct ApplyResult {
 }
 
 #[tauri::command]
-fn apply_loadout(
-    loadout_json: String,
+fn apply_build(
+    build_json: String,
     agent_id: String,
     agent_name: String,
     use_my_models: bool,
 ) -> Result<ApplyResult, String> {
-    let loadout: Value = serde_json::from_str(&loadout_json)
-        .map_err(|e| format!("Invalid loadout JSON: {}", e))?;
+    let build_cfg: Value = serde_json::from_str(&build_json)
+        .map_err(|e| format!("Invalid build_cfg JSON: {}", e))?;
 
     let agents_dir = openclaw_dir().join("agents");
     let agent_workspace = agents_dir.join(&agent_id);
@@ -1269,7 +1269,7 @@ fn apply_loadout(
             .and_then(|v| v.as_str())
             .unwrap_or("anthropic/claude-sonnet-4-5")
             .to_string()
-    } else if let Some(tiers) = loadout.pointer("/slots/model/tiers") {
+    } else if let Some(tiers) = build_cfg.pointer("/slots/model/tiers") {
         if let Some(main_tier) = tiers.get("main") {
             format!(
                 "{}/{}",
@@ -1290,7 +1290,7 @@ fn apply_loadout(
     }));
 
     // Persona files
-    if let Some(persona) = loadout.pointer("/slots/persona") {
+    if let Some(persona) = build_cfg.pointer("/slots/persona") {
         // IDENTITY.md
         if let Some(identity) = persona.get("identity") {
             let name = identity.get("name").and_then(|v| v.as_str()).unwrap_or("Agent");
@@ -1336,7 +1336,7 @@ fn apply_loadout(
     }
 
     // Skills
-    if let Some(skills) = loadout.pointer("/slots/skills/items").and_then(|v| v.as_array()) {
+    if let Some(skills) = build_cfg.pointer("/slots/skills/items").and_then(|v| v.as_array()) {
         let bundled: Vec<&str> = skills.iter()
             .filter(|s| s.get("source").and_then(|v| v.as_str()) == Some("bundled"))
             .filter_map(|s| s.get("name").and_then(|v| v.as_str()))
@@ -1381,7 +1381,7 @@ fn apply_loadout(
     }
 
     // Integrations — always manual
-    if let Some(items) = loadout.pointer("/slots/integrations/items").and_then(|v| v.as_array()) {
+    if let Some(items) = build_cfg.pointer("/slots/integrations/items").and_then(|v| v.as_array()) {
         for item in items {
             let name = item.get("name").and_then(|v| v.as_str()).unwrap_or("?");
             warnings.push(format!("🔧 Integration \"{}\" — manual setup required", name));
@@ -1394,7 +1394,7 @@ fn apply_loadout(
     }
 
     // Automations — write HEARTBEAT.md
-    if let Some(hb) = loadout.pointer("/slots/automations/heartbeat") {
+    if let Some(hb) = build_cfg.pointer("/slots/automations/heartbeat") {
         if hb.get("included").and_then(|v| v.as_bool()).unwrap_or(false) {
             if let Some(content) = hb.get("content").and_then(|v| v.as_str()) {
                 fs::write(agent_workspace.join("HEARTBEAT.md"), content)
@@ -1405,7 +1405,7 @@ fn apply_loadout(
     }
 
     // Memory structure
-    if let Some(structure) = loadout.pointer("/slots/memory/structure") {
+    if let Some(structure) = build_cfg.pointer("/slots/memory/structure") {
         if let Some(dirs) = structure.get("directories").and_then(|v| v.as_array()) {
             for dir in dirs {
                 if let Some(d) = dir.as_str() {
@@ -1484,36 +1484,36 @@ fn apply_loadout(
     })
 }
 
-// ─── List saved loadouts ───
+// ─── List saved builds ───
 
 #[tauri::command]
-fn list_loadouts() -> Vec<Value> {
-    let loadouts_dir = workspace_dir().join("loadouts");
+fn list_builds() -> Vec<Value> {
+    let builds_dir = workspace_dir().join("builds");
     // Also check legacy builds/ dir for migration
     let legacy_dir = workspace_dir().join("builds");
 
-    let mut loadouts = Vec::new();
-    for dir in [&loadouts_dir, &legacy_dir] {
+    let mut builds = Vec::new();
+    for dir in [&builds_dir, &legacy_dir] {
         if !dir.exists() { continue; }
         if let Ok(entries) = fs::read_dir(dir) {
             for entry in entries.flatten() {
                 let path = entry.path();
                 if path.extension().and_then(|e| e.to_str()) == Some("json") {
                     if let Ok(content) = fs::read_to_string(&path) {
-                        if let Ok(loadout) = serde_json::from_str::<Value>(&content) {
-                            let name = loadout.pointer("/meta/name")
+                        if let Ok(build_cfg) = serde_json::from_str::<Value>(&content) {
+                            let name = build_cfg.pointer("/meta/name")
                                 .and_then(|v| v.as_str())
                                 .unwrap_or("unknown");
-                            let exported_at = loadout.pointer("/meta/exportedAt")
+                            let exported_at = build_cfg.pointer("/meta/exportedAt")
                                 .and_then(|v| v.as_str())
                                 .unwrap_or("");
-                            loadouts.push(serde_json::json!({
+                            builds.push(serde_json::json!({
                                 "filename": path.file_name().unwrap_or_default().to_string_lossy(),
                                 "name": name,
                                 "exportedAt": exported_at,
                                 "path": path.to_string_lossy(),
-                                "slots": loadout.get("slots").and_then(|s| s.as_object()).map(|o| o.len()).unwrap_or(0),
-                                "mods": loadout.get("mods").and_then(|m| m.as_array()).map(|a| a.len()).unwrap_or(0),
+                                "blocks": build_cfg.get("blocks").and_then(|s| s.as_object()).map(|o| o.len()).unwrap_or(0),
+                                "mods": build_cfg.get("mods").and_then(|m| m.as_array()).map(|a| a.len()).unwrap_or(0),
                             }));
                         }
                     }
@@ -1521,38 +1521,38 @@ fn list_loadouts() -> Vec<Value> {
             }
         }
     }
-    loadouts
+    builds
 }
 
-/// Import a loadout from an absolute file path into the loadouts directory
+/// Import a build_cfg from an absolute file path into the builds directory
 #[tauri::command]
-fn import_loadout_file(path: String) -> Result<Value, String> {
+fn import_build_file(path: String) -> Result<Value, String> {
     let content = fs::read_to_string(&path)
         .map_err(|e| format!("Failed to read file: {}", e))?;
-    let loadout: Value = serde_json::from_str(&content)
+    let build_cfg: Value = serde_json::from_str(&content)
         .map_err(|e| format!("Invalid JSON: {}", e))?;
 
-    // Validate it looks like a loadout
-    if loadout.get("slots").is_none() && loadout.get("mods").is_none() {
-        return Err("File doesn't look like a valid loadout (missing slots/mods)".to_string());
+    // Validate it looks like a build_cfg
+    if build_cfg.get("blocks").is_none() && build_cfg.get("mods").is_none() {
+        return Err("File doesn't look like a valid build_cfg (missing slots/mods)".to_string());
     }
 
-    // Save to loadouts directory
-    let loadouts_dir = workspace_dir().join("loadouts");
-    let _ = fs::create_dir_all(&loadouts_dir);
+    // Save to builds directory
+    let builds_dir = workspace_dir().join("builds");
+    let _ = fs::create_dir_all(&builds_dir);
 
-    let name = loadout.pointer("/meta/name")
+    let name = build_cfg.pointer("/meta/name")
         .and_then(|v| v.as_str())
         .unwrap_or("imported");
     let safe_name: String = name.chars()
         .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '-' })
         .collect();
     let timestamp = chrono_now().replace(':', "-").replace('T', "_");
-    let filename = format!("{}-{}.loadout.json", safe_name, timestamp);
-    let dest = loadouts_dir.join(&filename);
+    let filename = format!("{}-{}.build_cfg.json", safe_name, timestamp);
+    let dest = builds_dir.join(&filename);
 
-    fs::write(&dest, serde_json::to_string_pretty(&loadout).unwrap_or_default())
-        .map_err(|e| format!("Failed to save loadout: {}", e))?;
+    fs::write(&dest, serde_json::to_string_pretty(&build_cfg).unwrap_or_default())
+        .map_err(|e| format!("Failed to save build_cfg: {}", e))?;
 
     Ok(serde_json::json!({
         "filename": filename,
@@ -1588,15 +1588,15 @@ pub fn run() {
             get_skills,
             get_system_status,
             get_cron_jobs,
-            get_slots,
+            get_blocks,
             get_agents,
-            import_loadout,
-            import_loadout_file,
-            export_loadout,
-            export_loadout_safe,
-            clone_loadout,
-            apply_loadout,
-            list_loadouts,
+            import_build,
+            import_build_file,
+            export_build,
+            export_build_safe,
+            clone_build,
+            apply_build,
+            list_builds,
             read_file_absolute,
             nostr::nostr_get_keys,
             nostr::nostr_generate_keys,
@@ -1604,7 +1604,7 @@ pub fn run() {
             nostr::nostr_export_keys,
             nostr::nostr_get_profile,
             nostr::nostr_set_profile,
-            nostr::nostr_publish_loadout,
+            nostr::nostr_publish_build_cfg,
             nostr::nostr_fetch_feed,
             nostr::nostr_get_relays,
             nostr::nostr_add_relay,

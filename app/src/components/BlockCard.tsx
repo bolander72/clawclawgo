@@ -1,7 +1,7 @@
-import type { SlotData } from '../types';
+import type { BlockData } from '../types';
 
 interface Props {
-  slot: SlotData;
+  block: BlockData;
   selected: boolean;
   onClick: () => void;
 }
@@ -13,30 +13,30 @@ const statusColor: Record<string, string> = {
   empty: 'var(--rc-text-muted)',
 };
 
-export function SlotCard({ slot, selected, onClick }: Props) {
+export function BlockCard({ block, selected, onClick }: Props) {
   return (
     <div
-      className={`slot-card ${selected ? 'active' : ''}`}
+      className={`block-card ${selected ? 'active' : ''}`}
       onClick={onClick}
     >
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <span className="text-lg" style={{ color: 'var(--rc-cyan)' }}>
-            {slot.icon}
+            {block.icon}
           </span>
           <span className="text-sm font-semibold uppercase tracking-wider" style={{ color: 'var(--rc-text)' }}>
-            {slot.label}
+            {block.label}
           </span>
         </div>
         <div
           className="w-2 h-2 rounded-full health-pulse"
-          style={{ backgroundColor: statusColor[slot.status] }}
+          style={{ backgroundColor: statusColor[block.status] }}
         />
       </div>
       <div className="text-xs" style={{ color: 'var(--rc-cyan)' }}>
-        {slot.component}
-        {slot.version && (
-          <span style={{ color: 'var(--rc-text-dim)' }}> v{slot.version}</span>
+        {block.component}
+        {block.version && (
+          <span style={{ color: 'var(--rc-text-dim)' }}> v{block.version}</span>
         )}
       </div>
     </div>

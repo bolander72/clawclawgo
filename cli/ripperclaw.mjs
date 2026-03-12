@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * ripperclaw CLI: export and apply OpenClaw agent loadouts
+ * ripperclaw CLI: export and apply OpenClaw agent builds
  *
  * Usage:
  *   ripperclaw export [--agent <id>] [--out <file>]
- *   ripperclaw apply <loadout.json> --agent <id> [--mode merge|replace] [--use-my-models] [--dry-run]
- *   ripperclaw preview <loadout.json>
+ *   ripperclaw apply <build.json> --agent <id> [--mode merge|replace] [--use-my-models] [--dry-run]
+ *   ripperclaw preview <build.json>
  */
 
 import fs from 'fs';
@@ -72,7 +72,7 @@ function preview(text, maxLen = 500) {
 
 // ── Export ──
 
-function exportLoadout(agentId) {
+function exportBuild(agentId) {
   const config = readConfig();
   const defaults = config.agents?.defaults || {};
   const agents = config.agents?.list || [];
@@ -81,7 +81,7 @@ function exportLoadout(agentId) {
   // Resolve workspace
   const workspace = agent?.workspace || defaults.workspace || path.join(OPENCLAW_DIR, 'workspace');
 
-  // ── Model slot ──
+  // ── Model block ──
   const primaryModel = agent?.model?.primary || defaults.model?.primary || 'unknown';
   const subagentModel = defaults.subagents?.model?.primary || 'unknown';
   const heartbeatModel = defaults.heartbeat?.model || 'unknown';
@@ -95,7 +95,7 @@ function exportLoadout(agentId) {
     return { provider, model, ...(alias && { alias }), paid: isPaid, local: isLocal };
   }
 
-  const modelSlot = {
+  const modelBlock = {
     tiers: {
       main: buildTier(primaryModel),
       subagent: buildTier(subagentModel),
@@ -106,7 +106,7 @@ function exportLoadout(agentId) {
     }
   };
 
-  // ── Persona slot ──
+  // ── Persona block ──
   const soulContent = readFileOr(path.join(workspace, 'SOUL.md'));
   const identityContent = readFileOr(path.join(workspace, 'IDENTITY.md'));
   const agentsContent = readFileOr(path.join(workspace, 'AGENTS.md'));
@@ -116,7 +116,7 @@ function exportLoadout(agentId) {
   const identityCreature = identityContent?.match(/\*\*Creature:\*\*\s*(.+)/)?.[1]?.trim() || '';
   const identityVibe = identityContent?.match(/\*\*Vibe:\*\*\s*(.+)/)?.[1]?.trim() || '';
 
-  const personaSlot = {
+  const personaBlock = {
     identity: {
       name: identityName,
       ...(identityCreature && { creature: identityCreature }),
@@ -139,7 +139,7 @@ function exportLoadout(agentId) {
     } : { included: false },
   };
 
-  // ── Skills slot ──
+  // ── Skills block ──
   const bundledSkills = config.skills?.allowBundled || [];
   const workspaceSkills = [];
   const skillsDir = path.join(workspace, 'skills');
@@ -168,9 +168,9 @@ function exportLoadout(agentId) {
     ...workspaceSkills,
   ];
 
-  const skillsSlot = { items: skillItems };
+  const skillsBlock = { items: skillItems };
 
-  // ── Integrations slot ──
+  // ── Integrations block ──
   const integrationItems = [];
   if (config.channels?.bluebubbles?.enabled) {
     integrationItems.push({
@@ -208,15 +208,15 @@ function exportLoadout(agentId) {
     });
   }
 
-  const integrationsSlot = { items: integrationItems };
+  const integrationsBlock = { items: integrationItems };
 
-  // ── Automations slot ──
+  // ── Automations block ──
   const heartbeatContent = readFileOr(path.join(workspace, 'HEARTBEAT.md'));
   const heartbeatTasks = heartbeatContent?.match(/^-\s/gm)?.length || 0;
 
   // We can't call the cron API from a CLI script, but we can note what we found
   // For export, we'll include heartbeat content and note cron jobs exist
-  const automationsSlot = {
+  const automationsBlock = {
     heartbeat: heartbeatContent ? {
       included: true,
       content: scrubPII(heartbeatContent),
@@ -225,7 +225,7 @@ function exportLoadout(agentId) {
     cron: [], // Populated separately when exporting via Tauri/gateway API
   };
 
-  // ── Memory slot ──
+  // ── Memory block ──
   const memoryDirs = [];
   const templateFiles = [];
   const memoryDir = path.join(workspace, 'memory');
@@ -250,50 +250,50 @@ function exportLoadout(agentId) {
     }
   }
 
-  const memorySlot = {
+  const memoryBlock = {
     structure: {
       directories: memoryDirs,
       templateFiles,
     },
     engine: {
-      type: config.plugins?.slots?.contextEngine || 'default',
-      description: config.plugins?.slots?.contextEngine === 'lossless-claw'
+      type: config.plugins?.blocks?.contextEngine || 'default',
+      description: config.plugins?.blocks?.contextEngine === 'lossless-claw'
         ? 'Lossless Context Management: auto-compacts conversation history'
         : 'Default OpenClaw context engine',
     },
   };
 
   // ── Assemble ──
-  const loadout = {
+  const build = {
     schema: 1,
     meta: {
-      name: `${identityName}'s Loadout`,
+      name: `${identityName}'s Build`,
       agentName: identityName,
-      description: identityVibe || 'An OpenClaw agent loadout',
+      description: identityVibe || 'An OpenClaw agent build',
       author: 'local',
       version: 1,
       exportedAt: new Date().toISOString(),
       tags: [],
     },
-    slots: {
-      model: modelSlot,
-      persona: personaSlot,
-      skills: skillsSlot,
-      integrations: integrationsSlot,
-      automations: automationsSlot,
-      memory: memorySlot,
+    blocks: {
+      model: modelBlock,
+      persona: personaBlock,
+      skills: skillsBlock,
+      integrations: integrationsBlock,
+      automations: automationsBlock,
+      memory: memoryBlock,
     },
   };
 
-  return loadout;
+  return build;
 }
 
 // ── Apply ──
 
-function applyLoadout(loadoutPath, agentId, options = {}) {
+function applyBuild(buildPath, agentId, options = {}) {
   const { mode = 'merge', useMyModels = false, dryRun = false } = options;
 
-  const loadout = JSON.parse(fs.readFileSync(loadoutPath, 'utf8'));
+  const build = JSON.parse(fs.readFileSync(buildPath, 'utf8'));
   const config = readConfig();
   const agents = config.agents?.list || [];
   const defaults = config.agents?.defaults || {};
@@ -336,9 +336,9 @@ function applyLoadout(loadoutPath, agentId, options = {}) {
   // ── 1. Create workspace ──
   actions.push({ type: 'create-workspace', path: agentWorkspace });
 
-  // ── 2. Model slot ──
-  const modelSlot = loadout.slots?.model;
-  if (modelSlot?.tiers) {
+  // ── 2. Model block ──
+  const modelBlock = build.blocks?.model;
+  if (modelBlock?.tiers) {
     if (useMyModels) {
       actions.push({
         type: 'set-model',
@@ -353,7 +353,7 @@ function applyLoadout(loadoutPath, agentId, options = {}) {
         note: 'Using your current subagent model',
       });
     } else {
-      for (const [tier, info] of Object.entries(modelSlot.tiers)) {
+      for (const [tier, info] of Object.entries(modelBlock.tiers)) {
         const fullModel = `${info.provider}/${info.model}`;
         actions.push({ type: 'set-model', tier, model: fullModel });
         if (info.paid) {
@@ -363,32 +363,32 @@ function applyLoadout(loadoutPath, agentId, options = {}) {
     }
   }
 
-  // ── 3. Persona slot ──
-  const personaSlot = loadout.slots?.persona;
-  if (personaSlot) {
-    if (personaSlot.identity) {
+  // ── 3. Persona block ──
+  const personaBlock = build.blocks?.persona;
+  if (personaBlock) {
+    if (personaBlock.identity) {
       actions.push({
         type: 'write-file',
         path: path.join(agentWorkspace, 'IDENTITY.md'),
-        content: `# IDENTITY.md - Who Am I?\n\n- **Name:** ${personaSlot.identity.name || 'Agent'}\n- **Creature:** ${personaSlot.identity.creature || 'AI assistant'}\n- **Vibe:** ${personaSlot.identity.vibe || ''}\n`,
+        content: `# IDENTITY.md - Who Am I?\n\n- **Name:** ${personaBlock.identity.name || 'Agent'}\n- **Creature:** ${personaBlock.identity.creature || 'AI assistant'}\n- **Vibe:** ${personaBlock.identity.vibe || ''}\n`,
         confirm: true,
         confirmMessage: '⚠️  This will set the agent\'s identity. Continue?',
       });
     }
-    if (personaSlot.soul?.included && personaSlot.soul.content) {
+    if (personaBlock.soul?.included && personaBlock.soul.content) {
       actions.push({
         type: 'write-file',
         path: path.join(agentWorkspace, 'SOUL.md'),
-        content: personaSlot.soul.content,
+        content: personaBlock.soul.content,
         confirm: true,
         confirmMessage: '⚠️  This will change the agent\'s persona (SOUL.md). Are you sure?',
       });
     }
-    if (personaSlot.agents?.included && personaSlot.agents.content) {
+    if (personaBlock.agents?.included && personaBlock.agents.content) {
       actions.push({
         type: 'write-file',
         path: path.join(agentWorkspace, 'AGENTS.md'),
-        content: personaSlot.agents.content,
+        content: personaBlock.agents.content,
       });
     }
     // Always create a blank USER.md
@@ -399,10 +399,10 @@ function applyLoadout(loadoutPath, agentId, options = {}) {
     });
   }
 
-  // ── 4. Skills slot ──
-  const skillsSlot = loadout.slots?.skills;
-  if (skillsSlot?.items) {
-    for (const skill of skillsSlot.items) {
+  // ── 4. Skills block ──
+  const skillsBlock = build.blocks?.skills;
+  if (skillsBlock?.items) {
+    for (const skill of skillsBlock.items) {
       if (skill.source === 'bundled') {
         actions.push({ type: 'enable-bundled-skill', name: skill.name });
       } else if (skill.source === 'clawhub') {
@@ -420,25 +420,25 @@ function applyLoadout(loadoutPath, agentId, options = {}) {
     }
   }
 
-  // ── 5. Integrations slot ──
-  const intSlot = loadout.slots?.integrations;
-  if (intSlot?.items) {
-    for (const integration of intSlot.items) {
+  // ── 5. Integrations block ──
+  const intBlock = build.blocks?.integrations;
+  if (intBlock?.items) {
+    for (const integration of intBlock.items) {
       warnings.push(`🔧 Integration "${integration.name}": manual setup required${integration.docsUrl ? ` (${integration.docsUrl})` : ''}`);
     }
   }
 
-  // ── 6. Automations slot ──
-  const autoSlot = loadout.slots?.automations;
-  if (autoSlot?.heartbeat?.included && autoSlot.heartbeat.content) {
+  // ── 6. Automations block ──
+  const autoBlock = build.blocks?.automations;
+  if (autoBlock?.heartbeat?.included && autoBlock.heartbeat.content) {
     actions.push({
       type: 'write-file',
       path: path.join(agentWorkspace, 'HEARTBEAT.md'),
-      content: autoSlot.heartbeat.content,
+      content: autoBlock.heartbeat.content,
     });
   }
-  if (autoSlot?.cron?.length) {
-    for (const job of autoSlot.cron) {
+  if (autoBlock?.cron?.length) {
+    for (const job of autoBlock.cron) {
       actions.push({ type: 'create-cron', job });
       if (job.dependsOn?.length) {
         warnings.push(`⏰ Cron "${job.name}" depends on: ${job.dependsOn.join(', ')}`);
@@ -446,13 +446,13 @@ function applyLoadout(loadoutPath, agentId, options = {}) {
     }
   }
 
-  // ── 7. Memory slot ──
-  const memSlot = loadout.slots?.memory;
-  if (memSlot?.structure) {
-    for (const dir of memSlot.structure.directories || []) {
+  // ── 7. Memory block ──
+  const memBlock = build.blocks?.memory;
+  if (memBlock?.structure) {
+    for (const dir of memBlock.structure.directories || []) {
       actions.push({ type: 'create-dir', path: path.join(agentWorkspace, dir) });
     }
-    for (const tmpl of memSlot.structure.templateFiles || []) {
+    for (const tmpl of memBlock.structure.templateFiles || []) {
       actions.push({
         type: 'write-file-if-missing',
         path: path.join(agentWorkspace, tmpl.path),
@@ -464,13 +464,13 @@ function applyLoadout(loadoutPath, agentId, options = {}) {
   // ── 8. Config entry for new agent ──
   const mainModel = useMyModels
     ? (defaults.model?.primary || 'anthropic/claude-sonnet-4-5')
-    : (modelSlot?.tiers?.main ? `${modelSlot.tiers.main.provider}/${modelSlot.tiers.main.model}` : defaults.model?.primary);
+    : (modelBlock?.tiers?.main ? `${modelBlock.tiers.main.provider}/${modelBlock.tiers.main.model}` : defaults.model?.primary);
 
   actions.push({
     type: 'add-agent-config',
     agent: {
       id: agentId,
-      name: personaSlot?.identity?.name || agentId,
+      name: personaBlock?.identity?.name || agentId,
       workspace: agentWorkspace,
       model: { primary: mainModel },
     },
@@ -591,17 +591,17 @@ function applyLoadout(loadoutPath, agentId, options = {}) {
 
 // ── Preview ──
 
-function previewLoadout(loadoutPath) {
-  const loadout = JSON.parse(fs.readFileSync(loadoutPath, 'utf8'));
+function previewBuild(buildPath) {
+  const build = JSON.parse(fs.readFileSync(buildPath, 'utf8'));
   const lines = [];
 
-  lines.push(`\n📦 ${loadout.meta.name} (by ${loadout.meta.author})`);
-  lines.push(`   Agent: ${loadout.meta.agentName}`);
-  if (loadout.meta.description) lines.push(`   ${loadout.meta.description}`);
+  lines.push(`\n📦 ${build.meta.name} (by ${build.meta.author})`);
+  lines.push(`   Agent: ${build.meta.agentName}`);
+  if (build.meta.description) lines.push(`   ${build.meta.description}`);
   lines.push('');
 
   // Model
-  const m = loadout.slots?.model;
+  const m = build.blocks?.model;
   if (m?.tiers) {
     lines.push('⬢ Model');
     for (const [tier, info] of Object.entries(m.tiers)) {
@@ -612,7 +612,7 @@ function previewLoadout(loadoutPath) {
   }
 
   // Persona
-  const p = loadout.slots?.persona;
+  const p = build.blocks?.persona;
   if (p) {
     lines.push('🎭 Persona');
     lines.push(`  Name: ${p.identity?.name || '?'}`);
@@ -623,7 +623,7 @@ function previewLoadout(loadoutPath) {
   }
 
   // Skills
-  const s = loadout.slots?.skills;
+  const s = build.blocks?.skills;
   if (s?.items?.length) {
     lines.push(`🔧 Skills (${s.items.length})`);
     for (const skill of s.items) {
@@ -635,7 +635,7 @@ function previewLoadout(loadoutPath) {
   }
 
   // Integrations
-  const i = loadout.slots?.integrations;
+  const i = build.blocks?.integrations;
   if (i?.items?.length) {
     lines.push(`🔌 Integrations (${i.items.length}): all manual setup`);
     for (const int of i.items) {
@@ -645,7 +645,7 @@ function previewLoadout(loadoutPath) {
   }
 
   // Automations
-  const a = loadout.slots?.automations;
+  const a = build.blocks?.automations;
   if (a) {
     lines.push('⏰ Automations');
     if (a.heartbeat?.included) lines.push(`  Heartbeat: ${a.heartbeat.taskCount} tasks`);
@@ -654,7 +654,7 @@ function previewLoadout(loadoutPath) {
   }
 
   // Memory
-  const mem = loadout.slots?.memory;
+  const mem = build.blocks?.memory;
   if (mem?.structure) {
     lines.push('🧠 Memory');
     lines.push(`  Directories: ${mem.structure.directories?.length || 0}`);
@@ -684,8 +684,8 @@ try {
     case 'export': {
       const agentId = getArg('--agent');
       const outFile = getArg('--out');
-      const loadout = exportLoadout(agentId);
-      const json = JSON.stringify(loadout, null, 2);
+      const build = exportBuild(agentId);
+      const json = JSON.stringify(build, null, 2);
       if (outFile) {
         fs.writeFileSync(outFile, json, 'utf8');
         console.log(`✅ Exported to ${outFile}`);
@@ -695,13 +695,13 @@ try {
       break;
     }
     case 'apply': {
-      const loadoutPath = args[1];
+      const buildPath = args[1];
       const agentId = getArg('--agent');
-      if (!loadoutPath || !agentId) {
-        console.error('Usage: ripperclaw apply <loadout.json> --agent <id>');
+      if (!buildPath || !agentId) {
+        console.error('Usage: ripperclaw apply <build.json> --agent <id>');
         process.exit(1);
       }
-      const result = applyLoadout(loadoutPath, agentId, {
+      const result = applyBuild(buildPath, agentId, {
         mode: getArg('--mode') || 'merge',
         useMyModels: hasFlag('--use-my-models'),
         dryRun: hasFlag('--dry-run'),
@@ -710,25 +710,25 @@ try {
       break;
     }
     case 'preview': {
-      const loadoutPath = args[1];
-      if (!loadoutPath) {
-        console.error('Usage: ripperclaw preview <loadout.json>');
+      const buildPath = args[1];
+      if (!buildPath) {
+        console.error('Usage: ripperclaw preview <build.json>');
         process.exit(1);
       }
-      console.log(previewLoadout(loadoutPath));
+      console.log(previewBuild(buildPath));
       break;
     }
     default:
-      console.log(`ripperclaw: OpenClaw agent loadout manager
+      console.log(`ripperclaw: OpenClaw agent build manager
 
 Commands:
-  export [--agent <id>] [--out <file>]    Export current agent as loadout
-  apply <file> --agent <id> [options]     Apply loadout to agent
-  preview <file>                          Preview loadout contents
+  export [--agent <id>] [--out <file>]    Export current agent as build
+  apply <file> --agent <id> [options]     Apply build to agent
+  preview <file>                          Preview build contents
 
 Apply options:
   --mode merge|replace    Apply mode (default: merge)
-  --use-my-models         Use your current models instead of loadout's
+  --use-my-models         Use your current models instead of build's
   --dry-run               Show what would happen without doing it`);
   }
 } catch (err) {
