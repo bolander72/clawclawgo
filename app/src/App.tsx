@@ -213,11 +213,11 @@ function App() {
               onClear={() => setCompareTarget(null)}
               onClone={async (loadout, mode) => {
                 const json = JSON.stringify(loadout);
-                const res = await cloneLoadout(json, mode);
+                const res = await cloneLoadout(json, mode, activeAgent);
                 if (res) {
                   const msg = mode === 'new'
                     ? `Saved as loadout: ${res.slot_changes[0] || 'done'}`
-                    : `Cloned to your agent. ${res.applied_skills.length} skills matched, ${res.skipped_skills.length} skipped. Backup: ${res.backup_path || 'none'}`;
+                    : `Applied to ${activeAgent || 'agent'}. ${res.applied_skills.length} skills, ${res.skipped_skills.length} skipped. ${res.slot_changes.length} changes.`;
                   setCloneResult({ message: msg, type: 'success' });
                   setTimeout(() => setCloneResult(null), 6000);
                 } else {

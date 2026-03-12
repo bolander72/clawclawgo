@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNostrKeys, useNostrProfile, type NostrProfile } from '../hooks/useNostr';
+import { useNostrKeys, useNostrProfile, useNostrRelays, type NostrProfile } from '../hooks/useNostr';
 
 export function SettingsView() {
   const { keys, generate, importKey, exportKeys, refresh } = useNostrKeys();
@@ -13,6 +13,9 @@ export function SettingsView() {
   const [profileSaved, setProfileSaved] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [confirmRegenerate, setConfirmRegenerate] = useState(false);
+  const { relays, addRelay, removeRelay } = useNostrRelays();
+  const [newRelayUrl, setNewRelayUrl] = useState('');
+  const [relayError, setRelayError] = useState<string | null>(null);
 
   const handleImport = async () => {
     try {
@@ -318,6 +321,83 @@ export function SettingsView() {
           </div>
         </section>
       )}
+      {/* Relays */}
+      <section>
+        <h3
+          className="text-[10px] uppercase tracking-widest font-bold mb-4 pb-2 border-b"
+          style={{ color: 'var(--rc-cyan)', borderColor: 'var(--rc-border)' }}
+        >
+          Relays
+        </h3>
+        <div className="text-[10px] mb-4" style={{ color: 'var(--rc-text-muted)' }}>
+          Nostr relays used for publishing and fetching loadouts from the feed.
+        </div>
+
+        <div className="space-y-2 mb-4">
+          {relays.map((relay) => (
+            <div
+              key={relay.url}
+              className="flex items-center justify-between px-3 py-2 rounded border text-xs"
+              style={{ borderColor: 'var(--rc-border)', background: 'var(--rc-surface)' }}
+            >
+              <span className="font-mono text-[11px]" style={{ color: 'var(--rc-text)' }}>
+                {relay.url}
+              </span>
+              <button
+                onClick={async () => {
+                  try {
+                    await removeRelay(relay.url);
+                    setRelayError(null);
+                  } catch (err) {
+                    setRelayError(String(err));
+                  }
+                }}
+                className="text-[10px] px-2 py-0.5 rounded transition-all hover:opacity-80"
+                style={{ color: 'var(--rc-text-muted)' }}
+                title="Remove relay"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newRelayUrl}
+            onChange={(e) => { setNewRelayUrl(e.target.value); setRelayError(null); }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && newRelayUrl.trim()) {
+                addRelay(newRelayUrl.trim())
+                  .then(() => { setNewRelayUrl(''); setRelayError(null); })
+                  .catch((err) => setRelayError(String(err)));
+              }
+            }}
+            placeholder="wss://relay.example.com"
+            className="flex-1 px-3 py-2 rounded text-xs border outline-none font-mono"
+            style={inputStyle}
+          />
+          <button
+            onClick={async () => {
+              if (!newRelayUrl.trim()) return;
+              try {
+                await addRelay(newRelayUrl.trim());
+                setNewRelayUrl('');
+                setRelayError(null);
+              } catch (err) {
+                setRelayError(String(err));
+              }
+            }}
+            disabled={!newRelayUrl.trim()}
+            className="px-4 py-2 rounded text-xs font-semibold border transition-all hover:opacity-80 disabled:opacity-40"
+            style={{ borderColor: 'var(--rc-cyan)', color: 'var(--rc-cyan)' }}
+          >
+            Add
+          </button>
+        </div>
+        {relayError && <div className="text-[10px] mt-1" style={{ color: 'var(--rc-red)' }}>{relayError}</div>}
+      </section>
     </div>
   );
 }

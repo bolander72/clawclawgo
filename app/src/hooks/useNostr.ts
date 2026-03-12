@@ -196,12 +196,32 @@ export function useSafeExport() {
 
 export function useNostrRelays() {
   const [relays, setRelays] = useState<RelayInfo[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    invoke<RelayInfo[]>('nostr_get_relays')
-      .then(setRelays)
-      .catch(console.error);
+  const refresh = useCallback(async () => {
+    try {
+      const list = await invoke<RelayInfo[]>('nostr_get_relays');
+      setRelays(list);
+    } catch (err) {
+      console.error('Failed to get relays:', err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  return { relays };
+  useEffect(() => { refresh(); }, [refresh]);
+
+  const addRelay = async (url: string) => {
+    const updated = await invoke<RelayInfo[]>('nostr_add_relay', { url });
+    setRelays(updated);
+    return updated;
+  };
+
+  const removeRelay = async (url: string) => {
+    const updated = await invoke<RelayInfo[]>('nostr_remove_relay', { url });
+    setRelays(updated);
+    return updated;
+  };
+
+  return { relays, loading, addRelay, removeRelay, refresh };
 }

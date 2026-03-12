@@ -129,12 +129,13 @@ export function useCloneLoadout() {
     backup_path?: string;
   } | null>(null);
 
-  const cloneLoadout = async (loadoutJson: string, mode: 'overwrite' | 'new') => {
+  const cloneLoadout = async (loadoutJson: string, mode: 'overwrite' | 'new', agentId?: string) => {
     setLoading(true);
     try {
       const res = await invoke<typeof result>('clone_loadout', {
         loadoutJson,
         mode,
+        agentId: agentId || null,
       });
       setResult(res);
       return res;

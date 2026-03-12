@@ -952,7 +952,7 @@ struct CloneResult {
 }
 
 #[tauri::command]
-fn clone_loadout(loadout_json: String, mode: String) -> Result<CloneResult, String> {
+fn clone_loadout(loadout_json: String, mode: String, agent_id: Option<String>) -> Result<CloneResult, String> {
     let loadout: Value = serde_json::from_str(&loadout_json)
         .map_err(|e| format!("Invalid loadout JSON: {}", e))?;
 
@@ -982,8 +982,13 @@ fn clone_loadout(loadout_json: String, mode: String) -> Result<CloneResult, Stri
         });
     }
 
-    // Mode: "overwrite" - apply to current agent
-    // First, backup current config
+    // Mode: "overwrite" - apply loadout to an existing agent
+    let target_workspace = match &agent_id {
+        Some(id) => resolve_agent_workspace(id),
+        None => workspace_dir(),
+    };
+
+    // Backup current config
     let config_path = openclaw_dir().join("openclaw.json");
     let backup_name = format!("openclaw.backup-{}.json", chrono_now().replace(':', "-"));
     let backup_path = openclaw_dir().join(&backup_name);
@@ -995,30 +1000,182 @@ fn clone_loadout(loadout_json: String, mode: String) -> Result<CloneResult, Stri
     let mut skipped_skills: Vec<String> = Vec::new();
     let mut slot_changes: Vec<String> = Vec::new();
 
-    // Extract skill names from the loadout mods
-    if let Some(mods) = loadout.get("mods").and_then(|m| m.as_array()) {
+    // ── Persona: write SOUL.md, IDENTITY.md, AGENTS.md if included ──
+    if let Some(persona) = loadout.pointer("/slots/persona") {
+        if let Some(identity) = persona.get("identity") {
+            let name = identity.get("name").and_then(|v| v.as_str()).unwrap_or("Agent");
+            let creature = identity.get("creature").and_then(|v| v.as_str()).unwrap_or("AI assistant");
+            let vibe = identity.get("vibe").and_then(|v| v.as_str()).unwrap_or("");
+            let content = format!(
+                "# IDENTITY.md - Who Am I?\n\n- **Name:** {}\n- **Creature:** {}\n- **Vibe:** {}\n",
+                name, creature, vibe
+            );
+            fs::write(target_workspace.join("IDENTITY.md"), &content)
+                .map_err(|e| format!("Write IDENTITY.md: {}", e))?;
+            slot_changes.push(format!("persona: wrote IDENTITY.md ({})", name));
+        }
+
+        if let Some(soul) = persona.get("soul") {
+            if soul.get("included").and_then(|v| v.as_bool()).unwrap_or(false) {
+                if let Some(content) = soul.get("content").and_then(|v| v.as_str()) {
+                    fs::write(target_workspace.join("SOUL.md"), content)
+                        .map_err(|e| format!("Write SOUL.md: {}", e))?;
+                    slot_changes.push("persona: wrote SOUL.md".to_string());
+                }
+            }
+        }
+
+        if let Some(agents_md) = persona.get("agents") {
+            if agents_md.get("included").and_then(|v| v.as_bool()).unwrap_or(false) {
+                if let Some(content) = agents_md.get("content").and_then(|v| v.as_str()) {
+                    fs::write(target_workspace.join("AGENTS.md"), content)
+                        .map_err(|e| format!("Write AGENTS.md: {}", e))?;
+                    slot_changes.push("persona: wrote AGENTS.md".to_string());
+                }
+            }
+        }
+    }
+
+    // ── Skills: install from ClawHub, track bundled ──
+    if let Some(skills) = loadout.pointer("/slots/skills/items").and_then(|v| v.as_array()) {
+        let skills_dir = target_workspace.join("skills");
+        let _ = fs::create_dir_all(&skills_dir);
+
+        for skill in skills {
+            let name = skill.get("name").and_then(|n| n.as_str()).unwrap_or("");
+            let source = skill.get("source").and_then(|s| s.as_str()).unwrap_or("");
+            if name.is_empty() { continue; }
+
+            if source == "bundled" {
+                // Bundled skills are inherited from defaults — just note them
+                applied_skills.push(format!("{} (bundled)", name));
+                continue;
+            }
+
+            // Check if already installed in target workspace
+            if skills_dir.join(name).exists() {
+                applied_skills.push(format!("{} (already installed)", name));
+                continue;
+            }
+
+            // Try installing from ClawHub
+            let result = Command::new("clawhub")
+                .args(["install", name, "--workdir", &target_workspace.to_string_lossy(), "--no-input"])
+                .output();
+            match result {
+                Ok(output) if output.status.success() => {
+                    applied_skills.push(name.to_string());
+                }
+                _ => {
+                    skipped_skills.push(format!("{} (source: {}, install failed)", name, source));
+                }
+            }
+        }
+        if !applied_skills.is_empty() || !skipped_skills.is_empty() {
+            slot_changes.push(format!("skills: {} installed, {} skipped", applied_skills.len(), skipped_skills.len()));
+        }
+    } else if let Some(mods) = loadout.get("mods").and_then(|m| m.as_array()) {
+        // Legacy format: check mods array
+        let skills_dir = target_workspace.join("skills");
+        let _ = fs::create_dir_all(&skills_dir);
+
         for m in mods {
             let name = m.get("name").and_then(|n| n.as_str()).unwrap_or("");
             let source = m.get("source").and_then(|s| s.as_str()).unwrap_or("");
             if name.is_empty() { continue; }
 
-            // Check if skill exists locally
             let bundled = PathBuf::from("/opt/homebrew/lib/node_modules/openclaw/skills").join(name);
-            let custom = workspace_dir().join("skills").join(name);
+            let custom = skills_dir.join(name);
 
             if bundled.exists() || custom.exists() {
                 applied_skills.push(name.to_string());
+            } else if source == "custom" {
+                // Try ClawHub install
+                let result = Command::new("clawhub")
+                    .args(["install", name, "--workdir", &target_workspace.to_string_lossy(), "--no-input"])
+                    .output();
+                match result {
+                    Ok(output) if output.status.success() => {
+                        applied_skills.push(name.to_string());
+                    }
+                    _ => {
+                        skipped_skills.push(format!("{} (source: {}, not found)", name, source));
+                    }
+                }
             } else {
                 skipped_skills.push(format!("{} (source: {}, not found locally)", name, source));
             }
         }
     }
 
-    // Document slot differences
-    if let Some(slots) = loadout.get("slots").and_then(|s| s.as_object()) {
-        for (id, slot_data) in slots {
-            let component = slot_data.get("component").and_then(|c| c.as_str()).unwrap_or("unknown");
-            slot_changes.push(format!("{}: {}", id, component));
+    // ── Automations: write HEARTBEAT.md ──
+    if let Some(hb) = loadout.pointer("/slots/automations/heartbeat") {
+        if hb.get("included").and_then(|v| v.as_bool()).unwrap_or(false) {
+            if let Some(content) = hb.get("content").and_then(|v| v.as_str()) {
+                fs::write(target_workspace.join("HEARTBEAT.md"), content)
+                    .map_err(|e| format!("Write HEARTBEAT.md: {}", e))?;
+                slot_changes.push("automations: wrote HEARTBEAT.md".to_string());
+            }
+        }
+    }
+
+    // ── Memory: create directory structure and templates ──
+    if let Some(structure) = loadout.pointer("/slots/memory/structure") {
+        if let Some(dirs) = structure.get("directories").and_then(|v| v.as_array()) {
+            for dir in dirs {
+                if let Some(d) = dir.as_str() {
+                    let _ = fs::create_dir_all(target_workspace.join(d));
+                }
+            }
+        }
+        if let Some(templates) = structure.get("templateFiles").and_then(|v| v.as_array()) {
+            for tmpl in templates {
+                let path_str = tmpl.get("path").and_then(|v| v.as_str()).unwrap_or("");
+                let content = tmpl.get("content").and_then(|v| v.as_str()).unwrap_or("");
+                if !path_str.is_empty() {
+                    let full_path = target_workspace.join(path_str);
+                    if !full_path.exists() {
+                        if let Some(parent) = full_path.parent() {
+                            let _ = fs::create_dir_all(parent);
+                        }
+                        let _ = fs::write(&full_path, content);
+                    }
+                }
+            }
+        }
+        slot_changes.push("memory: created directory structure".to_string());
+    }
+
+    // ── Model: update agent config if loadout has model tiers ──
+    if let Some(tiers) = loadout.pointer("/slots/model/tiers") {
+        if let Some(main_tier) = tiers.get("main") {
+            let model = format!(
+                "{}/{}",
+                main_tier.get("provider").and_then(|v| v.as_str()).unwrap_or("anthropic"),
+                main_tier.get("model").and_then(|v| v.as_str()).unwrap_or("claude-sonnet-4-5")
+            );
+            // Update agent config entry if it exists in agents.list
+            if let Some(aid) = &agent_id {
+                let mut config: Value = fs::read_to_string(&config_path)
+                    .ok()
+                    .and_then(|c| serde_json::from_str(&c).ok())
+                    .unwrap_or(serde_json::json!({}));
+
+                if let Some(list) = config.pointer_mut("/agents/list").and_then(|v| v.as_array_mut()) {
+                    for entry in list.iter_mut() {
+                        if entry.get("id").and_then(|v| v.as_str()) == Some(aid) {
+                            entry.as_object_mut().unwrap().insert(
+                                "model".to_string(),
+                                serde_json::json!({ "primary": model }),
+                            );
+                            slot_changes.push(format!("model: set primary to {}", model));
+                            break;
+                        }
+                    }
+                    fs::write(&config_path, serde_json::to_string_pretty(&config).unwrap_or_default())
+                        .map_err(|e| format!("Failed to write config: {}", e))?;
+                }
+            }
         }
     }
 
@@ -1367,6 +1524,43 @@ fn list_loadouts() -> Vec<Value> {
     loadouts
 }
 
+/// Import a loadout from an absolute file path into the loadouts directory
+#[tauri::command]
+fn import_loadout_file(path: String) -> Result<Value, String> {
+    let content = fs::read_to_string(&path)
+        .map_err(|e| format!("Failed to read file: {}", e))?;
+    let loadout: Value = serde_json::from_str(&content)
+        .map_err(|e| format!("Invalid JSON: {}", e))?;
+
+    // Validate it looks like a loadout
+    if loadout.get("slots").is_none() && loadout.get("mods").is_none() {
+        return Err("File doesn't look like a valid loadout (missing slots/mods)".to_string());
+    }
+
+    // Save to loadouts directory
+    let loadouts_dir = workspace_dir().join("loadouts");
+    let _ = fs::create_dir_all(&loadouts_dir);
+
+    let name = loadout.pointer("/meta/name")
+        .and_then(|v| v.as_str())
+        .unwrap_or("imported");
+    let safe_name: String = name.chars()
+        .map(|c| if c.is_alphanumeric() || c == '-' || c == '_' { c } else { '-' })
+        .collect();
+    let timestamp = chrono_now().replace(':', "-").replace('T', "_");
+    let filename = format!("{}-{}.loadout.json", safe_name, timestamp);
+    let dest = loadouts_dir.join(&filename);
+
+    fs::write(&dest, serde_json::to_string_pretty(&loadout).unwrap_or_default())
+        .map_err(|e| format!("Failed to save loadout: {}", e))?;
+
+    Ok(serde_json::json!({
+        "filename": filename,
+        "name": name,
+        "path": dest.to_string_lossy(),
+    }))
+}
+
 #[tauri::command]
 fn read_file_absolute(path: String) -> Result<String, String> {
     fs::read_to_string(&path).map_err(|e| format!("Failed to read {}: {}", path, e))
@@ -1397,6 +1591,7 @@ pub fn run() {
             get_slots,
             get_agents,
             import_loadout,
+            import_loadout_file,
             export_loadout,
             export_loadout_safe,
             clone_loadout,
@@ -1412,6 +1607,8 @@ pub fn run() {
             nostr::nostr_publish_loadout,
             nostr::nostr_fetch_feed,
             nostr::nostr_get_relays,
+            nostr::nostr_add_relay,
+            nostr::nostr_remove_relay,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

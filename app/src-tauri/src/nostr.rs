@@ -178,8 +178,8 @@ pub async fn nostr_set_profile(profile: NostrProfile) -> Result<String, String> 
     let keys = load_keys().ok_or("No keys found. Generate or import keys first.")?;
     let client = Client::new(keys);
 
-    for relay in DEFAULT_RELAYS {
-        client.add_relay(*relay).await.map_err(|e| e.to_string())?;
+    for relay in load_relay_urls() {
+        client.add_relay(relay).await.map_err(|e| e.to_string())?;
     }
     client.connect().await;
 
@@ -236,8 +236,8 @@ pub async fn nostr_publish_loadout(
     let keys = load_keys().ok_or("No keys found. Generate or import keys first.")?;
     let client = Client::new(keys);
 
-    for relay in DEFAULT_RELAYS {
-        client.add_relay(*relay).await.map_err(|e| e.to_string())?;
+    for relay in load_relay_urls() {
+        client.add_relay(relay).await.map_err(|e| e.to_string())?;
     }
     client.connect().await;
 
@@ -291,13 +291,13 @@ pub async fn nostr_fetch_feed(
     let keys = load_keys().unwrap_or_else(Keys::generate);
     let client = Client::new(keys);
 
-    let relays: Vec<&str> = match &relay_urls {
-        Some(urls) => urls.iter().map(|s| s.as_str()).collect(),
-        None => DEFAULT_RELAYS.to_vec(),
+    let relays: Vec<String> = match relay_urls {
+        Some(urls) if !urls.is_empty() => urls,
+        _ => load_relay_urls(),
     };
 
     for relay in &relays {
-        client.add_relay(*relay).await.map_err(|e| e.to_string())?;
+        client.add_relay(relay.as_str()).await.map_err(|e| e.to_string())?;
     }
     client.connect().await;
 
@@ -365,13 +365,68 @@ pub struct RelayInfo {
     pub connected: bool,
 }
 
+fn relays_path() -> PathBuf {
+    data_dir().join("relays.json")
+}
+
+/// Load user relays from disk, falling back to defaults
+pub fn load_relay_urls() -> Vec<String> {
+    if let Ok(data) = fs::read_to_string(relays_path()) {
+        if let Ok(urls) = serde_json::from_str::<Vec<String>>(&data) {
+            if !urls.is_empty() {
+                return urls;
+            }
+        }
+    }
+    DEFAULT_RELAYS.iter().map(|s| s.to_string()).collect()
+}
+
+fn save_relay_urls(urls: &[String]) -> Result<(), String> {
+    let dir = data_dir();
+    fs::create_dir_all(&dir).map_err(|e| format!("Failed to create dir: {}", e))?;
+    let json = serde_json::to_string_pretty(urls).map_err(|e| format!("JSON error: {}", e))?;
+    fs::write(relays_path(), json).map_err(|e| format!("Write error: {}", e))?;
+    Ok(())
+}
+
 #[tauri::command]
 pub fn nostr_get_relays() -> Vec<RelayInfo> {
-    DEFAULT_RELAYS
+    load_relay_urls()
         .iter()
         .map(|url| RelayInfo {
             url: url.to_string(),
             connected: false,
         })
         .collect()
+}
+
+#[tauri::command]
+pub fn nostr_add_relay(url: String) -> Result<Vec<RelayInfo>, String> {
+    let trimmed = url.trim().to_string();
+    if !trimmed.starts_with("wss://") && !trimmed.starts_with("ws://") {
+        return Err("Relay URL must start with wss:// or ws://".to_string());
+    }
+    let mut urls = load_relay_urls();
+    if urls.contains(&trimmed) {
+        return Err("Relay already exists".to_string());
+    }
+    urls.push(trimmed);
+    save_relay_urls(&urls)?;
+    Ok(urls.iter().map(|u| RelayInfo { url: u.clone(), connected: false }).collect())
+}
+
+#[tauri::command]
+pub fn nostr_remove_relay(url: String) -> Result<Vec<RelayInfo>, String> {
+    let mut urls = load_relay_urls();
+    let original_len = urls.len();
+    urls.retain(|u| u != &url);
+    if urls.len() == original_len {
+        return Err("Relay not found".to_string());
+    }
+    if urls.is_empty() {
+        // Don't allow removing all relays — restore defaults
+        urls = DEFAULT_RELAYS.iter().map(|s| s.to_string()).collect();
+    }
+    save_relay_urls(&urls)?;
+    Ok(urls.iter().map(|u| RelayInfo { url: u.clone(), connected: false }).collect())
 }

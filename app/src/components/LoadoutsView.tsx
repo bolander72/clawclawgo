@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { useLoadouts } from '../hooks/useTauri';
 
@@ -14,6 +14,11 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [expandedLoadout, setExpandedLoadout] = useState<string | null>(null);
   const [loadoutCache, setLoadoutCache] = useState<Record<string, unknown>>({});
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importSuccess, setImportSuccess] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropZoneRef = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState(false);
 
   const saveCurrentLoadout = async () => {
     if (!saveName.trim()) return;
@@ -71,8 +76,54 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
     setExpandedLoadout(filename);
   };
 
+  const handleFileImport = async (file: File) => {
+    setImportError(null);
+    setImportSuccess(null);
+    try {
+      const text = await file.text();
+      // Validate JSON
+      const parsed = JSON.parse(text);
+      if (!parsed.slots && !parsed.mods) {
+        setImportError("File doesn't look like a valid loadout (missing slots/mods)");
+        return;
+      }
+      // Save via clone_loadout in "new" mode
+      await invoke('clone_loadout', {
+        loadoutJson: text,
+        mode: 'new',
+        agentId: null,
+      });
+      setImportSuccess(`Imported "${parsed.meta?.name || file.name}"`);
+      setTimeout(() => setImportSuccess(null), 4000);
+      refresh();
+    } catch (err) {
+      setImportError(`Import failed: ${err instanceof SyntaxError ? 'Invalid JSON' : String(err)}`);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file && (file.name.endsWith('.json') || file.type === 'application/json')) {
+      handleFileImport(file);
+    } else {
+      setImportError('Please drop a .json loadout file');
+    }
+  };
+
   return (
-    <div className="flex-1 p-6 overflow-y-auto">
+    <div
+      className="flex-1 p-6 overflow-y-auto"
+      ref={dropZoneRef}
+      onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={handleDrop}
+      style={{
+        outline: dragging ? '2px dashed var(--rc-cyan)' : 'none',
+        outlineOffset: '-4px',
+      }}
+    >
       <div className="max-w-2xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
@@ -90,17 +141,66 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
               {loadouts.length} loadout{loadouts.length !== 1 ? 's' : ''} saved
             </p>
           </div>
-          <button
-            onClick={() => setShowSaveDialog(true)}
-            className="px-4 py-2 rounded text-xs font-semibold uppercase tracking-wider transition-all hover:opacity-80"
-            style={{
-              background: 'var(--rc-cyan)',
-              color: 'var(--rc-bg)',
-            }}
-          >
-            + Save Current Loadout
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-4 py-2 rounded text-xs font-semibold uppercase tracking-wider border transition-all hover:opacity-80"
+              style={{
+                borderColor: 'var(--rc-border)',
+                color: 'var(--rc-text-muted)',
+                background: 'transparent',
+              }}
+            >
+              Import File
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,application/json"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleFileImport(file);
+                e.target.value = '';
+              }}
+            />
+            <button
+              onClick={() => setShowSaveDialog(true)}
+              className="px-4 py-2 rounded text-xs font-semibold uppercase tracking-wider transition-all hover:opacity-80"
+              style={{
+                background: 'var(--rc-cyan)',
+                color: 'var(--rc-bg)',
+              }}
+            >
+              + Save Current Loadout
+            </button>
+          </div>
         </div>
+
+        {/* Import feedback */}
+        {importError && (
+          <div className="mb-4 p-3 rounded-lg text-xs border" style={{ borderColor: 'var(--rc-red)', color: 'var(--rc-red)', background: 'rgba(255,50,50,0.05)' }}>
+            {importError}
+          </div>
+        )}
+        {importSuccess && (
+          <div className="mb-4 p-3 rounded-lg text-xs border" style={{ borderColor: 'var(--rc-green)', color: 'var(--rc-green)', background: 'rgba(0,255,100,0.05)' }}>
+            ✓ {importSuccess}
+          </div>
+        )}
+
+        {/* Drop zone hint when dragging */}
+        {dragging && (
+          <div
+            className="mb-4 p-8 rounded-lg border-2 border-dashed text-center"
+            style={{ borderColor: 'var(--rc-cyan)', background: 'rgba(0,240,255,0.05)' }}
+          >
+            <span className="text-2xl block mb-2" style={{ color: 'var(--rc-cyan)' }}>⬡</span>
+            <p className="text-xs font-semibold" style={{ color: 'var(--rc-cyan)' }}>
+              Drop loadout file here
+            </p>
+          </div>
+        )}
 
         {/* Save dialog */}
         {showSaveDialog && (
@@ -159,7 +259,10 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
           >
             <span className="text-3xl block mb-3" style={{ color: 'var(--rc-text-muted)' }}>⬡</span>
             <p className="text-xs" style={{ color: 'var(--rc-text-dim)' }}>
-              No saved loadouts yet. Save your current config or grab one from the Feed.
+              No saved loadouts yet. Save your current config, import a file, or grab one from the Feed.
+            </p>
+            <p className="text-[10px] mt-2" style={{ color: 'var(--rc-text-muted)' }}>
+              Drag & drop a .json loadout file anywhere on this page
             </p>
           </div>
         )}
