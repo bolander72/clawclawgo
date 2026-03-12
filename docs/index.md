@@ -15,7 +15,7 @@ hero:
 features:
   - icon: 🔧
     title: Modular Slots
-    details: Six standardized slots — Model, Persona, Skills, Integrations, Automations, Memory — each independently swappable.
+    details: Six standardized slots (Model, Persona, Skills, Integrations, Automations, Memory), each independently swappable.
   - icon: 📦
     title: One-Click Apply
     details: Export your agent config as a portable loadout. Apply someone else's to a new or existing agent in seconds.

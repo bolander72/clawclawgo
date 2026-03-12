@@ -6,7 +6,7 @@ export const slots: SlotData[] = [
     label: 'Soul',
     icon: '◈',
     status: 'active',
-    component: 'Quinn — defined',
+    component: 'Quinn (defined)',
     details: { agent_name: 'Quinn', soul_tokens: 2831, has_soul: true },
     subComponents: [
       { name: 'SOUL.md', status: 'active', detail: '~2831 tokens', icon: '◈' },

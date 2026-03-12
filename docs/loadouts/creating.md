@@ -25,5 +25,5 @@ When you find a loadout in the Feed that you like, it's automatically available 
 ## Tips
 
 - **Save before big changes.** Create a loadout before swapping models, rewriting your SOUL.md, or installing experimental skills.
-- **Name meaningfully.** "Quinn v3 — Sonnet main, no voice" is better than "backup2".
+- **Name meaningfully.** "Quinn v3: Sonnet main, no voice" is better than "backup2".
 - **Version your loadouts.** The meta includes a version number. Bump it when you make significant changes before re-publishing.

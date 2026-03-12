@@ -21,10 +21,10 @@ node ripperclaw.mjs export > my-loadout.json
 **What it captures:**
 - Model tiers (main, fast, free) from `openclaw.json`
 - Persona files (IDENTITY.md, SOUL.md, AGENTS.md) with PII scrubbing
-- Skills (bundled + clawhub-installed)
+- Skills (bundled and clawhub-installed)
 - Integrations (types only, no credentials)
 - Automations (HEARTBEAT.md content)
-- Memory (directory structure + template files)
+- Memory (directory structure and template files)
 
 ### `apply`
 

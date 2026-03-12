@@ -30,4 +30,4 @@ If someone shared a loadout file directly:
 
 ## Applying
 
-See the [Applying guide](/guide/applying) for the full apply flow — safety rules, model strategy options, and the step-by-step wizard.
+See the [Applying guide](/guide/applying) for the full apply flow: safety rules, model strategy options, and the step-by-step wizard.

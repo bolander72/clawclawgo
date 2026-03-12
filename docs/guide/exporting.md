@@ -6,22 +6,22 @@ Export your current agent configuration as a portable loadout file.
 
 | Slot | Exported | Scrubbed |
 |------|----------|----------|
-| Model | Tiers, providers, model names | — |
+| Model | Tiers, providers, model names | (none) |
 | Persona | SOUL.md, IDENTITY.md, AGENTS.md | Phone numbers, emails, addresses |
-| Skills | Names, versions, sources | — |
+| Skills | Names, versions, sources | (none) |
 | Integrations | Types and names (no credentials) | API keys, tokens, passwords |
-| Automations | HEARTBEAT.md content, cron job configs | — |
+| Automations | HEARTBEAT.md content, cron job configs | (none) |
 | Memory | Directory structure, template files | Actual memory content, facts, notes |
 
 ## PII Scrubbing
 
 Exports automatically scrub personally identifiable information:
 
-- Phone numbers → `[REDACTED_PHONE]`
-- Email addresses → `[REDACTED_EMAIL]`
-- Street addresses → `[REDACTED_ADDRESS]`
-- API keys and tokens → removed entirely
-- Absolute file paths → relativized
+- Phone numbers: `[REDACTED_PHONE]`
+- Email addresses: `[REDACTED_EMAIL]`
+- Street addresses: `[REDACTED_ADDRESS]`
+- API keys and tokens: removed entirely
+- Absolute file paths: relativized
 
 You can review what was scrubbed in the export report.
 
@@ -59,4 +59,4 @@ When publishing to Nostr, RipperClaw uses `export_loadout_safe` which applies st
 
 ## Export Format
 
-Exports use the [Loadout Schema](/reference/schema) — a JSON format with `meta`, `slots`, and `mods` sections. See the reference for the full spec.
+Exports use the [Loadout Schema](/reference/schema), a JSON format with `meta`, `slots`, and `mods` sections. See the reference for the full spec.

@@ -6,17 +6,17 @@ Apply a loadout to create a new agent or update an existing one.
 
 RipperClaw follows strict safety rules when applying:
 
-1. **Never overwrites existing agent workspaces** — if `~/.openclaw/agents/<id>/` exists, the apply is blocked
-2. **Backs up config before changes** — `openclaw.json` is copied to `openclaw.backup-<timestamp>.json`
-3. **Protects the default agent** — if `agents.list` is empty, automatically adds the current agent as `default: true` before creating the new one
-4. **Integrations are always manual** — credentials never transfer, you get a checklist with docs links
-5. **Persona requires confirmation** — SOUL.md changes are shown before applying
+1. **Never overwrites existing agent workspaces**: if `~/.openclaw/agents/<id>/` exists, the apply is blocked
+2. **Backs up config before changes**: `openclaw.json` is copied to `openclaw.backup-<timestamp>.json`
+3. **Protects the default agent**: if `agents.list` is empty, automatically adds the current agent as `default: true` before creating the new one
+4. **Integrations are always manual**: credentials never transfer, you get a checklist with docs links
+5. **Persona requires confirmation**: SOUL.md changes are shown before applying
 
 ## Apply Modes
 
 ### Create New Agent (Default)
 
-Creates a fresh agent workspace at `~/.openclaw/agents/<id>/`:
+Creates a fresh agent workspace at `~/.openclaw/agents/<id>/`.
 
 - Writes persona files (IDENTITY.md, SOUL.md, AGENTS.md)
 - Creates USER.md template (never copies actual user data)
@@ -40,8 +40,8 @@ Merges loadout changes into an existing agent:
 
 When applying, you choose how to handle models:
 
-- **Use loadout's models** — adopts exactly what the loadout specifies
-- **Use my models** — remaps loadout tiers to your existing model configuration
+- **Use loadout's models**: adopts exactly what the loadout specifies
+- **Use my models**: remaps loadout tiers to your existing model configuration
 
 This is useful when a loadout uses paid models you don't have access to, or when you prefer local models.
 

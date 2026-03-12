@@ -229,7 +229,7 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
         })));
         setStep('done');
       } else {
-        setApplyError('Apply failed — check results for details');
+        setApplyError('Apply failed. Check results for details.');
         setActions(prev => prev.map((action, i) => ({
           ...action,
           status: result.results[i]?.status === 'error' ? 'error' : 'done',
@@ -537,7 +537,7 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
                   </span>
                   <span style={{ color: action.status === 'error' ? 'var(--rc-red)' : 'var(--rc-text)' }}>
                     {action.description}
-                    {action.error && ` — ${action.error}`}
+                    {action.error && `: ${action.error}`}
                   </span>
                 </div>
               ))}

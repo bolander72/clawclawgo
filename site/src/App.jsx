@@ -150,7 +150,7 @@ function Hero() {
 
         {/* Subhead */}
         <p className="text-lg md:text-xl text-rc-text-dim max-w-2xl mx-auto mb-4 leading-relaxed">
-          OpenClaw agents are built from loadouts — the models, integrations, skills, and personality
+          OpenClaw agents are built from loadouts: the models, integrations, skills, and personality
           that make each one unique. Browse what others have built. Copy what works. Make it yours.
         </p>
 
@@ -512,7 +512,7 @@ function WhatIsSection() {
     {
       icon: IconPuzzle,
       title: 'Modular loadouts',
-      desc: 'Every agent is built from six slots — model, persona, skills, integrations, automations, memory. Mix and match to create something that fits exactly how you work.',
+      desc: 'Every agent is built from six slots: model, persona, skills, integrations, automations, memory. Mix and match to create something that fits exactly how you work.',
     },
     {
       icon: IconCopy,
@@ -522,7 +522,7 @@ function WhatIsSection() {
     {
       icon: IconMessages,
       title: 'Share your build',
-      desc: 'Publish your loadout for the community. Show how you\'ve wired up your agent — what model, which skills, what personality. Help others skip the setup grind.',
+      desc: 'Publish your loadout for the community. Show how you\'ve wired up your agent: what model, which skills, what personality. Help others skip the setup grind.',
     },
     {
       icon: IconBolt,
@@ -550,7 +550,7 @@ function WhatIsSection() {
           </h2>
           <p className="text-rc-text-dim text-lg max-w-2xl mx-auto">
             A place to build, share, and discover AI agent loadouts.
-            Think dotfiles for your AI — modular, shareable, and endlessly remixable.
+            Think dotfiles for your AI: modular, shareable, and endlessly remixable.
           </p>
         </div>
 
@@ -589,7 +589,7 @@ function HowItWorks() {
     {
       num: '02',
       title: 'Share it',
-      desc: 'Publish your loadout to the community. Others can see exactly how your agent is configured — no black boxes.',
+      desc: 'Publish your loadout to the community. Others can see exactly how your agent is configured. No black boxes.',
     },
     {
       num: '03',
@@ -640,10 +640,10 @@ function HowItWorks() {
 
 function AnatomySection() {
   const slots = [
-    { name: 'Model', icon: IconCube, desc: 'Which LLMs power it. Route Opus for deep thinking, Sonnet for speed, local Qwen for free — or one model for everything.', color: 'from-purple-500/30 to-blue-500/30' },
+    { name: 'Model', icon: IconCube, desc: 'Which LLMs power it. Route Opus for deep thinking, Sonnet for speed, local Qwen for free, or one model for everything.', color: 'from-purple-500/30 to-blue-500/30' },
     { name: 'Persona', icon: IconSparkles, desc: 'How it thinks, talks, and acts. Tone, opinions, boundaries, identity. The stuff that makes it feel like yours, not a chatbot.', color: 'from-cyan-500/30 to-emerald-500/30' },
-    { name: 'Skills', icon: IconBolt, desc: 'What it can do. Voice chat, coding, web research, marketing, home automation — install from ClawHub or build your own.', color: 'from-pink-500/30 to-violet-500/30' },
-    { name: 'Integrations', icon: IconPlug, desc: 'What it connects to. iMessage, Calendar, Email, Smart Home, cameras, GitHub, voice I/O — your life\'s APIs wired in.', color: 'from-green-500/30 to-cyan-500/30' },
+    { name: 'Skills', icon: IconBolt, desc: 'What it can do. Voice chat, coding, web research, marketing, home automation. Install from ClawHub or build your own.', color: 'from-pink-500/30 to-violet-500/30' },
+    { name: 'Integrations', icon: IconPlug, desc: 'What it connects to. iMessage, Calendar, Email, Smart Home, cameras, GitHub, voice I/O. Your life\'s APIs wired in.', color: 'from-green-500/30 to-cyan-500/30' },
     { name: 'Automations', icon: IconClockHour4, desc: 'What it does on its own. Heartbeat checks, cron jobs, monitors, reminders. The autonomous layer.', color: 'from-rose-500/30 to-blue-500/30' },
     { name: 'Memory', icon: IconServer, desc: 'How it remembers. Context engine, conversation history, facts, daily notes, handoff between sessions.', color: 'from-amber-500/30 to-orange-500/30' },
   ]
@@ -656,7 +656,7 @@ function AnatomySection() {
             Anatomy of a loadout
           </h2>
           <p className="text-rc-text-dim text-lg max-w-xl mx-auto">
-            Six slots. Infinite combinations. Every slot is independent — swap one without touching the rest.
+            Six slots. Infinite combinations. Every slot is independent. Swap one without touching the rest.
           </p>
         </div>
 
@@ -691,7 +691,7 @@ function FAQSection() {
   const faqs = [
     {
       q: 'What is a loadout?',
-      a: 'A loadout is a complete agent configuration — the model, integrations, skills, personality, memory, and scheduling that define how an AI agent works. Think of it like a character build in a game, or dotfiles for your AI.',
+      a: 'A loadout is a complete agent configuration: the model, integrations, skills, personality, memory, and scheduling that define how an AI agent works. Think of it like a character build in a game, or dotfiles for your AI.',
     },
     {
       q: 'Do I need OpenClaw to use a loadout?',
@@ -699,7 +699,7 @@ function FAQSection() {
     },
     {
       q: 'How do I create a loadout?',
-      a: 'Set up your OpenClaw agent however you want — pick models, connect integrations, install skills, write a personality file. Then export your config as a loadout and publish it here.',
+      a: 'Set up your OpenClaw agent however you want. Pick models, connect integrations, install skills, write a personality file. Then export your config as a loadout and publish it here.',
     },
     {
       q: 'Can I copy someone else\'s loadout?',
@@ -707,11 +707,11 @@ function FAQSection() {
     },
     {
       q: 'What\'s in a typical loadout?',
-      a: 'Six slots: Model (which LLMs), Persona (how it thinks and talks), Skills (what it can do), Integrations (what it connects to), Automations (what it does on its own), and Memory (how it remembers).',
+      a: 'Six slots. Model (which LLMs), Persona (how it thinks and talks), Skills (what it can do), Integrations (what it connects to), Automations (what it does on its own), and Memory (how it remembers).',
     },
     {
       q: 'Is this free?',
-      a: 'RipperClaw is free. OpenClaw is free and open source. You\'ll pay for AI model API calls depending on which providers you use — or run fully local models for zero cost.',
+      a: 'RipperClaw is free. OpenClaw is free and open source. You\'ll pay for AI model API calls depending on which providers you use, or run fully local models for zero cost.',
     },
     {
       q: 'What is OpenClaw?',

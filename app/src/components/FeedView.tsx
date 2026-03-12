@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNostrKeys, useNostrFeed, type FeedLoadout } from '../hooks/useNostr';
 
-// Mock feed data — shown when no real events exist yet
+// Mock feed data, shown when no real events exist yet
 const mockLoadouts: DisplayLoadout[] = [
   {
     id: 'mock-1',
@@ -209,7 +209,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
             ) : (
               <div className="flex items-center justify-between w-full">
                 <span className="text-[10px]" style={{ color: 'var(--rc-text-muted)' }}>
-                  No identity set — generate or import a nostr key to publish & subscribe
+                  No identity set. Generate or import a nostr key to publish & subscribe.
                 </span>
                 <button
                   onClick={() => setShowKeySetup(!showKeySetup)}

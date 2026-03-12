@@ -21,18 +21,21 @@ The recipient can import the file in RipperClaw via drag-and-drop or the **Impor
 
 ## What Gets Shared
 
-Everything in the loadout is designed to be safe to share:
+Everything in the loadout is designed to be safe to share.
 
-- ✅ Model names and tiers
-- ✅ Persona files (PII scrubbed)
-- ✅ Skill names and versions
-- ✅ Integration types (not credentials)
-- ✅ Heartbeat tasks
-- ✅ Memory directory structure
-- ❌ API keys, tokens, passwords
-- ❌ Phone numbers, emails, addresses
-- ❌ Actual memory content
-- ❌ Chat history or conversations
+**What's included:**
+- Model names and tiers
+- Persona files (PII scrubbed)
+- Skill names and versions
+- Integration types (not credentials)
+- Heartbeat tasks
+- Memory directory structure
+
+**What's excluded:**
+- API keys, tokens, passwords
+- Phone numbers, emails, addresses
+- Actual memory content
+- Chat history or conversations
 
 ## Licensing
 

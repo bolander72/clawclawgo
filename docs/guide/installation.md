@@ -11,7 +11,7 @@ Download the latest release from [GitHub Releases](https://github.com/bolander72
 3. On first launch, right-click → Open (macOS may block unsigned apps)
 
 ::: tip
-RipperClaw requires OpenClaw to be installed and running. The app reads your config from `~/.openclaw/openclaw.json`.
+RipperClaw requires OpenClaw installed and running. The app reads your config from `~/.openclaw/openclaw.json`.
 :::
 
 ### Windows
@@ -35,7 +35,7 @@ chmod +x RipperClaw_*.AppImage
 
 ## CLI
 
-The CLI is a standalone Node.js script — no install needed beyond cloning the repo:
+The CLI is a standalone Node.js script. No install needed beyond cloning the repo:
 
 ```bash
 git clone https://github.com/bolander72/ripperclaw.git

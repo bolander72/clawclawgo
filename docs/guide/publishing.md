@@ -4,10 +4,10 @@ Share your loadout with the community by publishing it to the decentralized [Nos
 
 ## Why Nostr?
 
-- **No accounts** — your identity is a cryptographic key pair
-- **No platform lock-in** — loadouts are stored across multiple relays
-- **No moderation bottleneck** — anyone can publish, anyone can relay
-- **Censorship resistant** — no single point of failure
+- **No accounts**: your identity is a cryptographic key pair
+- **No platform lock-in**: loadouts are stored across multiple relays
+- **No moderation bottleneck**: anyone can publish, anyone can relay
+- **Censorship resistant**: no single point of failure
 
 ## First-Time Setup
 
@@ -25,7 +25,7 @@ Keys are stored locally at `~/.ripperclaw/keys.json` with restricted permissions
 1. Click the **▲ Publish** button
 2. Name your loadout and add tags
 3. Review the safe export (PII scrubbed)
-4. Publish — the loadout is sent to your configured relays
+4. Publish: the loadout is sent to your configured relays
 
 Published loadouts use **NIP-33** (parameterized replaceable events) with kind `38333`. This means publishing again with the same name updates the existing event rather than creating a duplicate.
 
@@ -34,7 +34,7 @@ Published loadouts use **NIP-33** (parameterized replaceable events) with kind `
 Go to **Settings → Identity** to:
 
 - View your `npub` (public key)
-- Reveal and copy your `nsec` (private key) — handle with care
+- Reveal and copy your `nsec` (private key): handle with care
 - Import a different key
 - Regenerate keys (irreversible for the old key)
 

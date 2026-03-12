@@ -1,6 +1,6 @@
 # Loadouts Overview
 
-A **loadout** is a portable snapshot of an AI agent's configuration. It captures everything about how an agent is set up — which models it uses, its personality, installed skills, connected services, scheduled tasks, and memory structure.
+A **loadout** is a portable snapshot of an AI agent's configuration. It captures everything about how an agent is set up: which models it uses, its personality, installed skills, connected services, scheduled tasks, and memory structure.
 
 ## What's in a Loadout?
 
@@ -29,7 +29,7 @@ A **loadout** is a portable snapshot of an AI agent's configuration. It captures
 Export → Save → (optional) Publish → Browse → Apply
 ```
 
-1. **Export** your current agent config → produces a loadout JSON file
+1. **Export** your current agent config produces a loadout JSON file
 2. **Save** it locally for versioning or backup
 3. **Publish** to Nostr for others to discover
 4. **Browse** the feed for loadouts shared by others
@@ -38,7 +38,7 @@ Export → Save → (optional) Publish → Browse → Apply
 ## Key Principles
 
 ### Portable
-Loadouts are plain JSON. Copy them, email them, paste them, host them — they work anywhere.
+Loadouts are plain JSON. Copy them, email them, paste them, host them. They work anywhere.
 
 ### Private by Default
 Exports automatically scrub phone numbers, emails, API keys, and personal data. You review what gets shared.

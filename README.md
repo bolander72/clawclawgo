@@ -10,15 +10,15 @@ Modular loadouts for AI agents. Build, share, and remix how your agent is config
 
 ## What is it?
 
-Your AI agent is more than config files. It's a combination of models, skills, integrations, personality, memory, and automations that work together. RipperClaw lets you package all of that as a **loadout** — then export it, share it, or apply someone else's to a new agent.
+Your AI agent is more than config files. It's a combination of models, skills, integrations, personality, memory, and automations that work together. RipperClaw lets you package all of that as a **loadout**. Then export it, share it, or apply someone else's to a new agent.
 
 ### The 6 Slots
 
 | Slot | What It Maps To |
 |---|---|
-| **Model** | LLM routing — primary, sub-agent, local (Ollama), image models |
+| **Model** | LLM routing: primary, sub-agent, local (Ollama), image models |
 | **Persona** | Personality, identity, behavioral rules (SOUL.md, IDENTITY.md, USER.md) |
-| **Skills** | Installed skill packages — voice, vision, tools, workflows |
+| **Skills** | Installed skill packages: voice, vision, tools, workflows |
 | **Integrations** | Channels, calendar, email, smart home, cameras, GitHub |
 | **Automations** | Heartbeat tasks, cron jobs, scheduled routines |
 | **Memory** | Context engine, LCM, memory files, daily notes |
@@ -35,27 +35,27 @@ npm run tauri dev
 
 ### Features
 
-- **Live slot visualization** — reads your OpenClaw config in real-time
-- **Multi-agent support** — switch between agents if you run more than one
-- **The Feed** — browse and clone loadouts published on Nostr
-- **Compare view** — side-by-side diff of any loadout against yours
-- **Apply wizard** — slot-by-slot review with safety guards, model remapping, and skill installs
-- **PII scrubber** — strips 12+ pattern types before publishing
-- **Publish flow** — review scrubbed output, sign with Nostr keys, push to relays
+- **Live slot visualization**: reads your OpenClaw config in real-time
+- **Multi-agent support**: switch between agents if you run more than one
+- **The Feed**: browse and clone loadouts published on Nostr
+- **Compare view**: side-by-side diff of any loadout against yours
+- **Apply wizard**: slot-by-slot review with safety guards, model remapping, and skill installs
+- **PII scrubber**: strips 12+ pattern types before publishing
+- **Publish flow**: review scrubbed output, sign with Nostr keys, push to relays
 
 ## Apply Flow
 
 Apply a loadout to create a new agent or configure an existing one:
 
-1. **Select loadout** — from the Feed, a file, or a saved loadout
-2. **Choose target** — pick an agent ID and name
-3. **Review slots** — slot-by-slot preview with warnings and options
-4. **Apply** — workspace created, skills installed, config wired up
+1. **Select loadout**: from the Feed, a file, or a saved loadout
+2. **Choose target**: pick an agent ID and name
+3. **Review slots**: slot-by-slot preview with warnings and options
+4. **Apply**: workspace created, skills installed, config wired up
 
 Safety rules:
 - Never overwrites an existing agent workspace
 - Protects your default agent when adding to `agents.list`
-- Credentials and integrations are never copied — always manual setup
+- Credentials and integrations are never copied: always manual setup
 - Automatic backup of config before changes
 - `--use-my-models` remaps loadout models to your existing tiers
 
@@ -77,7 +77,7 @@ node cli/ripperclaw.mjs apply loadout.json --agent my-bot --use-my-models
 
 ## The Feed
 
-Share your loadout on [Nostr](https://nostr.com/) using kind 38333. Your loadout is JSON, signed with your keys, and published to relays. Update it anytime — the old version gets replaced.
+Share your loadout on [Nostr](https://nostr.com/) using kind 38333. Your loadout is JSON, signed with your keys, and published to relays. Update it anytime and the old version gets replaced.
 
 | Mode | How It Works |
 |---|---|
@@ -91,7 +91,7 @@ The site at [ripperclaw.com](https://ripperclaw.com) is built with Vite + React 
 
 ## Privacy & Security
 
-The PII scrubber runs **locally** before any data leaves your machine:
+The PII scrubber runs locally before any data leaves your machine:
 
 - Phone numbers, email addresses, SSNs
 - IP addresses, API keys, bearer tokens, nostr secret keys
@@ -123,10 +123,10 @@ ripperclaw/
 
 ## Built With
 
-- [Tauri v2](https://v2.tauri.app/) — native desktop runtime
-- [React](https://react.dev/) + [Tailwind CSS](https://tailwindcss.com/) — frontend
-- [nostr-sdk](https://github.com/rust-nostr/nostr) — Nostr protocol (Rust)
-- [OpenClaw](https://openclaw.ai/) — the agent platform this is built for
+- [Tauri v2](https://v2.tauri.app/): native desktop runtime
+- [React](https://react.dev/) + [Tailwind CSS](https://tailwindcss.com/): frontend
+- [nostr-sdk](https://github.com/rust-nostr/nostr): Nostr protocol (Rust)
+- [OpenClaw](https://openclaw.ai/): the agent platform this is built for
 
 ## License
 

@@ -22,11 +22,11 @@ Download the latest release for your platform from the [releases page](https://g
 
 Open RipperClaw. If OpenClaw's gateway is running, you'll see **LIVE** in the status bar. The app automatically detects your config at `~/.openclaw/openclaw.json`.
 
-If you see **MOCK**, the gateway isn't reachable — RipperClaw will show sample data so you can still explore the UI.
+If you see **MOCK**, the gateway isn't reachable. RipperClaw will show sample data so you can still explore the UI.
 
 ## 3. View Your Loadout
 
-The **Slots** view shows your current agent's configuration across all 6 slots. Click any slot to see its details — which model you're running, what skills are installed, your integrations, etc.
+The **Slots** view shows your current agent's configuration across all 6 slots. Click any slot to see its details: which model you're running, what skills are installed, your integrations, etc.
 
 ## 4. Save a Snapshot
 
@@ -62,6 +62,6 @@ node ripperclaw.mjs apply loadout.json --agent my-bot
 
 ## Next Steps
 
-- [Slots](/guide/slots) — deep dive into each slot
-- [Exporting](/guide/exporting) — customize your exports
-- [Publishing](/guide/publishing) — share on Nostr
+- [Slots](/guide/slots): deep dive into each slot
+- [Exporting](/guide/exporting): customize your exports
+- [Publishing](/guide/publishing): share on Nostr

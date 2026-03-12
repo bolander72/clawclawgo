@@ -84,7 +84,7 @@ function App() {
           className="w-14 flex flex-col items-center py-4 gap-2 border-r"
           style={{ borderColor: 'var(--rc-border)', background: 'var(--rc-surface)' }}
         >
-          {/* Agent selector — only when multiple agents */}
+          {/* Agent selector (only when multiple agents) */}
           {agents.length > 1 && (
             <div className="mb-2 pb-2 w-full flex flex-col items-center gap-1" style={{ borderBottom: '1px solid var(--rc-border)' }}>
               {agents.map((agent) => (

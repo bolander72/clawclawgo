@@ -1,6 +1,6 @@
 # Slots
 
-Every loadout is made up of **6 slots**. Each slot is independent — you can swap, remix, or skip any of them.
+Every loadout is made up of **6 slots**. Each slot is independent. You can swap, remix, or skip any of them.
 
 ## Model
 
@@ -20,12 +20,12 @@ When applying, you can choose **"Use my models"** to remap tiers to your existin
 
 ## Persona
 
-Who the agent is — its identity, personality, and working style.
+Who the agent is: its identity, personality, and working style.
 
-- **IDENTITY.md** — name, creature type, vibe, emoji
-- **SOUL.md** — personality, communication style, anti-patterns, values
-- **AGENTS.md** — workspace conventions, coding principles, session routines
-- **USER.md** — info about the human (skipped by default on export, template on apply)
+- **IDENTITY.md**: name, creature type, vibe, emoji
+- **SOUL.md**: personality, communication style, anti-patterns, values
+- **AGENTS.md**: workspace conventions, coding principles, session routines
+- **USER.md**: info about the human (skipped by default on export, template on apply)
 
 Applying a persona requires explicit confirmation since it changes the agent's core character.
 
@@ -34,8 +34,8 @@ Applying a persona requires explicit confirmation since it changes the agent's c
 Installed skill packages that give the agent capabilities.
 
 Skills come from two sources:
-- **Bundled** — ship with OpenClaw (weather, github, calendar, etc.)
-- **Community** — installed from [ClawHub](https://clawhub.com)
+- **Bundled**: ship with OpenClaw (weather, github, calendar, etc.)
+- **Community**: installed from [ClawHub](https://clawhub.com)
 
 On apply, bundled skills are enabled automatically. Community skills are installed via `clawhub install`.
 
@@ -52,15 +52,15 @@ External services the agent connects to.
 - Developer tools (GitHub, SSH)
 
 ::: warning
-Integrations are **always manual setup**. A loadout tells you what integrations the source agent used and links to setup docs, but never copies credentials or connection details.
+Integrations are always manual setup. A loadout tells you what integrations the source agent used and links to setup docs, but never copies credentials or connection details.
 :::
 
 ## Automations
 
 Scheduled and recurring tasks.
 
-- **Heartbeat tasks** — periodic checks defined in HEARTBEAT.md
-- **Cron jobs** — scheduled via OpenClaw's cron system
+- **Heartbeat tasks**: periodic checks defined in HEARTBEAT.md
+- **Cron jobs**: scheduled via OpenClaw's cron system
 
 On apply, HEARTBEAT.md is written directly. Cron jobs are flagged if they depend on integrations or skills that aren't set up yet.
 
@@ -68,10 +68,10 @@ On apply, HEARTBEAT.md is written directly. Cron jobs are flagged if they depend
 
 The agent's context management system.
 
-- **Engine** — which memory system (e.g., LCM/lossless-claw)
-- **Directory structure** — `memory/`, `memory/reference/`, `memory/research/`
-- **Template files** — `handoff.md`, `active-work.md`, `facts.md`
+- **Engine**: which memory system (e.g., LCM/lossless-claw)
+- **Directory structure**: `memory/`, `memory/reference/`, `memory/research/`
+- **Template files**: `handoff.md`, `active-work.md`, `facts.md`
 
 ::: info
-Memory exports **structure only** — never actual content. Your agent's memories, conversations, and facts stay private.
+Memory exports structure only, never actual content. Your agent's memories, conversations, and facts stay private.
 :::

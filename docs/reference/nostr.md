@@ -1,10 +1,10 @@
 # Nostr Protocol
 
-RipperClaw uses the [Nostr](https://nostr.com) protocol for decentralized loadout sharing. No accounts, no servers to manage, no platform lock-in.
+RipperClaw uses the [Nostr](https://nostr.com) protocol for decentralized loadout sharing. No accounts. No servers to manage. No platform lock-in.
 
 ## Event Kind
 
-Loadouts use **kind `38333`** — a NIP-33 parameterized replaceable event. This means:
+Loadouts use **kind `38333`**, a NIP-33 parameterized replaceable event. This means:
 
 - Each loadout is identified by the `d` tag (loadout name)
 - Publishing with the same name **replaces** the previous version

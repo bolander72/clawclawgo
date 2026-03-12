@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * ripperclaw CLI — export and apply OpenClaw agent loadouts
+ * ripperclaw CLI: export and apply OpenClaw agent loadouts
  *
  * Usage:
  *   ripperclaw export [--agent <id>] [--out <file>]
@@ -130,7 +130,7 @@ function exportLoadout(agentId) {
     } : { included: false },
     user: {
       included: false,
-      note: 'USER.md excluded — contains personal information about the human'
+      note: 'USER.md excluded: contains personal information about the human'
     },
     agents: agentsContent ? {
       included: true,
@@ -258,7 +258,7 @@ function exportLoadout(agentId) {
     engine: {
       type: config.plugins?.slots?.contextEngine || 'default',
       description: config.plugins?.slots?.contextEngine === 'lossless-claw'
-        ? 'Lossless Context Management — auto-compacts conversation history'
+        ? 'Lossless Context Management: auto-compacts conversation history'
         : 'Default OpenClaw context engine',
     },
   };
@@ -321,7 +321,7 @@ function applyLoadout(loadoutPath, agentId, options = {}) {
     const defaultModel = defaults.model?.primary || 'anthropic/claude-sonnet-4-5';
     actions.push({
       type: 'add-agent-config',
-      note: 'Protecting current default agent — adding explicit entry before new agent',
+      note: 'Protecting current default agent: adding explicit entry before new agent',
       agent: {
         id: 'main',
         name: 'Main Agent',
@@ -415,7 +415,7 @@ function applyLoadout(loadoutPath, agentId, options = {}) {
           warnings.push(`⚙️  Skill "${skill.name}" needs configuration: ${skill.configHint || 'check skill docs'}`);
         }
       } else {
-        warnings.push(`📦 Skill "${skill.name}" (source: ${skill.source}) — manual install needed`);
+        warnings.push(`📦 Skill "${skill.name}" (source: ${skill.source}): manual install needed`);
       }
     }
   }
@@ -424,7 +424,7 @@ function applyLoadout(loadoutPath, agentId, options = {}) {
   const intSlot = loadout.slots?.integrations;
   if (intSlot?.items) {
     for (const integration of intSlot.items) {
-      warnings.push(`🔧 Integration "${integration.name}" — manual setup required${integration.docsUrl ? ` (${integration.docsUrl})` : ''}`);
+      warnings.push(`🔧 Integration "${integration.name}": manual setup required${integration.docsUrl ? ` (${integration.docsUrl})` : ''}`);
     }
   }
 
@@ -509,7 +509,7 @@ function applyLoadout(loadoutPath, agentId, options = {}) {
           break;
 
         case 'set-model':
-          // Model is set via the agent config entry — just track it
+          // Model is set via the agent config entry: just track it
           results.push({ ...action, status: 'ok (applied via config)' });
           break;
 
@@ -539,7 +539,7 @@ function applyLoadout(loadoutPath, agentId, options = {}) {
         }
 
         case 'create-cron':
-          // Would need gateway cron API — flag for manual setup
+          // Would need gateway cron API: flag for manual setup
           results.push({ ...action, status: 'skipped (cron jobs must be created via gateway)' });
           break;
 
@@ -637,7 +637,7 @@ function previewLoadout(loadoutPath) {
   // Integrations
   const i = loadout.slots?.integrations;
   if (i?.items?.length) {
-    lines.push(`🔌 Integrations (${i.items.length}) — all manual setup`);
+    lines.push(`🔌 Integrations (${i.items.length}): all manual setup`);
     for (const int of i.items) {
       lines.push(`  ${int.name} (${int.provider})`);
     }
@@ -719,7 +719,7 @@ try {
       break;
     }
     default:
-      console.log(`ripperclaw — OpenClaw agent loadout manager
+      console.log(`ripperclaw: OpenClaw agent loadout manager
 
 Commands:
   export [--agent <id>] [--out <file>]    Export current agent as loadout

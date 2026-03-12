@@ -107,7 +107,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
             >
               <p className="mb-3">
                 Your loadout will be signed with a <strong style={{ color: 'var(--rc-text)' }}>Nostr keypair</strong> so others
-                can verify it's yours. This is your publishing identity — it stays with your loadouts.
+                can verify it's yours. This is your publishing identity. It stays with your loadouts.
               </p>
               <p style={{ color: 'var(--rc-text-muted)' }}>
                 You can update your identity anytime in <strong>Settings</strong>.
@@ -181,7 +181,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
 
             {/* Or stay anon */}
             <div className="text-[10px] text-center" style={{ color: 'var(--rc-text-muted)' }}>
-              No Nostr account? No problem — publish anonymously with a generated key.
+              No Nostr account? No problem. Publish anonymously with a generated key.
               <br />Add a display name, avatar, and NIP-05 verification later in Settings.
             </div>
 
@@ -357,7 +357,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
               }}
             >
               <div className="font-semibold mb-1" style={{ color: 'var(--rc-green)' }}>
-                PII Scrub Complete — {scrubReport.scrubbed_fields.length} fields cleaned
+                PII Scrub Complete: {scrubReport.scrubbed_fields.length} fields cleaned
               </div>
               {scrubReport.scrubbed_fields.length > 0 && (
                 <ul className="space-y-0.5 mt-2" style={{ color: 'var(--rc-text-muted)' }}>

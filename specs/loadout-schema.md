@@ -4,10 +4,10 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
 
 ## Design Principles
 
-1. **Human-readable** — JSON with clear field names, no encoded blobs
-2. **Apply-safe** — no credentials, no PII, no absolute paths
-3. **Slot-independent** — each slot is self-contained, can be applied/skipped individually
-4. **Version-aware** — skills pin versions, models specify providers
+1. **Human-readable**: JSON with clear field names, no encoded blobs
+2. **Apply-safe**: no credentials, no PII, no absolute paths
+3. **Slot-independent**: each slot is self-contained, can be applied/skipped individually
+4. **Version-aware**: skills pin versions, models specify providers
 
 ---
 
@@ -122,7 +122,7 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
     },
     "user": {
       "included": false,
-      "note": "USER.md excluded — contains personal information about the human"
+      "note": "USER.md excluded: contains personal information about the human"
     },
     "agents": {
       "included": true,
@@ -177,7 +177,7 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
 **Apply behavior:**
 - Auto-install from ClawHub via `clawhub install <name>@<version>`
 - If already installed at same version: ✅ skip
-- If already installed at different version: show "weather v1.2.0 installed (loadout uses v1.4.0) [Update →]" — default: keep user's version
+- If already installed at different version: show "weather v1.2.0 installed (loadout uses v1.4.0) [Update →]": default: keep user's version
 - If `requiresConfig: true`: flag after install with `configHint`
 - Skills not on ClawHub (`source: "local"` or `source: "custom"`): show "manual install needed" with description
 
@@ -228,7 +228,7 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
 ```
 
 **Apply behavior:**
-- ❌ Never auto-applied — credentials, OAuth, device pairing all manual
+- ❌ Never auto-applied: credentials, OAuth, device pairing all manual
 - Show checklist: "This loadout uses these integrations:"
 - Each item shows setup status (✅ already configured / ⚙️ setup needed)
 - Link to docs where available
@@ -299,7 +299,7 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
     },
     "engine": {
       "type": "lcm",
-      "description": "Lossless Context Management — auto-compacts conversation history"
+      "description": "Lossless Context Management: auto-compacts conversation history"
     }
   }
 }
@@ -308,7 +308,7 @@ The canonical format for exporting, sharing, and applying OpenClaw agent loadout
 **Apply behavior:**
 - Create directory structure if missing
 - Write template files only if they don't already exist (never overwrite memory)
-- In replace mode: still never overwrite — memory is sacred
+- In replace mode: still never overwrite: memory is sacred
 - `engine` field is informational only (LCM is an OpenClaw feature, not configurable per-loadout)
 
 ---

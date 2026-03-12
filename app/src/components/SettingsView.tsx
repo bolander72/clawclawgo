@@ -269,7 +269,7 @@ export function SettingsView() {
                   {label}
                   {field === 'nip05' && (
                     <span className="normal-case tracking-normal ml-1" style={{ color: 'var(--rc-text-muted)' }}>
-                      — proves you own a domain
+                      (proves you own a domain)
                     </span>
                   )}
                 </label>

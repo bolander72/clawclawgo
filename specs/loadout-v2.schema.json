@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://ripperclaw.com/schemas/loadout-v2.json",
   "title": "Ripperclaw Loadout v2",
-  "description": "Canonical format for OpenClaw agent loadouts — export, share, and apply.",
+  "description": "Canonical format for OpenClaw agent loadouts: export, share, and apply.",
   "type": "object",
   "required": ["schema", "meta", "slots"],
   "properties": {
@@ -329,7 +329,7 @@
             "type": { "type": "string" },
             "description": { "type": "string" }
           },
-          "description": "Informational — what memory engine this agent uses"
+          "description": "Informational: what memory engine this agent uses"
         }
       }
     }

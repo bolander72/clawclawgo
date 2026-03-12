@@ -122,7 +122,7 @@ The loadout format is a JSON document with three top-level sections.
 ```
 
 ::: warning
-Integration entries are informational only. They describe what the source agent had configured but never include credentials or connection details.
+Integration entries are informational only. They describe what the source agent had configured. They never include credentials or connection details.
 :::
 
 ### `automations`
