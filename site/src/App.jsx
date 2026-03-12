@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { HashRouter, Routes, Route, Link } from 'react-router-dom'
 import { motion, AnimatePresence, useMotionValue, useTransform, animate } from 'framer-motion'
 import {
   IconBrain, IconCpu, IconMicrophone,
@@ -14,6 +15,7 @@ import {
   IconBrandApple, IconBrandWindows, IconBrandDebian,
 } from '@tabler/icons-react'
 import { loadouts } from './loadouts'
+import Explore from './Explore'
 
 // ─── Helpers ───────────────────────────────────────────────
 
@@ -162,13 +164,13 @@ function Hero() {
         {/* CTA */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <DownloadDropdown />
-          <button
-            onClick={() => document.getElementById('showcase')?.scrollIntoView({ behavior: 'smooth' })}
+          <Link
+            to="/explore"
             className="px-6 py-3 bg-white/5 text-rc-text font-grotesk font-semibold rounded-xl hover:bg-white/10 transition-colors border border-rc-border flex items-center gap-2"
           >
             Browse Loadouts
             <IconArrowDown size={16} />
-          </button>
+          </Link>
         </div>
       </motion.div>
 
@@ -809,7 +811,7 @@ function Footer() {
           <div>
             <h4 className="font-grotesk font-semibold text-rc-text text-sm mb-4">RipperClaw</h4>
             <ul className="space-y-2.5">
-              <li><a href="#showcase" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Browse Loadouts</a></li>
+              <li><Link to="/explore" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Explore Loadouts</Link></li>
               <li><a href="/docs/" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Documentation</a></li>
               <li><a href={RELEASE_BASE} target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Download</a></li>
             </ul>
@@ -856,9 +858,9 @@ function Footer() {
   )
 }
 
-// ─── App ───────────────────────────────────────────────────
+// ─── Landing Page ──────────────────────────────────────────
 
-export default function App() {
+function Landing() {
   const [selectedLoadout, setSelectedLoadout] = useState(null)
 
   return (
@@ -880,5 +882,18 @@ export default function App() {
         )}
       </AnimatePresence>
     </div>
+  )
+}
+
+// ─── App ───────────────────────────────────────────────────
+
+export default function App() {
+  return (
+    <HashRouter>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/explore" element={<Explore />} />
+      </Routes>
+    </HashRouter>
   )
 }

@@ -23,7 +23,7 @@ export function SlotDetail({ slot }: Props) {
       style={{
         background: 'var(--rc-surface)',
         borderColor: 'var(--rc-cyan)',
-        boxShadow: '0 0 20px var(--rc-cyan-dim), inset 0 0 20px rgba(0, 240, 255, 0.03)',
+        boxShadow: '0 0 20px var(--rc-cyan-dim), inset 0 0 20px var(--rc-overlay-subtle)',
       }}
     >
       {/* Header */}
@@ -61,7 +61,7 @@ export function SlotDetail({ slot }: Props) {
               <div
                 key={i}
                 className="flex items-center justify-between py-2 px-3 rounded"
-                style={{ background: 'rgba(255,255,255,0.02)' }}
+                style={{ background: 'var(--rc-overlay-subtle)' }}
               >
                 <div className="flex items-center gap-2">
                   <div
@@ -98,7 +98,7 @@ export function SlotDetail({ slot }: Props) {
           <div
             key={key}
             className="flex justify-between items-center py-2 px-3 rounded"
-            style={{ background: 'rgba(255,255,255,0.02)' }}
+            style={{ background: 'var(--rc-overlay-subtle)' }}
           >
             <span
               className="text-xs uppercase tracking-wider"

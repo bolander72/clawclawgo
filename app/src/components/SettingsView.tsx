@@ -70,7 +70,7 @@ export function SettingsView() {
   };
 
   const inputStyle = {
-    background: 'rgba(255,255,255,0.03)',
+    background: 'var(--rc-overlay-subtle)',
     borderColor: 'var(--rc-border)',
     color: 'var(--rc-text)',
   };
@@ -210,7 +210,7 @@ export function SettingsView() {
               <button
                 onClick={async () => { await generate(); await refresh(); }}
                 className="px-4 py-2 rounded text-xs font-semibold border transition-all hover:opacity-80"
-                style={{ borderColor: 'var(--rc-cyan)', color: 'var(--rc-cyan)', background: 'rgba(0,240,255,0.1)' }}
+                style={{ borderColor: 'var(--rc-cyan)', color: 'var(--rc-cyan)', background: 'var(--rc-overlay-active)' }}
               >
                 Generate New Identity
               </button>
@@ -313,7 +313,7 @@ export function SettingsView() {
               style={{
                 borderColor: 'var(--rc-cyan)',
                 color: 'var(--rc-cyan)',
-                background: 'rgba(0,240,255,0.1)',
+                background: 'var(--rc-overlay-active)',
               }}
             >
               {saving ? 'Publishing...' : 'Save & Publish Profile'}

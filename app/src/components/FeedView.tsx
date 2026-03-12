@@ -236,7 +236,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
                   style={{
                     borderColor: 'var(--rc-cyan)',
                     color: 'var(--rc-cyan)',
-                    background: 'rgba(0,240,255,0.05)',
+                    background: 'var(--rc-overlay-accent)',
                   }}
                 >
                   Refresh
@@ -253,7 +253,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
                   style={{
                     borderColor: 'var(--rc-cyan)',
                     color: 'var(--rc-cyan)',
-                    background: 'rgba(0,240,255,0.05)',
+                    background: 'var(--rc-overlay-accent)',
                   }}
                 >
                   Setup Identity
@@ -281,7 +281,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
                   style={{
                     borderColor: 'var(--rc-cyan)',
                     color: 'var(--rc-cyan)',
-                    background: 'rgba(0,240,255,0.1)',
+                    background: 'var(--rc-overlay-active)',
                   }}
                 >
                   Generate New Keys
@@ -295,7 +295,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
                     placeholder="nsec1..."
                     className="flex-1 px-3 py-2 rounded text-xs font-mono border outline-none"
                     style={{
-                      background: 'rgba(255,255,255,0.03)',
+                      background: 'var(--rc-overlay-subtle)',
                       borderColor: 'var(--rc-border)',
                       color: 'var(--rc-text)',
                     }}
@@ -344,7 +344,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
                 style={{
                   borderColor: !filter ? 'var(--rc-cyan)' : 'var(--rc-border)',
                   color: !filter ? 'var(--rc-cyan)' : 'var(--rc-text-muted)',
-                  background: !filter ? 'rgba(0,240,255,0.1)' : 'transparent',
+                  background: !filter ? 'var(--rc-overlay-active)' : 'transparent',
                 }}
               >
                 All
@@ -474,7 +474,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
                       key={tag}
                       className="text-[9px] px-1.5 py-0.5 rounded font-mono cursor-pointer"
                       style={{
-                        background: 'rgba(255,255,255,0.03)',
+                        background: 'var(--rc-overlay-subtle)',
                         color: 'var(--rc-text-muted)',
                       }}
                       onClick={(e) => {
@@ -529,7 +529,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
             </p>
 
             {selectedLoadout.model && (
-              <div className="mb-4 py-2 px-3 rounded" style={{ background: 'rgba(255,255,255,0.02)' }}>
+              <div className="mb-4 py-2 px-3 rounded" style={{ background: 'var(--rc-overlay-subtle)' }}>
                 <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--rc-text-muted)' }}>
                   Model
                 </div>
@@ -657,7 +657,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
                 style={{
                   borderColor: 'var(--rc-cyan)',
                   color: 'var(--rc-cyan)',
-                  background: 'rgba(0,240,255,0.1)',
+                  background: 'var(--rc-overlay-active)',
                 }}
                 onClick={() => {
                   if (!onCompare || !selectedLoadout) return;

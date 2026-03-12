@@ -29,5 +29,5 @@ regex = "1"
 
 
 [[bin]]
-name = "test_nostr"
-path = "src/test_nostr.rs"
+name = "app"
+path = "src/main.rs"

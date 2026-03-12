@@ -193,7 +193,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
         {dragging && (
           <div
             className="mb-4 p-8 rounded-lg border-2 border-dashed text-center"
-            style={{ borderColor: 'var(--rc-cyan)', background: 'rgba(0,240,255,0.05)' }}
+            style={{ borderColor: 'var(--rc-cyan)', background: 'var(--rc-overlay-accent)' }}
           >
             <span className="text-2xl block mb-2" style={{ color: 'var(--rc-cyan)' }}>⬡</span>
             <p className="text-xs font-semibold" style={{ color: 'var(--rc-cyan)' }}>
@@ -206,7 +206,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
         {showSaveDialog && (
           <div
             className="mb-6 p-4 rounded-lg border"
-            style={{ borderColor: 'var(--rc-cyan)', background: 'rgba(0, 240, 255, 0.03)' }}
+            style={{ borderColor: 'var(--rc-cyan)', background: 'var(--rc-overlay-accent)' }}
           >
             <label
               className="text-xs font-semibold uppercase tracking-wider block mb-2"
@@ -279,7 +279,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
                 className="rounded-lg border transition-all"
                 style={{
                   borderColor: expanded ? 'var(--rc-cyan)' : 'var(--rc-border)',
-                  background: expanded ? 'rgba(0, 240, 255, 0.02)' : 'var(--rc-surface)',
+                  background: expanded ? 'var(--rc-overlay-accent)' : 'var(--rc-surface)',
                 }}
               >
                 {/* Build header */}
@@ -291,7 +291,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
                     <span
                       className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold"
                       style={{
-                        background: 'rgba(0, 240, 255, 0.08)',
+                        background: 'var(--rc-overlay-active)',
                         color: 'var(--rc-cyan)',
                         border: '1px solid var(--rc-cyan-dim)',
                       }}
@@ -338,7 +338,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
                                 key={id}
                                 className="px-2 py-1 rounded text-[10px] font-mono"
                                 style={{
-                                  background: 'rgba(0, 240, 255, 0.05)',
+                                  background: 'var(--rc-overlay-accent)',
                                   color: 'var(--rc-text-dim)',
                                   border: '1px solid var(--rc-border)',
                                 }}

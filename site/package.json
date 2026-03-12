@@ -15,8 +15,10 @@
     "@react-three/fiber": "^9.5.0",
     "@tabler/icons-react": "^3.40.0",
     "framer-motion": "^12.35.2",
+    "nostr-tools": "^2.23.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-router-dom": "^7.13.1",
     "three": "^0.183.2"
   },
   "devDependencies": {

@@ -119,7 +119,7 @@ export function CompareView({ currentSlots, currentMods, currentName, initialLoa
           className="w-full max-w-lg p-12 rounded-lg border-2 border-dashed text-center transition-all"
           style={{
             borderColor: dragOver ? 'var(--rc-cyan)' : 'var(--rc-border)',
-            background: dragOver ? 'rgba(0, 240, 255, 0.05)' : 'transparent',
+            background: dragOver ? 'var(--rc-overlay-accent)' : 'transparent',
           }}
           onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
@@ -232,7 +232,7 @@ export function CompareView({ currentSlots, currentMods, currentName, initialLoa
               key={sd.id}
               className="grid grid-cols-[1fr_1fr_1fr] gap-4 py-3 px-4 rounded"
               style={{
-                background: sd.match ? 'rgba(255,255,255,0.01)' : 'rgba(255,255,255,0.03)',
+                background: sd.match ? 'var(--rc-overlay-subtle)' : 'var(--rc-overlay-subtle)',
                 border: sd.match ? 'none' : '1px solid var(--rc-border)',
               }}
             >
@@ -301,7 +301,7 @@ export function CompareView({ currentSlots, currentMods, currentName, initialLoa
               </h4>
               <div className="space-y-1">
                 {diff.onlyYours.map((name) => (
-                  <div key={name} className="text-xs py-1 px-2 rounded" style={{ background: 'rgba(0,240,255,0.05)', color: 'var(--rc-cyan)' }}>
+                  <div key={name} className="text-xs py-1 px-2 rounded" style={{ background: 'var(--rc-overlay-accent)', color: 'var(--rc-cyan)' }}>
                     {name}
                   </div>
                 ))}

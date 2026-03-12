@@ -75,7 +75,7 @@ function App() {
   ];
 
   return (
-    <div className="h-screen flex flex-col scanlines">
+    <div className="h-screen flex flex-col">
       <Header />
 
       <div className="flex-1 flex overflow-hidden">
@@ -93,7 +93,7 @@ function App() {
                   onClick={() => setActiveAgent(agent.id)}
                   className="w-9 h-9 rounded-lg flex items-center justify-center text-[10px] font-bold uppercase transition-all"
                   style={{
-                    background: activeAgent === agent.id ? 'rgba(0, 240, 255, 0.15)' : 'transparent',
+                    background: activeAgent === agent.id ? 'var(--rc-overlay-light)' : 'transparent',
                     color: activeAgent === agent.id ? 'var(--rc-cyan)' : 'var(--rc-text-muted)',
                     border: activeAgent === agent.id ? '1px solid var(--rc-cyan)' : '1px solid transparent',
                   }}
@@ -111,7 +111,7 @@ function App() {
               onClick={() => setView(item.id)}
               className="w-9 h-9 rounded-lg flex items-center justify-center text-sm transition-all"
               style={{
-                background: view === item.id ? 'rgba(0, 240, 255, 0.1)' : 'transparent',
+                background: view === item.id ? 'var(--rc-overlay-light)' : 'transparent',
                 color: view === item.id ? 'var(--rc-cyan)' : 'var(--rc-text-muted)',
                 border: view === item.id ? '1px solid var(--rc-cyan)' : '1px solid transparent',
               }}
@@ -128,7 +128,7 @@ function App() {
             onClick={() => setShowPublish(true)}
             className="w-9 h-9 rounded-lg flex items-center justify-center text-sm transition-all hover:opacity-80"
             style={{
-              background: 'rgba(0, 240, 255, 0.08)',
+              background: 'var(--rc-overlay-light)',
               color: 'var(--rc-cyan)',
               border: '1px solid var(--rc-cyan-dim)',
             }}

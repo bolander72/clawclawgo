@@ -43,7 +43,7 @@ export function ModList({ mods }: Props) {
               <div
                 key={mod.name}
                 className="flex items-center justify-between py-1.5 px-3 rounded text-xs"
-                style={{ background: 'rgba(255,255,255,0.02)' }}
+                style={{ background: 'var(--rc-overlay-subtle)' }}
               >
                 <div className="flex items-center gap-2">
                   <span

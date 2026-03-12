@@ -101,7 +101,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
               className="p-4 rounded border text-xs leading-relaxed"
               style={{
                 borderColor: 'var(--rc-cyan)',
-                background: 'rgba(0,240,255,0.03)',
+                background: 'var(--rc-overlay-accent)',
                 color: 'var(--rc-text-dim)',
               }}
             >
@@ -131,7 +131,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
                 className="p-3 rounded border text-xs"
                 style={{
                   borderColor: 'var(--rc-border)',
-                  background: 'rgba(255,255,255,0.02)',
+                  background: 'var(--rc-overlay-subtle)',
                   color: 'var(--rc-text-muted)',
                 }}
               >
@@ -152,7 +152,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
                   placeholder="nsec1..."
                   className="flex-1 px-3 py-2 rounded text-xs border outline-none font-mono"
                   style={{
-                    background: 'rgba(255,255,255,0.03)',
+                    background: 'var(--rc-overlay-subtle)',
                     borderColor: 'var(--rc-border)',
                     color: 'var(--rc-text)',
                   }}
@@ -241,7 +241,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
                 placeholder="e.g. Nighthawk, Mercury, Athena..."
                 className="w-full px-3 py-2 rounded text-xs border outline-none"
                 style={{
-                  background: 'rgba(255,255,255,0.03)',
+                  background: 'var(--rc-overlay-subtle)',
                   borderColor: 'var(--rc-border)',
                   color: 'var(--rc-text)',
                 }}
@@ -285,7 +285,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
                 rows={3}
                 className="w-full px-3 py-2 rounded text-xs border outline-none resize-none"
                 style={{
-                  background: 'rgba(255,255,255,0.03)',
+                  background: 'var(--rc-overlay-subtle)',
                   borderColor: 'var(--rc-border)',
                   color: 'var(--rc-text)',
                 }}
@@ -304,7 +304,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
                 placeholder="privacy, local-first, voice"
                 className="w-full px-3 py-2 rounded text-xs border outline-none"
                 style={{
-                  background: 'rgba(255,255,255,0.03)',
+                  background: 'var(--rc-overlay-subtle)',
                   borderColor: 'var(--rc-border)',
                   color: 'var(--rc-text)',
                 }}
@@ -315,7 +315,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
                     <span
                       key={t}
                       className="text-[9px] px-1.5 py-0.5 rounded"
-                      style={{ background: 'rgba(0,240,255,0.1)', color: 'var(--rc-cyan)' }}
+                      style={{ background: 'var(--rc-overlay-active)', color: 'var(--rc-cyan)' }}
                     >
                       #{t}
                     </span>
@@ -337,7 +337,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
               style={{
                 borderColor: 'var(--rc-cyan)',
                 color: 'var(--rc-cyan)',
-                background: 'rgba(0,240,255,0.1)',
+                background: 'var(--rc-overlay-active)',
               }}
             >
               {exporting ? 'Scrubbing PII...' : 'Review Before Publishing'}
@@ -453,7 +453,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
               Loadout Published
             </div>
             <div className="text-[10px] font-mono p-2 rounded" style={{
-              background: 'rgba(255,255,255,0.03)',
+              background: 'var(--rc-overlay-subtle)',
               color: 'var(--rc-text-muted)',
             }}>
               Event: {publishResult.event_id.slice(0, 16)}...
@@ -467,7 +467,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
               style={{
                 borderColor: 'var(--rc-cyan)',
                 color: 'var(--rc-cyan)',
-                background: 'rgba(0,240,255,0.1)',
+                background: 'var(--rc-overlay-active)',
               }}
             >
               Done

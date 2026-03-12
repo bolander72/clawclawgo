@@ -253,7 +253,7 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
         style={{
           background: 'var(--rc-bg)',
           borderColor: 'var(--rc-cyan)',
-          boxShadow: '0 0 40px rgba(0, 240, 255, 0.1)',
+          boxShadow: '0 0 40px var(--rc-overlay-active)',
         }}
       >
         {/* Header */}
