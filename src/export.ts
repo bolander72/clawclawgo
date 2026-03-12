@@ -394,7 +394,7 @@ async function buildMemoryBlock(
   }
 
   const contextEngine =
-    config?.plugins?.slots?.contextEngine || "legacy";
+    config?.plugins?.blocks?.contextEngine || config?.plugins?.slots?.contextEngine || "legacy";
   const engineType =
     contextEngine === "lossless-claw" ? "lcm" : "default";
 

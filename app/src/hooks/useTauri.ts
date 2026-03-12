@@ -1,6 +1,6 @@
 import { invoke } from '@tauri-apps/api/core';
 import { useEffect, useState } from 'react';
-import type { BlockData, Mod } from '../types';
+import type { BlockData, SkillItem } from '../types';
 
 function useTauriCommand<T>(
   command: string,
@@ -66,14 +66,13 @@ export function useSkills() {
     []
   );
 
-  const mods: Mod[] = result.data.map((s) => ({
+  const skills: SkillItem[] = result.data.map((s) => ({
     name: s.name,
-    source: s.source as Mod['source'],
-    enabled: true,
+    source: s.source as SkillItem['source'],
     description: s.description,
   }));
 
-  return { ...result, data: mods };
+  return { ...result, data: skills };
 }
 
 export function useSystemStatus() {
@@ -157,6 +156,6 @@ export function useBuilds() {
     exportedAt: string;
     path: string;
     blocks: number;
-    mods: number;
+    skills: number;
   }>>('list_builds', []);
 }

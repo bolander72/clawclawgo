@@ -123,20 +123,6 @@ fn resolve_agent_workspace(agent_id: &str) -> PathBuf {
     default_ws.unwrap_or_else(|| workspace_dir())
 }
 
-/// Read config overrides for a specific agent
-fn resolve_agent_config(agent_id: &str) -> Value {
-    let config = read_config();
-    if let Some(list) = config.pointer("/agents/list").and_then(|v| v.as_array()) {
-        for entry in list {
-            let id = entry.get("id").and_then(|v| v.as_str()).unwrap_or("");
-            if id == agent_id {
-                return entry.clone();
-            }
-        }
-    }
-    // Return defaults if no specific agent found
-    config.pointer("/agents/defaults").cloned().unwrap_or(Value::Null)
-}
 
 // ─── Config reader ───
 
@@ -432,7 +418,7 @@ fn get_blocks(agent_id: Option<String>) -> Vec<BlockData> {
         label: "Persona".to_string(),
         icon: "◈".to_string(),
         status: if soul_exists { "active" } else { "empty" }.to_string(),
-        component: format!("{} — {}", identity_name, if soul_exists { "defined" } else { "undefined" }),
+        component: format!("{} - {}", identity_name, if soul_exists { "defined" } else { "undefined" }),
         version: None,
         details: serde_json::json!({
             "agent_name": identity_name,
@@ -627,7 +613,7 @@ fn get_blocks(agent_id: Option<String>) -> Vec<BlockData> {
         });
     }
 
-    // Voice I/O (TTS + STT — folded into integrations)
+    // Voice I/O (TTS + STT, folded into integrations)
     let tts_provider = config.pointer("/tts/provider")
         .and_then(|v| v.as_str())
         .unwrap_or("none");
@@ -1043,7 +1029,7 @@ fn clone_build(build_json: String, mode: String, agent_id: Option<String>) -> Re
             if name.is_empty() { continue; }
 
             if source == "bundled" {
-                // Bundled skills are inherited from defaults — just note them
+                // Bundled skills are inherited from defaults, just note them
                 applied_skills.push(format!("{} (bundled)", name));
                 continue;
             }
@@ -1259,7 +1245,7 @@ fn apply_build(
         "status": "ok"
     }));
 
-    // Model — resolved via config entry below
+    // Model: resolved via config entry below
     let main_model = if use_my_models {
         defaults.pointer("/model/primary")
             .and_then(|v| v.as_str())
@@ -1323,7 +1309,7 @@ fn apply_build(
             }
         }
 
-        // USER.md — blank template
+        // USER.md: blank template
         let user_path = agent_workspace.join("USER.md");
         if !user_path.exists() {
             fs::write(&user_path, "# USER.md - About Your Human\n\n_(Fill in your details)_\n")
@@ -1376,11 +1362,11 @@ fn apply_build(
         }));
     }
 
-    // Integrations — always manual
+    // Integrations: always manual
     if let Some(items) = build_cfg.pointer("/blocks/integrations/items").and_then(|v| v.as_array()) {
         for item in items {
             let name = item.get("name").and_then(|v| v.as_str()).unwrap_or("?");
-            warnings.push(format!("🔧 Integration \"{}\" — manual setup required", name));
+            warnings.push(format!("🔧 Integration \"{}\" - manual setup required", name));
         }
         results.push(serde_json::json!({
             "type": "flag-integrations",
@@ -1389,7 +1375,7 @@ fn apply_build(
         }));
     }
 
-    // Automations — write HEARTBEAT.md
+    // Automations: write HEARTBEAT.md
     if let Some(hb) = build_cfg.pointer("/blocks/automations/heartbeat") {
         if hb.get("included").and_then(|v| v.as_bool()).unwrap_or(false) {
             if let Some(content) = hb.get("content").and_then(|v| v.as_str()) {
@@ -1509,7 +1495,7 @@ fn list_builds() -> Vec<Value> {
                                 "exportedAt": exported_at,
                                 "path": path.to_string_lossy(),
                                 "blocks": build_cfg.get("blocks").and_then(|s| s.as_object()).map(|o| o.len()).unwrap_or(0),
-                                "mods": build_cfg.get("mods").and_then(|m| m.as_array()).map(|a| a.len()).unwrap_or(0),
+                                "skills": build_cfg.get("blocks").and_then(|b| b.get("skills")).and_then(|s| s.get("items")).and_then(|i| i.as_array()).map(|a| a.len()).unwrap_or(0),
                             }));
                         }
                     }
@@ -1530,7 +1516,7 @@ fn import_build_file(path: String) -> Result<Value, String> {
 
     // Validate it looks like a build_cfg
     if build_cfg.get("blocks").is_none() && build_cfg.get("mods").is_none() {
-        return Err("File doesn't look like a valid build_cfg (missing slots/mods)".to_string());
+        return Err("File doesn't look like a valid build (missing blocks)".to_string());
     }
 
     // Save to builds directory

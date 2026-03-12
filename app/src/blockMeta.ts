@@ -1,4 +1,4 @@
-// Shared block metadata — known defaults + graceful fallback for custom types
+// Shared block metadata: known defaults + graceful fallback for custom types
 
 export interface BlockMeta {
   icon: string;

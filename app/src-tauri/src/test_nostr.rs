@@ -1,7 +1,7 @@
 use nostr_sdk::prelude::*;
 use std::borrow::Cow;
 
-const LOADOUT_KIND: u16 = 38333;
+const BUILD_KIND: u16 = 38333;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -21,29 +21,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     client.connect().await;
     println!("[2] Connected to {} relays", relays.len());
 
-    // 3. Build test loadout
-    let test_loadout = serde_json::json!({
+    // 3. Build test data (schema v2)
+    let test_build = serde_json::json!({
+        "schema": 2,
         "meta": {
-            "name": "ClawClawGo Test Loadout",
+            "name": "ClawClawGo Test Build",
             "version": "0.1.0",
-            "exportedAt": "2026-03-11T02:00:00Z"
+            "exportedAt": "2026-03-12T02:00:00Z"
         },
-        "slots": {
-            "brain": { "model": "claude-opus-4-6", "status": "active" },
-            "os": { "platform": "openclaw", "version": "2026.3.7" }
-        },
-        "mods": [
-            { "name": "weather", "source": "bundled", "enabled": true },
-            { "name": "github", "source": "bundled", "enabled": true }
-        ]
+        "blocks": {
+            "model": {
+                "default": "claude-opus-4-6",
+                "tiers": { "main": "claude-opus-4-6", "sub": "claude-sonnet-4-5" }
+            },
+            "skills": {
+                "items": [
+                    { "name": "weather", "source": "bundled" },
+                    { "name": "github", "source": "bundled" }
+                ]
+            }
+        }
     });
 
-    let loadout_json = serde_json::to_string(&test_loadout)?;
-    let kind = Kind::from(LOADOUT_KIND);
-    let loadout_name = "clawclawgo-test-roundtrip";
+    let build_json = serde_json::to_string(&test_build)?;
+    let kind = Kind::from(BUILD_KIND);
+    let build_name = "clawclawgo-test-roundtrip";
 
-    let builder = EventBuilder::new(kind, &loadout_json)
-        .tag(Tag::identifier(loadout_name))
+    let builder = EventBuilder::new(kind, &build_json)
+        .tag(Tag::identifier(build_name))
         .tag(Tag::hashtag("test"))
         .tag(Tag::hashtag("homelab"))
         .tag(Tag::custom(
@@ -70,7 +75,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Fetch our own events
     let filter = Filter::new()
-        .kind(Kind::from(LOADOUT_KIND))
+        .kind(Kind::from(BUILD_KIND))
         .author(keys.public_key())
         .limit(5);
 
@@ -90,7 +95,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("    Event: {} | Name: {} | Size: {} bytes", 
             &event.id.to_hex()[..8], name, event.content.len());
 
-        if name == loadout_name {
+        if name == build_name {
             // Verify content round-trips
             let parsed: serde_json::Value = serde_json::from_str(&event.content)?;
             let original_name = parsed.pointer("/meta/name")

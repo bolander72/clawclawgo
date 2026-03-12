@@ -86,7 +86,7 @@ export const blocks: BlockData[] = [
   },
 ];
 
-// Skills list (backwards-compatible with "mods" export name for existing imports)
+// Skills list
 export const skills: SkillItem[] = [
   { name: 'apple-notes', source: 'bundled' },
   { name: 'apple-reminders', source: 'bundled' },
@@ -115,5 +115,4 @@ export const skills: SkillItem[] = [
   { name: 'lossless-claw', source: 'custom', version: '0.2.8' },
 ];
 
-// Export mods alias for backwards compatibility
-export const mods = skills;
+

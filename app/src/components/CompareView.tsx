@@ -267,7 +267,7 @@ export function CompareView({ currentBlocks, currentSkills, currentName, initial
                     />
                   </div>
                 ) : (
-                  <span className="text-xs" style={{ color: 'var(--rc-text-muted)' }}>—</span>
+                  <span className="text-xs" style={{ color: 'var(--rc-text-muted)' }}>·</span>
                 )}
               </div>
               <div className="text-center">
@@ -282,7 +282,7 @@ export function CompareView({ currentBlocks, currentSkills, currentName, initial
                     />
                   </div>
                 ) : (
-                  <span className="text-xs" style={{ color: 'var(--rc-text-muted)' }}>—</span>
+                  <span className="text-xs" style={{ color: 'var(--rc-text-muted)' }}>·</span>
                 )}
               </div>
             </div>

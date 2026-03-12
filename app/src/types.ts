@@ -313,4 +313,4 @@ export interface SubComponent {
 }
 
 /** Legacy compatibility */
-export type Mod = SkillItem & { enabled?: boolean };
+

@@ -143,7 +143,7 @@ function parseFeedBuild(entry: FeedBuild, allEntries: FeedBuild[]): DisplayBuild
     description: (meta.description as string) || `${entry.tags.length} tags · Published via ClawClawGo`,
     tags: entry.tags,
     publishedAt: entry.published_at,
-    model: ((parsed.slots as Record<string, unknown>)?.model as Record<string, unknown>)?.component as string | undefined,
+    model: ((parsed.blocks as Record<string, unknown>)?.model as Record<string, unknown>)?.component as string | undefined,
     forkOf: entry.fork_of || undefined,
     forkAuthor: entry.fork_author || undefined,
     remixCount,
@@ -714,8 +714,8 @@ export function FeedView({ onCompare }: FeedViewProps) {
                       author: selectedBuild.author,
                       template: selectedBuild.template,
                     },
-                    slots: (parsed.slots as Record<string, unknown>) || {},
-                    mods: (parsed.mods as unknown[]) || [],
+                    blocks: (parsed.blocks as Record<string, unknown>) || {},
+                    skills: (parsed.skills as unknown[]) || [],
                   };
                   onCompare(build);
                 }}

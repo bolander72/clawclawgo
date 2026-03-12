@@ -83,8 +83,8 @@ export function BuildsView({ onCompare, onApply }: Props) {
       const text = await file.text();
       // Validate JSON
       const parsed = JSON.parse(text);
-      if (!parsed.blocks && !parsed.mods) {
-        setImportError("File doesn't look like a valid build (missing blocks/mods)");
+      if (!parsed.blocks) {
+        setImportError("File doesn't look like a valid build (missing blocks)");
         return;
       }
       // Save via clone_build in "new" mode
@@ -306,7 +306,7 @@ export function BuildsView({ onCompare, onApply }: Props) {
                         {entry.name}
                       </span>
                       <span className="text-[10px]" style={{ color: 'var(--rc-text-muted)' }}>
-                        {entry.blocks} blocks · {entry.mods} mods
+                        {entry.blocks} blocks · {entry.skills} skills
                         {entry.exportedAt && (
                           <> · {new Date(entry.exportedAt).toLocaleDateString()}</>
                         )}

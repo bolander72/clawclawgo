@@ -510,7 +510,7 @@ pub fn nostr_remove_relay(url: String) -> Result<Vec<RelayInfo>, String> {
         return Err("Relay not found".to_string());
     }
     if urls.is_empty() {
-        // Don't allow removing all relays — restore defaults
+        // Don't allow removing all relays, restore defaults
         urls = DEFAULT_RELAYS.iter().map(|s| s.to_string()).collect();
     }
     save_relay_urls(&urls)?;
