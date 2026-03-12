@@ -148,7 +148,7 @@ function App() {
                   className="text-xs font-semibold uppercase tracking-widest mb-4 px-1"
                   style={{ color: 'var(--rc-text-muted)' }}
                 >
-                  Cyberware Slots
+                  Slots
                   {slotsLoading && (
                     <span className="ml-2 animate-pulse" style={{ color: 'var(--rc-cyan)' }}>●</span>
                   )}

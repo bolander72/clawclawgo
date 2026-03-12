@@ -60,9 +60,11 @@ function DownloadDropdown() {
   }, [])
 
   const platforms = [
-    { label: 'macOS', icon: IconBrandApple, href: `${RELEASE_BASE}/download/RipperClaw.dmg` },
-    { label: 'Windows', icon: IconBrandWindows, href: `${RELEASE_BASE}/download/RipperClaw.msi` },
-    { label: 'Linux', icon: IconBrandDebian, href: `${RELEASE_BASE}/download/RipperClaw.AppImage` },
+    { label: 'macOS (Apple Silicon)', icon: IconBrandApple, href: `${RELEASE_BASE}/download/RipperClaw_aarch64.dmg` },
+    { label: 'macOS (Intel)', icon: IconBrandApple, href: `${RELEASE_BASE}/download/RipperClaw_x64.dmg` },
+    { label: 'Windows', icon: IconBrandWindows, href: `${RELEASE_BASE}/download/RipperClaw_x64-setup.exe` },
+    { label: 'Linux (.deb)', icon: IconBrandDebian, href: `${RELEASE_BASE}/download/ripperclaw_amd64.deb` },
+    { label: 'Linux (.AppImage)', icon: IconBrandDebian, href: `${RELEASE_BASE}/download/RipperClaw_amd64.AppImage` },
   ]
 
   return (
@@ -793,7 +795,7 @@ function Footer() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <DownloadDropdown />
             <a
-              href="https://ripperclaw.com/docs"
+              href="/docs/"
               className="px-6 py-3 bg-white/5 hover:bg-white/10 text-rc-text font-grotesk font-semibold rounded-xl transition-colors border border-rc-border flex items-center gap-2"
             >
               <IconBook2 size={18} />
@@ -808,14 +810,14 @@ function Footer() {
             <h4 className="font-grotesk font-semibold text-rc-text text-sm mb-4">RipperClaw</h4>
             <ul className="space-y-2.5">
               <li><a href="#showcase" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Browse Loadouts</a></li>
-              <li><a href="https://ripperclaw.com/docs" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Documentation</a></li>
+              <li><a href="/docs/" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Documentation</a></li>
               <li><a href={RELEASE_BASE} target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Download</a></li>
             </ul>
           </div>
           <div>
             <h4 className="font-grotesk font-semibold text-rc-text text-sm mb-4">OpenClaw</h4>
             <ul className="space-y-2.5">
-              <li><a href="https://docs.openclaw.ai" target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">Docs</a></li>
+              <li><a href="https://docs.openclaw.ai" target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">OpenClaw Docs</a></li>
               <li><a href="https://github.com/openclaw/openclaw" target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">GitHub</a></li>
               <li><a href="https://clawhub.com" target="_blank" rel="noopener" className="text-rc-text-dim text-sm hover:text-rc-text transition-colors">ClawHub Skills</a></li>
             </ul>

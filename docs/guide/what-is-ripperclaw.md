@@ -1,0 +1,45 @@
+# What is RipperClaw?
+
+RipperClaw is a desktop app and CLI for building, sharing, and remixing AI agent configurations — called **loadouts**.
+
+Think of it like dotfiles for AI agents. Your agent has a model, a persona, skills, integrations, automations, and memory. RipperClaw packages all of that into a portable format that anyone can browse, copy, and apply to their own setup.
+
+## The Problem
+
+Setting up a useful AI agent takes time. You pick a model, write personality files, install skills, configure integrations, set up automations. Then your friend wants something similar and has to start from scratch.
+
+## The Solution
+
+RipperClaw gives you:
+
+- **Export** your working agent config as a loadout
+- **Share** it on Nostr (decentralized, no accounts needed)
+- **Browse** other people's loadouts in the feed
+- **Apply** any loadout to create a new agent or update an existing one
+
+## How It Works
+
+Every AI agent (specifically [OpenClaw](https://github.com/openclaw/openclaw) agents) breaks down into **6 slots**:
+
+| Slot | What It Covers |
+|------|---------------|
+| **Model** | Which LLMs to use, routing rules between tiers |
+| **Persona** | SOUL.md, IDENTITY.md, USER.md — who the agent is |
+| **Skills** | Installed skill packages (bundled + community) |
+| **Integrations** | Channels, calendar, email, smart home, voice I/O |
+| **Automations** | Heartbeat tasks, cron jobs, scheduled work |
+| **Memory** | Context engine, LCM config, memory file structure |
+
+A loadout captures the state of all 6 slots, scrubs sensitive data, and produces a JSON file that's portable across machines.
+
+## What RipperClaw Is Not
+
+- **Not a hosting platform.** Your agent runs on your machine. RipperClaw just helps you configure it.
+- **Not a marketplace.** Loadouts are shared freely via Nostr. No payments (yet — zaps are on the roadmap).
+- **Not an agent framework.** RipperClaw works with [OpenClaw](https://openclaw.ai). It's the config layer, not the runtime.
+
+## Next Steps
+
+- [Quick Start](/guide/quickstart) — get up and running in 5 minutes
+- [Installation](/guide/installation) — download the app
+- [Slots](/guide/slots) — understand the 6-slot system
