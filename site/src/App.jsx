@@ -74,7 +74,7 @@ function DownloadDropdown({ className = '' }) {
     <div ref={ref} className={`relative ${className}`}>
       <button
         onClick={() => setOpen(!open)}
-        className="w-full px-6 py-3 bg-rc-cyan text-rc-bg font-grotesk font-semibold rounded-xl hover:bg-rc-cyan/90 transition-colors flex items-center justify-center gap-2"
+        className="w-full px-6 py-3 bg-rc-cyan text-rc-bg font-grotesk font-semibold rounded-xl hover:bg-rc-cyan/90 transition-colors flex items-center justify-center gap-2 whitespace-nowrap"
       >
         Get ClawClawGo
         <IconChevronDown size={16} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
@@ -163,7 +163,7 @@ function Hero() {
         </p>
 
         {/* CTA */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-sm mx-auto">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md mx-auto">
           <DownloadDropdown className="w-full" />
           <Link
             to="/explore"
@@ -803,7 +803,7 @@ function Footer() {
           <p className="text-rc-text-dim text-sm mb-8 max-w-md mx-auto">
             Find agent builds that match your needs. No tracking. No accounts. Publish yours anonymously or with verified identity.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-sm mx-auto">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full max-w-md mx-auto">
             <DownloadDropdown className="w-full" />
             <a
               href="/docs/"
