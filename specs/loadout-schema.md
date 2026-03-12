@@ -352,7 +352,7 @@ Before a loadout is shared, the PII scrubber (`scrub::scrub_loadout`) must:
 ## Migration
 
 Schema v1 (current Tauri export) → v2:
-- Map 9 diagnostic slots to 6 canonical slots
+- Map 9 diagnostic slots to 6 core slots (extensible, custom slot types supported)
 - Restructure flat `details` into typed slot objects
 - Add `tiers` to model slot
 - Add `items` array to skills/integrations

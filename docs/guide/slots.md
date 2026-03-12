@@ -1,6 +1,6 @@
 # Slots
 
-Every loadout is made up of **6 slots**. Each slot is independent. You can swap, remix, or skip any of them.
+Every loadout is made up of **slots**. Each slot is independent. You can swap, remix, or skip any of them.
 
 ## Model
 
@@ -82,4 +82,14 @@ The agent's context management system.
 
 ::: info
 Memory exports structure only, never actual content. Your agent's memories, conversations, and facts stay private.
+:::
+
+## Custom Slots
+
+The six slots above are the defaults, but the system is extensible. Custom slot types can use any string key in the loadout JSON. The schema accepts arbitrary slot keys alongside the known ones.
+
+When a loadout contains a custom slot, RipperClaw renders it with a generic icon and auto-generated label. Custom slots follow the same publish, apply, and remix rules as built-in ones.
+
+::: tip
+Custom slots are fully supported in the schema and Nostr events today. User-facing creation tools are coming in a future release.
 :::

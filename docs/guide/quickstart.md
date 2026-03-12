@@ -26,7 +26,7 @@ If you see **MOCK**, the gateway isn't reachable. RipperClaw will show sample da
 
 ## 3. View Your Loadout
 
-The **Slots** view shows your current agent's configuration across all 6 slots. Click any slot to see its details: which model you're running, what skills are installed, your integrations, etc.
+The **Slots** view shows your current agent's configuration across all slots. Click any slot to see its details: which model you're running, what skills are installed, your integrations, etc.
 
 ## 4. Save a Snapshot
 

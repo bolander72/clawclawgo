@@ -515,7 +515,7 @@ function WhatIsSection() {
     {
       icon: IconPuzzle,
       title: 'Modular loadouts',
-      desc: 'Every agent is built from six slots: model, persona, skills, integrations, automations, memory. Mix and match to create something that fits exactly how you work.',
+      desc: 'Every agent is built from modular slots: model, persona, skills, integrations, automations, memory, and more. Mix and match to create something that fits exactly how you work.',
     },
     {
       icon: IconCopy,
@@ -659,7 +659,7 @@ function AnatomySection() {
             Anatomy of a loadout
           </h2>
           <p className="text-rc-text-dim text-lg max-w-xl mx-auto">
-            Six slots. Infinite combinations. Every slot is independent. Swap one without touching the rest.
+            Modular slots. Infinite combinations. Every slot is independent. Swap one without touching the rest.
           </p>
         </div>
 
@@ -710,7 +710,7 @@ function FAQSection() {
     },
     {
       q: 'What\'s in a typical loadout?',
-      a: 'Six slots. Model (which LLMs), Persona (how it thinks and talks), Skills (what it can do), Integrations (what it connects to), Automations (what it does on its own), and Memory (how it remembers).',
+      a: 'Core slots include Model (which LLMs), Persona (how it thinks and talks), Skills (what it can do), Integrations (what it connects to), Automations (what it does on its own), and Memory (how it remembers). The system is extensible, so custom slot types can be added as needs evolve.',
     },
     {
       q: 'Is this free?',

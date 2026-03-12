@@ -17,21 +17,37 @@ const RELAYS = [
 
 const slotColors = {
   Model: 'from-purple-500/40 to-blue-500/40',
+  model: 'from-purple-500/40 to-blue-500/40',
   Persona: 'from-cyan-500/40 to-emerald-500/40',
+  persona: 'from-cyan-500/40 to-emerald-500/40',
   Skills: 'from-pink-500/40 to-violet-500/40',
+  skills: 'from-pink-500/40 to-violet-500/40',
   Integrations: 'from-green-500/40 to-cyan-500/40',
+  integrations: 'from-green-500/40 to-cyan-500/40',
   Automations: 'from-rose-500/40 to-blue-500/40',
+  automations: 'from-rose-500/40 to-blue-500/40',
   Memory: 'from-amber-500/40 to-orange-500/40',
+  memory: 'from-amber-500/40 to-orange-500/40',
 }
 
 const slotIcons = {
   Model: IconCube,
+  model: IconCube,
   Persona: IconSparkles,
+  persona: IconSparkles,
   Skills: IconBolt,
+  skills: IconBolt,
   Integrations: IconPlug,
+  integrations: IconPlug,
   Automations: IconClockHour4,
+  automations: IconClockHour4,
   Memory: IconServer,
+  memory: IconServer,
 }
+
+// Fallback for custom/unknown slot types
+const defaultSlotColor = 'from-white/10 to-white/20'
+const DefaultSlotIcon = IconCube
 
 // ─── Helpers ───────────────────────────────────────────────
 

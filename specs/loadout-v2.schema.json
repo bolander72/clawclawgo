@@ -61,7 +61,21 @@
         "automations": { "$ref": "#/definitions/automationsSlot" },
         "memory": { "$ref": "#/definitions/memorySlot" }
       },
-      "additionalProperties": false
+      "additionalProperties": {
+        "type": "object",
+        "description": "Custom slot types beyond the six defaults. Any string key is valid.",
+        "properties": {
+          "label": { "type": "string" },
+          "status": { "type": "string" },
+          "component": { "type": "string" },
+          "version": { "type": "string" },
+          "details": { "type": "object" },
+          "items": {
+            "type": "array",
+            "items": { "type": "object" }
+          }
+        }
+      }
     }
   },
   "definitions": {

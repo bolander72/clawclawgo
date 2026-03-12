@@ -19,7 +19,7 @@ RipperClaw gives you:
 
 ## How It Works
 
-Every AI agent (specifically [OpenClaw](https://github.com/openclaw/openclaw) agents) breaks down into **6 slots**:
+Every AI agent (specifically [OpenClaw](https://github.com/openclaw/openclaw) agents) breaks down into modular **slots**:
 
 | Slot | What It Covers |
 |------|---------------|
@@ -30,7 +30,7 @@ Every AI agent (specifically [OpenClaw](https://github.com/openclaw/openclaw) ag
 | **Automations** | Heartbeat tasks, cron jobs, scheduled work |
 | **Memory** | Context engine, LCM config, memory file structure |
 
-A loadout captures the state of all 6 slots, scrubs sensitive data, and produces a JSON file that's portable across machines.
+A loadout captures the state of all slots, scrubs sensitive data, and produces a JSON file that's portable across machines.
 
 ## What RipperClaw Is Not
 
@@ -42,4 +42,4 @@ A loadout captures the state of all 6 slots, scrubs sensitive data, and produces
 
 - [Quick Start](/guide/quickstart): get up and running in 5 minutes
 - [Installation](/guide/installation): download the app
-- [Slots](/guide/slots): understand the 6-slot system
+- [Slots](/guide/slots): understand the slot system

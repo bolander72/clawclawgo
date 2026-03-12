@@ -47,4 +47,4 @@ Exports automatically scrub phone numbers, emails, API keys, and personal data. 
 Applying a loadout never deletes existing config. It creates new agents in isolated workspaces or merges changes with explicit confirmation.
 
 ### Modular
-Each of the 6 slots is independent. You can apply just the skills from one loadout and the persona from another.
+Each slot is independent. You can apply just the skills from one loadout and the persona from another.

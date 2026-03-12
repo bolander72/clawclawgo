@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 import { useNostrKeys, useNostrPublish, useSafeExport, type ScrubReport } from '../hooks/useNostr';
+import { getSlotMeta } from '../slotMeta';
+import type { SlotData } from '../types';
 
 const TEMPLATES = [
   { id: 'homelab', label: 'Homelab', color: 'var(--rc-cyan)', desc: 'Self-hosted, privacy-first' },
@@ -25,6 +28,14 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
   const [publishMode, setPublishMode] = useState<'loadout' | 'slot'>('loadout');
   const [selectedSlot, setSelectedSlot] = useState<string>('');
   const [slotValidationError, setSlotValidationError] = useState<string | null>(null);
+  const [agentSlots, setAgentSlots] = useState<SlotData[]>([]);
+
+  // Fetch actual slots from the agent
+  useEffect(() => {
+    invoke<SlotData[]>('get_slots', { agentId: null })
+      .then(setAgentSlots)
+      .catch(() => {});
+  }, []);
 
   const { keys, generate, importKey, refresh } = useNostrKeys();
   const { publish, publishing } = useNostrPublish();
@@ -299,29 +310,32 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
                   Select Slot
                 </label>
                 <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: 'model', label: 'Model', icon: '🧠' },
-                    { id: 'persona', label: 'Persona', icon: '👤' },
-                    { id: 'skills', label: 'Skills', icon: '⚡' },
-                    { id: 'integrations', label: 'Integrations', icon: '🔌' },
-                    { id: 'automations', label: 'Automations', icon: '⏰' },
-                    { id: 'memory', label: 'Memory', icon: '💾' },
-                  ].map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => { setSelectedSlot(s.id); setSlotValidationError(null); }}
-                      className="p-2 rounded border text-center transition-all"
-                      style={{
-                        borderColor: selectedSlot === s.id ? 'var(--rc-cyan)' : 'var(--rc-border)',
-                        background: selectedSlot === s.id ? 'rgba(0,240,255,0.1)' : 'transparent',
-                      }}
-                    >
-                      <div className="text-base">{s.icon}</div>
-                      <div className="text-[10px] mt-0.5" style={{ color: selectedSlot === s.id ? 'var(--rc-cyan)' : 'var(--rc-text-dim)' }}>
-                        {s.label}
-                      </div>
-                    </button>
-                  ))}
+                  {agentSlots.map((s) => {
+                    const meta = getSlotMeta(s.id);
+                    const itemCount = s.subComponents?.length || 0;
+                    return (
+                      <button
+                        key={s.id}
+                        onClick={() => { setSelectedSlot(s.id); setSlotValidationError(null); }}
+                        className="p-2 rounded border text-center transition-all"
+                        style={{
+                          borderColor: selectedSlot === s.id ? meta.color : 'var(--rc-border)',
+                          background: selectedSlot === s.id ? `${meta.color}1a` : 'transparent',
+                          opacity: itemCount < 2 ? 0.4 : 1,
+                        }}
+                        disabled={itemCount < 2}
+                        title={itemCount < 2 ? `${itemCount} item${itemCount === 1 ? '' : 's'} (min 2)` : `${itemCount} items`}
+                      >
+                        <div className="text-base">{meta.emoji}</div>
+                        <div className="text-[10px] mt-0.5" style={{ color: selectedSlot === s.id ? meta.color : 'var(--rc-text-dim)' }}>
+                          {meta.label}
+                        </div>
+                        <div className="text-[9px]" style={{ color: 'var(--rc-text-muted)' }}>
+                          {itemCount} item{itemCount !== 1 ? 's' : ''}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
                 {slotValidationError && (
                   <div className="text-[10px] mt-1 px-1" style={{ color: 'var(--rc-red)' }}>{slotValidationError}</div>

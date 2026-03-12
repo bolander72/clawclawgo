@@ -58,14 +58,7 @@ interface ApplyAction {
 
 type Step = 'target' | 'review' | 'applying' | 'done';
 
-const SLOT_META: Record<string, { icon: string; label: string; color: string }> = {
-  model: { icon: '⬢', label: 'Model', color: '#00f0ff' },
-  persona: { icon: '◈', label: 'Persona', color: '#ff6b9d' },
-  skills: { icon: '◆', label: 'Skills', color: '#00ff88' },
-  integrations: { icon: '⊕', label: 'Integrations', color: '#ffd700' },
-  automations: { icon: '⏱', label: 'Automations', color: '#ff6b35' },
-  memory: { icon: '◎', label: 'Memory', color: '#b388ff' },
-};
+import { getSlotMeta } from '../slotMeta';
 
 // ── Component ──
 
@@ -412,10 +405,10 @@ export function ApplyWizard({ loadout, agents, onClose, onComplete }: Props) {
             </div>
 
             {/* Slot-by-slot action list */}
-            {Object.keys(SLOT_META).map(slotKey => {
+            {Object.keys(actions.reduce((acc: Record<string, boolean>, a: { slot?: string }) => { if (a.slot) acc[a.slot] = true; return acc; }, {})).map(slotKey => {
               const slotActions = previewActions.filter(a => a.slot === slotKey);
               if (slotActions.length === 0) return null;
-              const meta = SLOT_META[slotKey];
+              const meta = getSlotMeta(slotKey);
 
               return (
                 <div key={slotKey}>
