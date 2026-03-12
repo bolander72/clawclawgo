@@ -197,7 +197,7 @@ function Hero() {
 // ─── Build Card (Conveyor Item) ──────────────────────────
 
 function BuildCard({ build, index, onClick, dropped }) {
-  const totalItems = build.slots.reduce((sum, s) => sum + s.items.length, 0)
+  const totalItems = build.blocks.reduce((sum, s) => sum + s.items.length, 0)
 
   return (
     <motion.div
@@ -226,7 +226,7 @@ function BuildCard({ build, index, onClick, dropped }) {
         {/* Mini block grid preview */}
         <div className="p-5 pt-12">
           <div className="grid grid-cols-3 gap-2 mb-4">
-            {build.slots.slice(0, 6).map((block, si) => {
+            {build.blocks.slice(0, 6).map((block, si) => {
               const Icon = blockIcons[block.name] || IconCube
               return (
                 <div
@@ -264,7 +264,7 @@ function BuildCard({ build, index, onClick, dropped }) {
               {build.creator}
             </span>
             <span className="text-rc-text-muted text-[10px] font-mono">
-              {build.slots.length} blocks · {totalItems} items
+              {build.blocks.length} blocks · {totalItems} items
             </span>
           </div>
         </div>
@@ -406,7 +406,7 @@ function BuildDetail({ build, onClose }) {
         {/* Blocks grid */}
         <div className="p-6 md:p-8">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {build.slots.map((block, si) => {
+            {build.blocks.map((block, si) => {
               const Icon = blockIcons[block.name] || IconCube
               const isExpanded = expandedBlock === si
 
