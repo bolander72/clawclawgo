@@ -810,7 +810,7 @@ function Footer() {
               className="w-full px-6 py-3 bg-white/5 hover:bg-white/10 text-rc-text font-grotesk font-semibold rounded-xl transition-colors border border-rc-border flex items-center justify-center gap-2"
             >
               <IconBook2 size={18} />
-              Docs
+              Read the Docs
             </a>
           </div>
         </div>
