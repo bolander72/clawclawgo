@@ -49,7 +49,8 @@ function formatDate(dateStr) {
 
 // ─── Download Dropdown ─────────────────────────────────────
 
-const RELEASE_BASE = 'https://github.com/bolander72/ripperclaw/releases/latest'
+const RELEASE_BASE = 'https://github.com/bolander72/ripperclaw/releases'
+const RELEASE_TAG = 'v0.1.0'
 
 function DownloadDropdown() {
   const [open, setOpen] = useState(false)
@@ -62,11 +63,11 @@ function DownloadDropdown() {
   }, [])
 
   const platforms = [
-    { label: 'macOS (Apple Silicon)', icon: IconBrandApple, href: `${RELEASE_BASE}/download/RipperClaw_aarch64.dmg` },
-    { label: 'macOS (Intel)', icon: IconBrandApple, href: `${RELEASE_BASE}/download/RipperClaw_x64.dmg` },
-    { label: 'Windows', icon: IconBrandWindows, href: `${RELEASE_BASE}/download/RipperClaw_x64-setup.exe` },
-    { label: 'Linux (.deb)', icon: IconBrandDebian, href: `${RELEASE_BASE}/download/ripperclaw_amd64.deb` },
-    { label: 'Linux (.AppImage)', icon: IconBrandDebian, href: `${RELEASE_BASE}/download/RipperClaw_amd64.AppImage` },
+    { label: 'macOS (Apple Silicon)', icon: IconBrandApple, href: `${RELEASE_BASE}/download/${RELEASE_TAG}/RipperClaw_${RELEASE_TAG.slice(1)}_aarch64.dmg` },
+    { label: 'macOS (Intel)', icon: IconBrandApple, href: `${RELEASE_BASE}/download/${RELEASE_TAG}/RipperClaw_${RELEASE_TAG.slice(1)}_x64.dmg` },
+    { label: 'Windows', icon: IconBrandWindows, href: `${RELEASE_BASE}/download/${RELEASE_TAG}/RipperClaw_${RELEASE_TAG.slice(1)}_x64-setup.exe` },
+    { label: 'Linux (.deb)', icon: IconBrandDebian, href: `${RELEASE_BASE}/download/${RELEASE_TAG}/RipperClaw_${RELEASE_TAG.slice(1)}_amd64.deb` },
+    { label: 'Linux (.AppImage)', icon: IconBrandDebian, href: `${RELEASE_BASE}/download/${RELEASE_TAG}/RipperClaw_${RELEASE_TAG.slice(1)}_amd64.AppImage` },
   ]
 
   return (
@@ -85,14 +86,14 @@ function DownloadDropdown() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 mt-2 w-full min-w-[180px] bg-rc-surface border border-rc-border rounded-xl overflow-hidden shadow-xl z-50"
+            className="absolute top-full left-0 mt-2 w-full min-w-[220px] bg-rc-surface border border-rc-border rounded-xl shadow-xl z-50 py-1"
           >
             {platforms.map((p) => (
               <a
                 key={p.label}
                 href={p.href}
                 onClick={() => setOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 text-rc-text hover:bg-white/5 transition-colors text-sm font-grotesk"
+                className="flex items-center gap-3 px-4 py-2.5 text-rc-text hover:bg-white/5 transition-colors text-sm font-grotesk"
               >
                 <p.icon size={18} stroke={1.5} />
                 {p.label}
@@ -100,7 +101,7 @@ function DownloadDropdown() {
             ))}
             <div className="border-t border-rc-border">
               <a
-                href={RELEASE_BASE}
+                href={`${RELEASE_BASE}/tag/${RELEASE_TAG}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setOpen(false)}
