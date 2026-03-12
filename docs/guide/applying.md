@@ -50,13 +50,13 @@ This is useful when a build uses paid models you don't have access to, or when y
 
 ## Using the App
 
-1. Find a build (Builds view, Feed, or import a file)
-2. Click **Apply to Agent**
-3. Enter an agent ID and display name
-4. Choose your model strategy
-5. Review the block-by-block action plan
-6. Confirm and apply
-7. Restart OpenClaw to activate the new agent
+The ApplyWizard walks you through five steps:
+
+1. **Target** - Enter an agent ID, display name, and model strategy (use build's models or your own)
+2. **Security Scan** - Runs schema validation and a client-side security scan. Shows trust score, badge, and any findings. Builds with "block" severity findings cannot proceed.
+3. **Dependencies** - Shows what the build needs: binaries, brew/pip/npm packages, models, config keys, platform requirements, and setup guides. Informational only, never blocks you.
+4. **Review** - Block-by-block action plan showing exactly what will be created, written, or installed
+5. **Apply** - Creates the agent workspace, installs skills, writes config. Restart OpenClaw to activate.
 
 ## Using the CLI
 
