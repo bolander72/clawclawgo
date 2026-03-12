@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * ripperclaw CLI: export and apply OpenClaw agent builds
+ * clawclawgo CLI: export and apply OpenClaw agent builds
  *
  * Usage:
- *   ripperclaw export [--agent <id>] [--out <file>]
- *   ripperclaw apply <build.json> --agent <id> [--mode merge|replace] [--use-my-models] [--dry-run]
- *   ripperclaw preview <build.json>
+ *   clawclawgo export [--agent <id>] [--out <file>]
+ *   clawclawgo apply <build.json> --agent <id> [--mode merge|replace] [--use-my-models] [--dry-run]
+ *   clawclawgo preview <build.json>
  */
 
 import fs from 'fs';
@@ -305,7 +305,7 @@ function applyBuild(buildPath, agentId, options = {}) {
   if (fs.existsSync(agentWorkspace)) {
     throw new Error(
       `Agent workspace already exists at ${agentWorkspace}. ` +
-      `RipperClaw never overwrites existing agents. Use a different --agent id ` +
+      `ClawClawGo never overwrites existing agents. Use a different --agent id ` +
       `or remove the directory manually if you're sure.`
     );
   }
@@ -698,7 +698,7 @@ try {
       const buildPath = args[1];
       const agentId = getArg('--agent');
       if (!buildPath || !agentId) {
-        console.error('Usage: ripperclaw apply <build.json> --agent <id>');
+        console.error('Usage: clawclawgo apply <build.json> --agent <id>');
         process.exit(1);
       }
       const result = applyBuild(buildPath, agentId, {
@@ -712,14 +712,14 @@ try {
     case 'preview': {
       const buildPath = args[1];
       if (!buildPath) {
-        console.error('Usage: ripperclaw preview <build.json>');
+        console.error('Usage: clawclawgo preview <build.json>');
         process.exit(1);
       }
       console.log(previewBuild(buildPath));
       break;
     }
     default:
-      console.log(`ripperclaw: OpenClaw agent build manager
+      console.log(`clawclawgo: OpenClaw agent build manager
 
 Commands:
   export [--agent <id>] [--out <file>]    Export current agent as build
