@@ -127,15 +127,15 @@ pub fn scrub_build(
         scrubbed_fields.push("meta.exportedAt".into());
     }
 
-    // Scrub slot details
-    if let Some(slots) = build_data.get_mut("blocks").and_then(|s| s.as_object_mut()) {
-        let slot_ids: Vec<String> = slots.keys().cloned().collect();
-        for slot_id in slot_ids {
-            if let Some(slot_val) = slots.get_mut(&slot_id) {
-                if let Some(details) = slot_val.get_mut("details").and_then(|d| d.as_object_mut()) {
+    // Scrub block details
+    if let Some(blocks) = build_data.get_mut("blocks").and_then(|s| s.as_object_mut()) {
+        let block_ids: Vec<String> = blocks.keys().cloned().collect();
+        for block_id in block_ids {
+            if let Some(block_val) = blocks.get_mut(&block_id) {
+                if let Some(details) = block_val.get_mut("details").and_then(|d| d.as_object_mut()) {
                     for key in REDACT_DETAIL_KEYS {
                         if details.remove(*key).is_some() {
-                            scrubbed_fields.push(format!("slots.{}.details.{}", slot_id, key));
+                            scrubbed_fields.push(format!("blocks.{}.details.{}", block_id, key));
                         }
                     }
                     for key in SANITIZE_DETAIL_KEYS {
@@ -147,30 +147,43 @@ pub fn scrub_build(
                                 let s = val.as_str().unwrap_or("");
                                 if s.parse::<f64>().is_err() {
                                     details.insert((*key).into(), Value::String("[redacted]".into()));
-                                    scrubbed_fields.push(format!("slots.{}.details.{}", slot_id, key));
+                                    scrubbed_fields.push(format!("blocks.{}.details.{}", block_id, key));
                                 }
                             }
                         }
                     }
-                    let prefix = format!("slots.{}.details", slot_id);
+                    let prefix = format!("blocks.{}.details", block_id);
                     scrub_map_values(details, &patterns, &mut scrubbed_fields, &prefix);
                 }
 
-                if let Some(comp) = slot_val.get("component").and_then(|c| c.as_str()).map(String::from) {
+                if let Some(comp) = block_val.get("component").and_then(|c| c.as_str()).map(String::from) {
                     let scrubbed = scrub_string(&comp, &patterns);
                     if scrubbed != comp {
-                        if let Some(c) = slot_val.get_mut("component") {
+                        if let Some(c) = block_val.get_mut("component") {
                             *c = Value::String(scrubbed);
                         }
-                        scrubbed_fields.push(format!("slots.{}.component", slot_id));
+                        scrubbed_fields.push(format!("blocks.{}.component", block_id));
                     }
                 }
             }
         }
     }
 
-    // Scrub mod descriptions
-    if let Some(mods) = build_data.get_mut("mods").and_then(|m| m.as_array_mut()) {
+    // Scrub skill descriptions (schema v2: blocks.skills.items, legacy: mods array)
+    if let Some(skills) = build_data.pointer_mut("/blocks/skills/items").and_then(|v| v.as_array_mut()) {
+        for (i, skill_val) in skills.iter_mut().enumerate() {
+            if let Some(desc) = skill_val.get("description").and_then(|d| d.as_str()).map(String::from) {
+                let scrubbed = scrub_string(&desc, &patterns);
+                if scrubbed != desc {
+                    if let Some(d) = skill_val.get_mut("description") {
+                        *d = Value::String(scrubbed);
+                    }
+                    scrubbed_fields.push(format!("skills[{}].description", i));
+                }
+            }
+        }
+    } else if let Some(mods) = build_data.get_mut("mods").and_then(|m| m.as_array_mut()) {
+        // Legacy format
         for (i, mod_val) in mods.iter_mut().enumerate() {
             if let Some(desc) = mod_val.get("description").and_then(|d| d.as_str()).map(String::from) {
                 let scrubbed = scrub_string(&desc, &patterns);

@@ -3,17 +3,17 @@ import type { Build, BlockData } from '../types';
 
 interface Props {
   currentBlocks: BlockData[];
-  currentMods: { name: string; source: string; enabled: boolean; version?: string }[];
+  currentSkills: { name: string; source: string; enabled?: boolean; version?: string }[];
   currentName: string;
   initialBuild?: unknown;
   onClear?: () => void;
-  onClone?: (build_entry: Build, mode: 'overwrite' | 'new') => void;
+  onClone?: (build: Build, mode: 'overwrite' | 'new') => void;
 }
 
-// Build a diff between current build_entry and imported build_entry
+// Build a diff between current build and imported build
 function buildDiff(
   currentBlocks: BlockData[],
-  currentMods: { name: string; source: string }[],
+  currentSkills: { name: string; source: string }[],
   imported: Build
 ) {
   const blockDiffs: {
@@ -34,25 +34,36 @@ function buildDiff(
     const mine = currentBlocks.find((s) => s.id === id);
     const theirs = imported.blocks?.[id];
 
-    const match = mine && theirs
-      ? mine.component === theirs.component && mine.status === theirs.status
-      : !mine && !theirs;
+    // For schema v2 blocks, we need to extract comparable data
+    const theirsData = theirs
+      ? {
+          component: (theirs as any).component || id,
+          status: (theirs as any).status || 'active',
+          label: (theirs as any).label || id,
+          details: (theirs as any).details || {},
+        }
+      : null;
+
+    const match = mine && theirsData
+      ? mine.component === theirsData.component && mine.status === theirsData.status
+      : !mine && !theirsData;
 
     blockDiffs.push({
       id,
-      label: mine?.label || theirs?.label || id,
+      label: mine?.label || theirsData?.label || id,
       yours: mine ? { component: mine.component, status: mine.status, details: mine.details } : null,
-      theirs: theirs ? { component: theirs.component, status: theirs.status, details: theirs.details as Record<string, unknown> } : null,
+      theirs: theirsData ? { component: theirsData.component, status: theirsData.status, details: theirsData.details } : null,
       match,
     });
   }
 
-  // Mod diffs
-  const myModNames = new Set(currentMods.map((m) => m.name));
-  const theirModNames = new Set((imported.mods || []).map((m) => m.name));
-  const onlyYours = [...myModNames].filter((n) => !theirModNames.has(n));
-  const onlyTheirs = [...theirModNames].filter((n) => !myModNames.has(n));
-  const shared = [...myModNames].filter((n) => theirModNames.has(n));
+  // Skill diffs
+  const mySkillNames = new Set(currentSkills.map((s) => s.name));
+  const theirSkills = (imported.blocks?.skills as { items?: { name: string }[] })?.items || [];
+  const theirSkillNames = new Set(theirSkills.map((s) => s.name));
+  const onlyYours = [...mySkillNames].filter((n) => !theirSkillNames.has(n));
+  const onlyTheirs = [...theirSkillNames].filter((n) => !mySkillNames.has(n));
+  const shared = [...mySkillNames].filter((n) => theirSkillNames.has(n));
 
   return { blockDiffs, onlyYours, onlyTheirs, shared };
 }
@@ -64,7 +75,7 @@ const statusColor: Record<string, string> = {
   empty: 'var(--rc-text-muted)',
 };
 
-export function CompareView({ currentBlocks, currentMods, currentName, initialBuild, onClear, onClone }: Props) {
+export function CompareView({ currentBlocks, currentSkills, currentName, initialBuild, onClear, onClone }: Props) {
   const [imported, setImported] = useState<Build | null>(
     initialBuild ? (initialBuild as Build) : null
   );
@@ -151,7 +162,7 @@ export function CompareView({ currentBlocks, currentMods, currentName, initialBu
     );
   }
 
-  const diff = buildDiff(currentBlocks, currentMods, imported);
+  const diff = buildDiff(currentBlocks, currentSkills, imported);
 
   return (
     <div className="flex-1 p-6 overflow-y-auto">
@@ -278,7 +289,7 @@ export function CompareView({ currentBlocks, currentMods, currentName, initialBu
           ))}
         </div>
 
-        {/* Mod diffs */}
+        {/* Skill diffs */}
         <div className="grid grid-cols-3 gap-6">
           {diff.shared.length > 0 && (
             <div>

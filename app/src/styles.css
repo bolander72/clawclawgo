@@ -83,10 +83,10 @@ body {
 
 /* Light mode glow adjustments */
 @media (prefers-color-scheme: light) {
-  .slot-card:hover {
+  .block-card:hover {
     box-shadow: 0 2px 8px rgba(0, 153, 170, 0.15);
   }
-  .slot-card.active {
+  .block-card.active {
     box-shadow: 0 2px 12px rgba(0, 153, 170, 0.2);
   }
   .glow-cyan {
@@ -108,7 +108,7 @@ body {
   border-color: var(--rc-magenta);
 }
 
-.slot-card {
+.block-card {
   background: var(--rc-surface);
   border: 1px solid var(--rc-border);
   border-radius: 8px;
@@ -117,13 +117,13 @@ body {
   transition: all 0.2s ease;
 }
 
-.slot-card:hover {
+.block-card:hover {
   background: var(--rc-surface-hover);
   border-color: var(--rc-cyan);
   box-shadow: 0 0 12px var(--rc-cyan-dim);
 }
 
-.slot-card.active {
+.block-card.active {
   border-color: var(--rc-cyan);
   box-shadow: 0 0 16px var(--rc-cyan-dim), inset 0 0 12px rgba(0, 240, 255, 0.05);
 }

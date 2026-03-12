@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { BlockCard } from './components/BlockCard';
 import { BlockDetail } from './components/BlockDetail';
-import { ModList } from './components/ModList';
+import { SkillList } from './components/SkillList';
 import { CompareView } from './components/CompareView';
 import { FeedView } from './components/FeedView';
 import { BuildsView } from './components/BuildsView';
@@ -10,9 +10,9 @@ import { PublishDialog } from './components/PublishDialog';
 import { ApplyWizard } from './components/ApplyWizard';
 import { SettingsView } from './components/SettingsView';
 import { useBlocks, useSkills, useSystemStatus, useCloneBuild, useAgents } from './hooks/useTauri';
-import { blocks as mockBlocks, mods as mockMods } from './data/mockBuild';
+import { blocks as mockBlocks, skills as mockSkills } from './data/mockBuild';
 
-type View = 'build' | 'mods' | 'builds' | 'compare' | 'feed' | 'settings';
+type View = 'build' | 'skills' | 'builds' | 'compare' | 'feed' | 'settings';
 
 function CloneToast({ result }: { result: { message: string; type: 'success' | 'error' } | null }) {
   if (!result) return null;
@@ -41,7 +41,7 @@ function App() {
 
   const { data: agents } = useAgents();
   const { data: realBlocks, loading: blocksLoading, error: blocksError } = useBlocks(activeAgent);
-  const { data: realMods, loading: modsLoading } = useSkills();
+  const { data: realSkills, loading: skillsLoading } = useSkills();
   const { data: status } = useSystemStatus();
 
   // Set initial active agent once loaded
@@ -53,7 +53,7 @@ function App() {
   }, [agents]);
 
   const blocks = realBlocks.length > 0 ? realBlocks : mockBlocks;
-  const mods = realMods.length > 0 ? realMods : mockMods;
+  const skills = realSkills.length > 0 ? realSkills : mockSkills;
 
   const activeBlock = blocks.find((s) => s.id === selectedBlock) ?? blocks[0];
 
@@ -67,7 +67,7 @@ function App() {
 
   const navItems: { id: View; icon: string; label: string }[] = [
     { id: 'build', icon: '⬡', label: 'Active Build' },
-    { id: 'mods', icon: '◆', label: 'Mods' },
+    { id: 'skills', icon: '◆', label: 'Skills' },
     { id: 'builds', icon: '▤', label: 'Builds' },
     { id: 'compare', icon: '⊕', label: 'Compare' },
     { id: 'feed', icon: '◎', label: 'The Feed' },
@@ -172,22 +172,22 @@ function App() {
             </>
           )}
 
-          {view === 'mods' && (
+          {view === 'skills' && (
             <div className="flex-1 p-6 overflow-y-auto">
               <div className="max-w-2xl">
                 <h3
                   className="text-xs font-semibold uppercase tracking-widest mb-1"
                   style={{ color: 'var(--rc-text-muted)' }}
                 >
-                  Installed Mods
-                  {modsLoading && (
+                  Installed Skills
+                  {skillsLoading && (
                     <span className="ml-2 animate-pulse" style={{ color: 'var(--rc-cyan)' }}>●</span>
                   )}
                 </h3>
                 <p className="text-xs mb-6" style={{ color: 'var(--rc-text-dim)' }}>
-                  {mods.length} mods · {mods.filter((m) => m.enabled).length} active
+                  {skills.length} skills · {skills.filter((s) => (s as any).enabled !== false).length} active
                 </p>
-                <ModList mods={mods} />
+                <SkillList skills={skills} />
               </div>
             </div>
           )}
@@ -207,7 +207,7 @@ function App() {
           {view === 'compare' && (
             <CompareView
               currentBlocks={blocks}
-              currentMods={mods}
+              currentSkills={skills}
               currentName="Quinn"
               initialBuild={compareTarget}
               onClear={() => setCompareTarget(null)}
@@ -260,7 +260,7 @@ function App() {
             <span style={{ color: 'var(--rc-green)' }}> · GW ✓</span>
           )}
         </span>
-        <span>LOADOUT: QUINN · {blocks.length} SLOTS · {mods.length} MODS</span>
+        <span>BUILD: QUINN · {blocks.length} BLOCKS · {skills.length} SKILLS</span>
       </footer>
 
       {/* Clone result toast */}

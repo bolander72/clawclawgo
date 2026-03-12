@@ -321,7 +321,7 @@ fn get_blocks(agent_id: Option<String>) -> Vec<BlockData> {
     let ws = agent_id.as_ref()
         .map(|id| resolve_agent_workspace(id))
         .unwrap_or_else(|| workspace_dir());
-    let mut slots = Vec::new();
+    let mut blocks_list = Vec::new();
 
     // ── MODEL ──
     let primary_model = config.pointer("/model/default")
@@ -370,7 +370,7 @@ fn get_blocks(agent_id: Option<String>) -> Vec<BlockData> {
         });
     }
 
-    slots.push(BlockData {
+    blocks_list.push(BlockData {
         id: "model".to_string(),
         label: "Model".to_string(),
         icon: "⬢".to_string(),
@@ -427,7 +427,7 @@ fn get_blocks(agent_id: Option<String>) -> Vec<BlockData> {
         });
     }
 
-    slots.push(BlockData {
+    blocks_list.push(BlockData {
         id: "persona".to_string(),
         label: "Persona".to_string(),
         icon: "◈".to_string(),
@@ -484,7 +484,7 @@ fn get_blocks(agent_id: Option<String>) -> Vec<BlockData> {
         });
     }
 
-    slots.push(BlockData {
+    blocks_list.push(BlockData {
         id: "skills".to_string(),
         label: "Skills".to_string(),
         icon: "⚡".to_string(),
@@ -699,7 +699,7 @@ fn get_blocks(agent_id: Option<String>) -> Vec<BlockData> {
         });
     }
 
-    slots.push(BlockData {
+    blocks_list.push(BlockData {
         id: "integrations".to_string(),
         label: "Integrations".to_string(),
         icon: "⚡".to_string(),
@@ -758,7 +758,7 @@ fn get_blocks(agent_id: Option<String>) -> Vec<BlockData> {
         });
     }
 
-    slots.push(BlockData {
+    blocks_list.push(BlockData {
         id: "automations".to_string(),
         label: "Automations".to_string(),
         icon: "⏱".to_string(),
@@ -780,7 +780,8 @@ fn get_blocks(agent_id: Option<String>) -> Vec<BlockData> {
     } else {
         0
     };
-    let context_engine = config.pointer("/plugins/slots/contextEngine")
+    let context_engine = config.pointer("/plugins/blocks/contextEngine")
+        .or(config.pointer("/plugins/slots/contextEngine")) // fallback for old configs
         .and_then(|v| v.as_str())
         .unwrap_or("legacy");
 
@@ -839,7 +840,7 @@ fn get_blocks(agent_id: Option<String>) -> Vec<BlockData> {
         });
     }
 
-    slots.push(BlockData {
+    blocks_list.push(BlockData {
         id: "memory".to_string(),
         label: "Memory".to_string(),
         icon: "◉".to_string(),
@@ -857,7 +858,7 @@ fn get_blocks(agent_id: Option<String>) -> Vec<BlockData> {
         sub_components: mem_subs,
     });
 
-    slots
+    blocks_list
 }
 
 // ─── Build import for diff ───
@@ -872,33 +873,24 @@ fn import_build(path: String) -> Result<Value, String> {
 
 #[tauri::command]
 fn export_build() -> Result<Value, String> {
-    // Build a build_cfg from current state
+    // Build a build (schema v2) from current state
     let _config = read_config();
-    let blocks_data = get_blocks(None);
+    let _blocks_data = get_blocks(None);
     let skills = get_skills();
     let _status = get_system_status();
 
-    let mut blocks_json = serde_json::Map::new();
-    for slot in &blocks_data {
-        blocks_json.insert(slot.id.clone(), serde_json::json!({
-            "label": slot.label,
-            "status": slot.status,
-            "component": slot.component,
-            "version": slot.version,
-            "details": slot.details,
-        }));
-    }
+    let ws = workspace_dir();
 
-    let mods: Vec<Value> = skills.iter().map(|s| {
+    // Skills block
+    let skills_items: Vec<Value> = skills.iter().map(|s| {
         serde_json::json!({
             "name": s.name,
             "source": s.source,
-            "enabled": true,
             "description": s.description,
         })
     }).collect();
 
-    let identity_name = fs::read_to_string(workspace_dir().join("IDENTITY.md"))
+    let identity_name = fs::read_to_string(ws.join("IDENTITY.md"))
         .ok()
         .and_then(|c| {
             c.lines()
@@ -907,19 +899,23 @@ fn export_build() -> Result<Value, String> {
         })
         .unwrap_or_else(|| "Agent".to_string());
 
-    let build_cfg = serde_json::json!({
-        "schema": 1,
+    let build = serde_json::json!({
+        "schema": 2,
         "meta": {
-            "name": identity_name,
+            "name": identity_name.clone(),
+            "agentName": identity_name,
             "author": "local",
             "version": 1,
             "exportedAt": chrono_now(),
         },
-        "blocks": blocks_json,
-        "mods": mods,
+        "blocks": {
+            "skills": {
+                "items": skills_items
+            }
+        }
     });
 
-    Ok(build_cfg)
+    Ok(build)
 }
 
 // ─── PII-safe export for publishing ───
@@ -1001,7 +997,7 @@ fn clone_build(build_json: String, mode: String, agent_id: Option<String>) -> Re
     let mut block_changes: Vec<String> = Vec::new();
 
     // ── Persona: write SOUL.md, IDENTITY.md, AGENTS.md if included ──
-    if let Some(persona) = build_cfg.pointer("/slots/persona") {
+    if let Some(persona) = build_cfg.pointer("/blocks/persona") {
         if let Some(identity) = persona.get("identity") {
             let name = identity.get("name").and_then(|v| v.as_str()).unwrap_or("Agent");
             let creature = identity.get("creature").and_then(|v| v.as_str()).unwrap_or("AI assistant");
@@ -1037,7 +1033,7 @@ fn clone_build(build_json: String, mode: String, agent_id: Option<String>) -> Re
     }
 
     // ── Skills: install from ClawHub, track bundled ──
-    if let Some(skills) = build_cfg.pointer("/slots/skills/items").and_then(|v| v.as_array()) {
+    if let Some(skills) = build_cfg.pointer("/blocks/skills/items").and_then(|v| v.as_array()) {
         let skills_dir = target_workspace.join("skills");
         let _ = fs::create_dir_all(&skills_dir);
 
@@ -1109,7 +1105,7 @@ fn clone_build(build_json: String, mode: String, agent_id: Option<String>) -> Re
     }
 
     // ── Automations: write HEARTBEAT.md ──
-    if let Some(hb) = build_cfg.pointer("/slots/automations/heartbeat") {
+    if let Some(hb) = build_cfg.pointer("/blocks/automations/heartbeat") {
         if hb.get("included").and_then(|v| v.as_bool()).unwrap_or(false) {
             if let Some(content) = hb.get("content").and_then(|v| v.as_str()) {
                 fs::write(target_workspace.join("HEARTBEAT.md"), content)
@@ -1120,7 +1116,7 @@ fn clone_build(build_json: String, mode: String, agent_id: Option<String>) -> Re
     }
 
     // ── Memory: create directory structure and templates ──
-    if let Some(structure) = build_cfg.pointer("/slots/memory/structure") {
+    if let Some(structure) = build_cfg.pointer("/blocks/memory/structure") {
         if let Some(dirs) = structure.get("directories").and_then(|v| v.as_array()) {
             for dir in dirs {
                 if let Some(d) = dir.as_str() {
@@ -1147,7 +1143,7 @@ fn clone_build(build_json: String, mode: String, agent_id: Option<String>) -> Re
     }
 
     // ── Model: update agent config if build_cfg has model tiers ──
-    if let Some(tiers) = build_cfg.pointer("/slots/model/tiers") {
+    if let Some(tiers) = build_cfg.pointer("/blocks/model/tiers") {
         if let Some(main_tier) = tiers.get("main") {
             let model = format!(
                 "{}/{}",
@@ -1269,7 +1265,7 @@ fn apply_build(
             .and_then(|v| v.as_str())
             .unwrap_or("anthropic/claude-sonnet-4-5")
             .to_string()
-    } else if let Some(tiers) = build_cfg.pointer("/slots/model/tiers") {
+    } else if let Some(tiers) = build_cfg.pointer("/blocks/model/tiers") {
         if let Some(main_tier) = tiers.get("main") {
             format!(
                 "{}/{}",
@@ -1290,7 +1286,7 @@ fn apply_build(
     }));
 
     // Persona files
-    if let Some(persona) = build_cfg.pointer("/slots/persona") {
+    if let Some(persona) = build_cfg.pointer("/blocks/persona") {
         // IDENTITY.md
         if let Some(identity) = persona.get("identity") {
             let name = identity.get("name").and_then(|v| v.as_str()).unwrap_or("Agent");
@@ -1336,7 +1332,7 @@ fn apply_build(
     }
 
     // Skills
-    if let Some(skills) = build_cfg.pointer("/slots/skills/items").and_then(|v| v.as_array()) {
+    if let Some(skills) = build_cfg.pointer("/blocks/skills/items").and_then(|v| v.as_array()) {
         let bundled: Vec<&str> = skills.iter()
             .filter(|s| s.get("source").and_then(|v| v.as_str()) == Some("bundled"))
             .filter_map(|s| s.get("name").and_then(|v| v.as_str()))
@@ -1381,7 +1377,7 @@ fn apply_build(
     }
 
     // Integrations — always manual
-    if let Some(items) = build_cfg.pointer("/slots/integrations/items").and_then(|v| v.as_array()) {
+    if let Some(items) = build_cfg.pointer("/blocks/integrations/items").and_then(|v| v.as_array()) {
         for item in items {
             let name = item.get("name").and_then(|v| v.as_str()).unwrap_or("?");
             warnings.push(format!("🔧 Integration \"{}\" — manual setup required", name));
@@ -1394,7 +1390,7 @@ fn apply_build(
     }
 
     // Automations — write HEARTBEAT.md
-    if let Some(hb) = build_cfg.pointer("/slots/automations/heartbeat") {
+    if let Some(hb) = build_cfg.pointer("/blocks/automations/heartbeat") {
         if hb.get("included").and_then(|v| v.as_bool()).unwrap_or(false) {
             if let Some(content) = hb.get("content").and_then(|v| v.as_str()) {
                 fs::write(agent_workspace.join("HEARTBEAT.md"), content)
@@ -1405,7 +1401,7 @@ fn apply_build(
     }
 
     // Memory structure
-    if let Some(structure) = build_cfg.pointer("/slots/memory/structure") {
+    if let Some(structure) = build_cfg.pointer("/blocks/memory/structure") {
         if let Some(dirs) = structure.get("directories").and_then(|v| v.as_array()) {
             for dir in dirs {
                 if let Some(d) = dir.as_str() {

@@ -28,12 +28,12 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
   const [publishMode, setPublishMode] = useState<'build' | 'block'>('build');
   const [selectedBlock, setSelectedSlot] = useState<string>('');
   const [blockValidationError, setBlockValidationError] = useState<string | null>(null);
-  const [agentBlocks, setAgentSlots] = useState<BlockData[]>([]);
+  const [agentBlocks, setAgentBlocks] = useState<BlockData[]>([]);
 
-  // Fetch actual slots from the agent
+  // Fetch actual blocks from the agent
   useEffect(() => {
     invoke<BlockData[]>('get_blocks', { agentId: null })
-      .then(setAgentSlots)
+      .then(setAgentBlocks)
       .catch(() => {});
   }, []);
 
@@ -60,8 +60,8 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
         }
         // Extract the selected block from the build
         const parsed = typeof build === 'string' ? JSON.parse(build) : build;
-        const slots = parsed.slots || {};
-        const blockData = slots[selectedBlock];
+        const blocks = parsed.blocks || {};
+        const blockData = blocks[selectedBlock];
         if (!blockData) {
           setBlockValidationError(`Block "${selectedBlock}" not found in your build`);
           return;
@@ -69,15 +69,15 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
         // Count items (sub_components or items array)
         const items = blockData.items || blockData.sub_components || [];
         if (items.length < 2) {
-          setBlockValidationError(`This slot has ${items.length} item${items.length === 1 ? '' : 's'}. Minimum 2 required.`);
+          setBlockValidationError(`This block has ${items.length} item${items.length === 1 ? '' : 's'}. Minimum 2 required.`);
           return;
         }
         // Publish just the block content
-        const slotPublish = {
+        const blockPublish = {
           meta: { ...parsed.meta, block_type: selectedBlock },
           block: blockData,
         };
-        setScrubbedJson(JSON.stringify(slotPublish, null, 2));
+        setScrubbedJson(JSON.stringify(blockPublish, null, 2));
       } else {
         setScrubbedJson(JSON.stringify(build, null, 2));
       }
