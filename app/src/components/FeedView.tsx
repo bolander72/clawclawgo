@@ -101,6 +101,8 @@ interface DisplayLoadout {
   forkOf?: string;
   forkAuthor?: string;
   remixCount: number;
+  publishType?: string;
+  slotType?: string;
 }
 
 const templateColors: Record<string, string> = {
@@ -145,6 +147,8 @@ function parseFeedLoadout(entry: FeedLoadout, allEntries: FeedLoadout[]): Displa
     forkOf: entry.fork_of || undefined,
     forkAuthor: entry.fork_author || undefined,
     remixCount,
+    publishType: entry.publish_type || 'loadout',
+    slotType: entry.slot_type || undefined,
   };
 }
 
@@ -154,6 +158,7 @@ interface FeedViewProps {
 
 export function FeedView({ onCompare }: FeedViewProps) {
   const [filter, setFilter] = useState<string | null>(null);
+  const [typeFilter, setTypeFilter] = useState<'all' | 'loadout' | 'slot'>('all');
   const [sortBy, setSortBy] = useState<'recent' | 'remixes'>('recent');
   const [selectedLoadout, setSelectedLoadout] = useState<DisplayLoadout | null>(null);
   const [showKeySetup, setShowKeySetup] = useState(false);
@@ -174,8 +179,11 @@ export function FeedView({ onCompare }: FeedViewProps) {
   const displayLoadouts = realLoadouts.length > 0 ? realLoadouts : mockLoadouts;
   const isUsingMock = realLoadouts.length === 0;
 
+  const typeFiltered = typeFilter === 'all'
+    ? displayLoadouts
+    : displayLoadouts.filter((r) => (r.publishType || 'loadout') === typeFilter);
   const filtered = (filter
-    ? displayLoadouts.filter((r) => r.template === filter || r.tags.includes(filter))
+    ? typeFiltered.filter((r) => r.template === filter || r.tags.includes(filter))
     : displayLoadouts
   ).sort((a, b) =>
     sortBy === 'remixes'
@@ -335,7 +343,23 @@ export function FeedView({ onCompare }: FeedViewProps) {
             </div>
           )}
 
-          {/* Template filters + sort */}
+          {/* Type + template filters + sort */}
+          <div className="flex gap-2 mb-3 flex-wrap">
+            {(['all', 'loadout', 'slot'] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setTypeFilter(t)}
+                className="px-3 py-1 rounded text-[10px] font-semibold uppercase tracking-wider border transition-all"
+                style={{
+                  borderColor: typeFilter === t ? 'var(--rc-magenta)' : 'var(--rc-border)',
+                  color: typeFilter === t ? 'var(--rc-magenta)' : 'var(--rc-text-muted)',
+                  background: typeFilter === t ? 'rgba(255,0,170,0.1)' : 'transparent',
+                }}
+              >
+                {t === 'all' ? '📋 All' : t === 'loadout' ? '📦 Loadouts' : '🧩 Slots'}
+              </button>
+            ))}
+          </div>
           <div className="flex items-center justify-between mb-6">
             <div className="flex gap-2 flex-wrap">
               <button
@@ -409,6 +433,18 @@ export function FeedView({ onCompare }: FeedViewProps) {
                     >
                       {entry.template}
                     </span>
+                    {entry.publishType === 'slot' && entry.slotType && (
+                      <span
+                        className="text-[9px] px-1.5 py-0.5 rounded font-semibold"
+                        style={{
+                          color: 'var(--rc-cyan)',
+                          background: 'rgba(0,240,255,0.1)',
+                          border: '1px solid rgba(0,240,255,0.2)',
+                        }}
+                      >
+                        🧩 {entry.slotType}
+                      </span>
+                    )}
                     {entry.remixCount > 0 && (
                       <span
                         className="text-[9px] px-1.5 py-0.5 rounded font-semibold"

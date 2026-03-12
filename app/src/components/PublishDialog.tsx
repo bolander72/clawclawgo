@@ -22,6 +22,9 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
   const [publishResult, setPublishResult] = useState<{ event_id: string; relays_sent: number } | null>(null);
   const [nsecInput, setNsecInput] = useState('');
   const [importError, setImportError] = useState<string | null>(null);
+  const [publishMode, setPublishMode] = useState<'loadout' | 'slot'>('loadout');
+  const [selectedSlot, setSelectedSlot] = useState<string>('');
+  const [slotValidationError, setSlotValidationError] = useState<string | null>(null);
 
   const { keys, generate, importKey, refresh } = useNostrKeys();
   const { publish, publishing } = useNostrPublish();
@@ -38,7 +41,36 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
   const handleReview = async () => {
     try {
       const [loadout, report] = await exportSafe(template, description, [...tags, template]);
-      setScrubbedJson(JSON.stringify(loadout, null, 2));
+
+      if (publishMode === 'slot') {
+        if (!selectedSlot) {
+          setSlotValidationError('Select a slot to publish');
+          return;
+        }
+        // Extract the selected slot from the loadout
+        const parsed = typeof loadout === 'string' ? JSON.parse(loadout) : loadout;
+        const slots = parsed.slots || {};
+        const slotData = slots[selectedSlot];
+        if (!slotData) {
+          setSlotValidationError(`Slot "${selectedSlot}" not found in your loadout`);
+          return;
+        }
+        // Count items (sub_components or items array)
+        const items = slotData.items || slotData.sub_components || [];
+        if (items.length < 2) {
+          setSlotValidationError(`This slot has ${items.length} item${items.length === 1 ? '' : 's'}. Minimum 2 required.`);
+          return;
+        }
+        // Publish just the slot content
+        const slotPublish = {
+          meta: { ...parsed.meta, slot_type: selectedSlot },
+          slot: slotData,
+        };
+        setScrubbedJson(JSON.stringify(slotPublish, null, 2));
+      } else {
+        setScrubbedJson(JSON.stringify(loadout, null, 2));
+      }
+
       setScrubReport(report);
       setStep('review');
     } catch (err) {
@@ -53,7 +85,15 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
     setStep('publishing');
     setPublishError(null);
     try {
-      const result = await publish(scrubbedJson, loadoutName || 'My Loadout', [...tags, template]);
+      const result = await publish(
+        scrubbedJson,
+        loadoutName || (publishMode === 'slot' ? `${selectedSlot} slot` : 'My Loadout'),
+        [...tags, template, ...(publishMode === 'slot' ? [selectedSlot] : [])],
+        undefined,
+        undefined,
+        publishMode,
+        publishMode === 'slot' ? selectedSlot : undefined,
+      );
       setPublishResult(result);
       setStep('done');
     } catch (err) {
@@ -80,7 +120,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-sm font-bold uppercase tracking-widest" style={{ color: 'var(--rc-text)' }}>
             {step === 'identity' && 'Your Identity'}
-            {step === 'configure' && 'Publish Loadout'}
+            {step === 'configure' && (publishMode === 'slot' ? 'Publish Slot' : 'Publish Loadout')}
             {step === 'review' && 'Review & Confirm'}
             {step === 'publishing' && 'Publishing...'}
             {step === 'done' && 'Published!'}
@@ -229,10 +269,73 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
               <span style={{ color: 'var(--rc-magenta)' }}>⚠ Privacy:</span> Your loadout will be scrubbed of phone numbers, emails, IP addresses, API keys, file paths, and other PII before publishing. You'll review the scrubbed version before it goes live.
             </div>
 
+            {/* Publish mode toggle */}
+            <div>
+              <label className="text-[10px] uppercase tracking-wider block mb-2" style={{ color: 'var(--rc-text-muted)' }}>
+                What to publish
+              </label>
+              <div className="flex gap-2">
+                {(['loadout', 'slot'] as const).map((mode) => (
+                  <button
+                    key={mode}
+                    onClick={() => { setPublishMode(mode); setSlotValidationError(null); }}
+                    className="flex-1 py-2 rounded border text-xs font-semibold transition-all"
+                    style={{
+                      borderColor: publishMode === mode ? 'var(--rc-cyan)' : 'var(--rc-border)',
+                      background: publishMode === mode ? 'rgba(0,240,255,0.1)' : 'transparent',
+                      color: publishMode === mode ? 'var(--rc-cyan)' : 'var(--rc-text-dim)',
+                    }}
+                  >
+                    {mode === 'loadout' ? '📦 Full Loadout' : '🧩 Single Slot'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Slot picker (only when publishing a slot) */}
+            {publishMode === 'slot' && (
+              <div>
+                <label className="text-[10px] uppercase tracking-wider block mb-2" style={{ color: 'var(--rc-text-muted)' }}>
+                  Select Slot
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { id: 'model', label: 'Model', icon: '🧠' },
+                    { id: 'persona', label: 'Persona', icon: '👤' },
+                    { id: 'skills', label: 'Skills', icon: '⚡' },
+                    { id: 'integrations', label: 'Integrations', icon: '🔌' },
+                    { id: 'automations', label: 'Automations', icon: '⏰' },
+                    { id: 'memory', label: 'Memory', icon: '💾' },
+                  ].map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => { setSelectedSlot(s.id); setSlotValidationError(null); }}
+                      className="p-2 rounded border text-center transition-all"
+                      style={{
+                        borderColor: selectedSlot === s.id ? 'var(--rc-cyan)' : 'var(--rc-border)',
+                        background: selectedSlot === s.id ? 'rgba(0,240,255,0.1)' : 'transparent',
+                      }}
+                    >
+                      <div className="text-base">{s.icon}</div>
+                      <div className="text-[10px] mt-0.5" style={{ color: selectedSlot === s.id ? 'var(--rc-cyan)' : 'var(--rc-text-dim)' }}>
+                        {s.label}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                {slotValidationError && (
+                  <div className="text-[10px] mt-1 px-1" style={{ color: 'var(--rc-red)' }}>{slotValidationError}</div>
+                )}
+                <div className="text-[10px] mt-1 px-1" style={{ color: 'var(--rc-text-muted)' }}>
+                  Minimum 2 items required per slot
+                </div>
+              </div>
+            )}
+
             {/* Loadout name */}
             <div>
               <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: 'var(--rc-text-muted)' }}>
-                Loadout Name
+                {publishMode === 'slot' ? 'Slot Name' : 'Loadout Name'}
               </label>
               <input
                 type="text"
@@ -332,7 +435,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
 
             <button
               onClick={handleReview}
-              disabled={exporting || !loadoutName.trim()}
+              disabled={exporting || !loadoutName.trim() || (publishMode === 'slot' && !selectedSlot)}
               className="w-full py-2.5 rounded text-xs font-semibold uppercase tracking-wider border transition-all hover:opacity-80 disabled:opacity-40"
               style={{
                 borderColor: 'var(--rc-cyan)',

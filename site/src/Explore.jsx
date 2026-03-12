@@ -53,6 +53,9 @@ function parseLoadoutEvent(event) {
     const forkTag = event.tags.find(t => t[0] === 'e' && t[3] === 'fork')
     const authorTag = event.tags.find(t => t[0] === 'p')
 
+    const publishTypeTag = event.tags.find(t => t[0] === 'publish_type')
+    const slotTypeTag = event.tags.find(t => t[0] === 'slot_type')
+
     return {
       id: event.id,
       name: dTag,
@@ -61,13 +64,15 @@ function parseLoadoutEvent(event) {
       createdAt: event.created_at,
       isNew: (Date.now() / 1000 - event.created_at) < 7 * 24 * 60 * 60, // 7 days
       tags: tTags,
-      slots: content.slots || [],
+      slots: content.slots || (content.slot ? { [slotTypeTag?.[1] || 'unknown']: content.slot } : []),
       fork: forkTag ? {
         eventId: forkTag[1],
         relay: forkTag[2],
       } : null,
       originalAuthor: authorTag ? nip19.npubEncode(authorTag[1]).slice(0, 12) + '...' : null,
-      remixCount: 0, // We'll calculate this separately
+      remixCount: 0,
+      publishType: publishTypeTag?.[1] || 'loadout',
+      slotType: slotTypeTag?.[1] || null,
     }
   } catch (e) {
     console.error('Failed to parse loadout event:', e)
@@ -102,6 +107,12 @@ function LoadoutCard({ loadout, index, onClick, dropped }) {
               <span className="w-1.5 h-1.5 rounded-full bg-rc-cyan animate-pulse" />
               <span className="text-[10px] font-mono font-bold text-rc-cyan tracking-wider">NEW</span>
               <span className="text-[10px] font-mono text-rc-cyan/60">{formatDate(loadout.createdAt)}</span>
+            </div>
+          )}
+          {loadout.publishType === 'slot' && loadout.slotType && (
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rc-cyan/15 border border-rc-cyan/30">
+              <span className="text-[10px]">🧩</span>
+              <span className="text-[10px] font-mono font-bold text-rc-cyan tracking-wider uppercase">{loadout.slotType}</span>
             </div>
           )}
           {loadout.fork && (

@@ -39,6 +39,8 @@ export interface FeedLoadout {
   template: string | null;
   fork_of: string | null;
   fork_author: string | null;
+  publish_type: string;
+  slot_type: string | null;
 }
 
 export interface RelayInfo {
@@ -151,6 +153,8 @@ export function useNostrPublish() {
     tags: string[],
     forkOf?: string,
     forkAuthor?: string,
+    publishType?: string,
+    slotType?: string,
   ) => {
     setPublishing(true);
     try {
@@ -160,6 +164,8 @@ export function useNostrPublish() {
         tags,
         forkOf: forkOf || null,
         forkAuthor: forkAuthor || null,
+        publishType: publishType || 'loadout',
+        slotType: slotType || null,
       });
       return result;
     } catch (err) {
