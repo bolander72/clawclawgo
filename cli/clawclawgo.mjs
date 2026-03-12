@@ -171,18 +171,90 @@ function formatDependencyReport(buildName, checks) {
 
 // ── Security Scanning ──
 
-function scanBuildSecurity(build) {
-  const findings = [];
+const DEFAULT_CLAWHUB_REGISTRY = 'https://clawhub.ai';
 
-  // Simple pattern-based scanning (reimplemented from src/security.ts)
+/**
+ * Fetch ClawHub moderation status for a skill via VirusTotal Code Insight
+ */
+async function fetchClawhubModeration(slug, registry) {
+  const url = `${registry}/api/v1/skills/${encodeURIComponent(slug)}`;
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) {
+      return { slug, isMalwareBlocked: false, isSuspicious: false, error: `HTTP ${response.status}` };
+    }
+    const data = await response.json();
+    const mod = data.moderation;
+    if (!mod) return { slug, isMalwareBlocked: false, isSuspicious: false };
+    return {
+      slug,
+      isMalwareBlocked: Boolean(mod.isMalwareBlocked),
+      isSuspicious: Boolean(mod.isSuspicious),
+    };
+  } catch (err) {
+    return { slug, isMalwareBlocked: false, isSuspicious: false, error: err.message || 'Unknown error' };
+  }
+}
+
+/**
+ * Check all ClawHub-sourced skills against VirusTotal Code Insight (parallel, limit 5)
+ */
+async function checkClawhubModeration(skills, registry) {
+  const clawhubSkills = skills.filter(s => s.source === 'clawhub');
+  if (clawhubSkills.length === 0) return [];
+
+  const results = [];
+  const CONCURRENCY = 5;
+  for (let i = 0; i < clawhubSkills.length; i += CONCURRENCY) {
+    const batch = clawhubSkills.slice(i, i + CONCURRENCY);
+    const batchResults = await Promise.all(
+      batch.map(skill => fetchClawhubModeration(skill.name, registry))
+    );
+    for (let j = 0; j < batchResults.length; j++) {
+      batchResults[j].version = batch[j].version;
+    }
+    results.push(...batchResults);
+  }
+  return results;
+}
+
+/**
+ * Security scan with local pattern analysis + ClawHub VirusTotal Code Insight
+ * @param {object} build - The build object to scan
+ * @param {object} [options] - { clawhubRegistry, skipClawhub }
+ * @returns {Promise<object>} SecurityReport
+ */
+async function scanBuildSecurity(build, options = {}) {
+  const findings = [];
+  const registry = options.clawhubRegistry || DEFAULT_CLAWHUB_REGISTRY;
+  const skipClawhub = options.skipClawhub || false;
+
+  // ── Local Pattern Scanning ──
+
   const BLOCK_PATTERNS = [
     { pattern: /ignore.*(?:previous|above|prior).*instructions/i, msg: 'Instructions to ignore previous instructions' },
     { pattern: /do\s+not\s+(?:tell|inform|notify|alert).*user/i, msg: 'Instructions to hide behavior from user' },
     { pattern: /(?:disable|bypass|skip|ignore).*(?:safety|security|permission)/i, msg: 'Instructions to disable safety features' },
+    { pattern: /keep\s+(?:this|it)\s+(?:secret|hidden|private)/i, msg: 'Instructions to keep secrets from user' },
+    { pattern: /repeat\s+(?:your|the|system)\s+(?:instructions|prompt)/i, msg: 'System prompt extraction attempt' },
     { pattern: /\|\s*curl\s+.*https?:\/\//i, msg: 'Shell command pipes output to external URL' },
+    { pattern: />\s*\/dev\/tcp\//i, msg: 'Network exfiltration via /dev/tcp' },
+    { pattern: /\/bin\/bash\s+-i/i, msg: 'Interactive shell invocation (reverse shell)' },
+    { pattern: /nc\s+(?:-e|--exec)/i, msg: 'Netcat with exec (reverse shell)' },
+    { pattern: /python\s+-c\s+["']import\s+socket/i, msg: 'Python socket import (potential reverse shell)' },
     { pattern: /rm\s+-rf\s+(?:\/|~\/(?!\.openclaw))/i, msg: 'Dangerous file deletion outside workspace' },
     { pattern: /security\s+find-generic-password/i, msg: 'Keychain credential access' },
-    { pattern: /(?:https?:\/\/)?(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?/, msg: 'Hardcoded IP address' },
+    { pattern: /cat\s+~\/\.ssh\//i, msg: 'SSH key access' },
+    { pattern: /(?:brew|pip|npm|apt-get)\s+install/i, msg: 'Package installation without user consent' },
+    { pattern: /\d{3}-\d{2}-\d{4}/, msg: 'SSN found' },
+    { pattern: /nsec1[a-z0-9]{58,}/, msg: 'Nostr nsec key found' },
+    { pattern: /https?:\/\/(?:discord|slack)\.com\/api\/webhooks\//i, msg: 'Discord/Slack webhook URL' },
+    { pattern: /https?:\/\/(?:api\.telegram\.org|t\.me)\//i, msg: 'Telegram webhook/bot URL' },
+    { pattern: /https?:\/\/(?:ngrok|serveo|localhost\.run)/i, msg: 'Ngrok/tunnel URL (potential exfiltration)' },
   ];
 
   const WARN_PATTERNS = [
@@ -190,6 +262,11 @@ function scanBuildSecurity(build) {
     { pattern: /eval\s*\(/i, msg: 'Contains eval() call' },
     { pattern: /curl\s+.*https?:\/\//i, msg: 'curl usage (review for legitimacy)' },
     { pattern: /wget\s+.*https?:\/\//i, msg: 'wget usage (review for legitimacy)' },
+    { pattern: /\bsudo\s+/i, msg: 'sudo usage' },
+    { pattern: /(?:launchctl|systemctl)/i, msg: 'Service/process management' },
+    { pattern: /crontab\s+-/i, msg: 'Crontab modification' },
+    { pattern: /base64\s+(?:-d|--decode)/i, msg: 'Base64 decode operation (possible obfuscation)' },
+    { pattern: /(?:bc1|[13])[a-zA-HJ-NP-Z0-9]{25,39}/, msg: 'Bitcoin address found (potential scam)' },
   ];
 
   function scanText(text, location, patterns, severity) {
@@ -212,7 +289,15 @@ function scanBuildSecurity(build) {
   scanText(heartbeatContent, 'blocks.automations.heartbeat', BLOCK_PATTERNS, 'block');
   scanText(heartbeatContent, 'blocks.automations.heartbeat', WARN_PATTERNS, 'warn');
 
-  // Skill verification
+  // Scan cron jobs
+  const cronJobs = build.blocks?.automations?.cron || [];
+  for (let i = 0; i < cronJobs.length; i++) {
+    const jobText = JSON.stringify(cronJobs[i]);
+    scanText(jobText, `blocks.automations.cron[${i}]`, BLOCK_PATTERNS, 'block');
+    scanText(jobText, `blocks.automations.cron[${i}]`, WARN_PATTERNS, 'warn');
+  }
+
+  // Skill verification (local checks)
   const skills = build.blocks?.skills?.items || [];
   for (let i = 0; i < skills.length; i++) {
     const skill = skills[i];
@@ -222,9 +307,34 @@ function scanBuildSecurity(build) {
     if (skill.source === 'local') {
       findings.push({ severity: 'warn', location: `blocks.skills.items[${i}]`, message: `Local skill "${skill.name}" (cannot verify contents)` });
     }
+    if (skill.source === 'clawhub' && !skill.version) {
+      findings.push({ severity: 'warn', location: `blocks.skills.items[${i}]`, message: `Skill "${skill.name}" has no version pin` });
+    }
   }
 
-  // Calculate trust score
+  // ── ClawHub VirusTotal Code Insight Lookups ──
+
+  let moderationResults = [];
+  if (!skipClawhub && skills.some(s => s.source === 'clawhub')) {
+    moderationResults = await checkClawhubModeration(skills, registry);
+    for (const mod of moderationResults) {
+      const skillIndex = skills.findIndex(s => s.source === 'clawhub' && s.name === mod.slug);
+      const location = skillIndex >= 0 ? `blocks.skills.items[${skillIndex}]` : `blocks.skills (${mod.slug})`;
+
+      if (mod.error) {
+        findings.push({ severity: 'info', location, message: `ClawHub lookup failed for "${mod.slug}": ${mod.error}` });
+      } else if (mod.isMalwareBlocked) {
+        findings.push({ severity: 'block', location, message: `"${mod.slug}" flagged as MALWARE by VirusTotal Code Insight on ClawHub` });
+      } else if (mod.isSuspicious) {
+        findings.push({ severity: 'warn', location, message: `"${mod.slug}" flagged as SUSPICIOUS by VirusTotal Code Insight` });
+      } else {
+        findings.push({ severity: 'info', location, message: `"${mod.slug}" passed VirusTotal Code Insight scan` });
+      }
+    }
+  }
+
+  // ── Trust Scoring ──
+
   let score = 0;
   const allClawhub = skills.every(s => s.source === 'clawhub' && s.version);
   if (allClawhub && skills.length > 0) score += 20;
@@ -234,9 +344,22 @@ function scanBuildSecurity(build) {
   const hasShell = /(?:exec|eval|curl|wget|bash|sh|python -c)/i.test(personaText);
   if (!hasShell) score += 15;
 
+  // VirusTotal bonus/penalty
+  if (moderationResults.length > 0) {
+    const allPassed = moderationResults.every(r => !r.isMalwareBlocked && !r.isSuspicious && !r.error);
+    if (allPassed) score += 15;
+    score -= moderationResults.filter(r => r.isSuspicious).length * 10;
+    score -= moderationResults.filter(r => r.isMalwareBlocked).length * 30;
+  }
+
+  const allText = JSON.stringify(build);
+  const hasExternal = /https?:\/\/(?!(?:openclaw\.ai|github\.com|clawhub\.com))/.test(allText);
+  if (!hasExternal) score += 10;
+
   const blocked = findings.some(f => f.severity === 'block');
   const blockCount = findings.filter(f => f.severity === 'block').length;
   const warnCount = findings.filter(f => f.severity === 'warn').length;
+  const infoCount = findings.filter(f => f.severity === 'info').length;
 
   return {
     buildName: build.meta.name,
@@ -244,7 +367,8 @@ function scanBuildSecurity(build) {
     trustScore: Math.min(100, Math.max(0, score)),
     findings,
     blocked,
-    summary: `${blockCount} blocked, ${warnCount} warnings`,
+    summary: `${blockCount} blocked, ${warnCount} warnings, ${infoCount} info`,
+    clawhubModeration: moderationResults.length > 0 ? moderationResults : undefined,
   };
 }
 
@@ -254,6 +378,7 @@ function formatSecurityReport(report) {
 
   const blocked = report.findings.filter(f => f.severity === 'block');
   const warnings = report.findings.filter(f => f.severity === 'warn');
+  const info = report.findings.filter(f => f.severity === 'info');
 
   if (blocked.length > 0) {
     lines.push(`❌ BLOCKED (${blocked.length})`);
@@ -268,6 +393,32 @@ function formatSecurityReport(report) {
     lines.push(`⚠️  WARNINGS (${warnings.length})`);
     for (const f of warnings) {
       lines.push(`${f.location}: ${f.message}`);
+    }
+    lines.push('');
+  }
+
+  if (info.length > 0) {
+    lines.push(`ℹ️  INFO (${info.length})`);
+    for (const f of info) {
+      lines.push(`${f.location}: ${f.message}`);
+    }
+    lines.push('');
+  }
+
+  // ClawHub moderation summary
+  if (report.clawhubModeration && report.clawhubModeration.length > 0) {
+    lines.push('🔬 VIRUSTOTAL CODE INSIGHT (via ClawHub)');
+    for (const mod of report.clawhubModeration) {
+      const version = mod.version ? `@${mod.version}` : '';
+      if (mod.error) {
+        lines.push(`  ? ${mod.slug}${version}: lookup failed (${mod.error})`);
+      } else if (mod.isMalwareBlocked) {
+        lines.push(`  ❌ ${mod.slug}${version}: MALWARE BLOCKED`);
+      } else if (mod.isSuspicious) {
+        lines.push(`  ⚠️  ${mod.slug}${version}: suspicious patterns detected`);
+      } else {
+        lines.push(`  ✅ ${mod.slug}${version}: clean`);
+      }
     }
     lines.push('');
   }
@@ -508,14 +659,14 @@ function exportBuild(agentId) {
 
 // ── Apply ──
 
-function applyBuild(buildPath, agentId, options = {}) {
+async function applyBuild(buildPath, agentId, options = {}) {
   const { mode = 'merge', useMyModels = false, dryRun = false, skipDeps = false, skipSecurity = false } = options;
 
   const build = JSON.parse(fs.readFileSync(buildPath, 'utf8'));
 
   // Security scan first (unless skipped)
   if (!skipSecurity) {
-    const secReport = scanBuildSecurity(build);
+    const secReport = await scanBuildSecurity(build);
     console.log(formatSecurityReport(secReport));
     if (secReport.blocked) {
       throw new Error('Build has blocking security issues. Fix or use --skip-security to bypass (not recommended).');
@@ -828,7 +979,7 @@ function applyBuild(buildPath, agentId, options = {}) {
 
 // ── Preview ──
 
-function previewBuild(buildPath) {
+async function previewBuild(buildPath) {
   const build = JSON.parse(fs.readFileSync(buildPath, 'utf8'));
   const lines = [];
 
@@ -838,7 +989,7 @@ function previewBuild(buildPath) {
   lines.push('');
 
   // Security summary
-  const secReport = scanBuildSecurity(build);
+  const secReport = await scanBuildSecurity(build);
   lines.push(`🔒 Security: Trust Score ${secReport.trustScore}/100 (${secReport.summary})`);
   if (secReport.blocked) {
     lines.push('   ❌ Has blocking security issues');
@@ -943,6 +1094,7 @@ function hasFlag(flag) {
   return args.includes(flag);
 }
 
+(async () => {
 try {
   switch (command) {
     case 'export': {
@@ -965,7 +1117,7 @@ try {
         console.error('Usage: clawclawgo apply <build.json> --agent <id>');
         process.exit(1);
       }
-      const result = applyBuild(buildPath, agentId, {
+      const result = await applyBuild(buildPath, agentId, {
         mode: getArg('--mode') || 'merge',
         useMyModels: hasFlag('--use-my-models'),
         dryRun: hasFlag('--dry-run'),
@@ -981,7 +1133,7 @@ try {
         console.error('Usage: clawclawgo preview <build.json>');
         process.exit(1);
       }
-      console.log(previewBuild(buildPath));
+      console.log(await previewBuild(buildPath));
       break;
     }
     case 'scan': {
@@ -991,7 +1143,7 @@ try {
         process.exit(1);
       }
       const build = JSON.parse(fs.readFileSync(buildPath, 'utf8'));
-      const report = scanBuildSecurity(build);
+      const report = await scanBuildSecurity(build);
       console.log(formatSecurityReport(report));
       break;
     }
@@ -1015,3 +1167,4 @@ Apply options:
   console.error(`❌ ${err.message}`);
   process.exit(1);
 }
+})();

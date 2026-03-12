@@ -1,8 +1,11 @@
 /**
  * Build Security Scanner - detect malicious patterns in builds before apply/publish
+ *
+ * Includes local pattern scanning (5 passes) and optional ClawHub moderation
+ * status lookups via VirusTotal Code Insight for ClawHub-sourced skills.
  */
 
-import type { Build } from "./schema/build.js";
+import type { Build, SkillItem } from "./schema/build.js";
 
 // ── Types ───────────────────────────────────────────────────────────
 
@@ -22,6 +25,26 @@ export interface SecurityReport {
   findings: SecurityFinding[];
   blocked: boolean;
   summary: string;
+  /** ClawHub moderation results for skills that were checked */
+  clawhubModeration?: ClawhubModerationResult[];
+}
+
+/** Result of querying ClawHub's VirusTotal Code Insight moderation for a skill */
+export interface ClawhubModerationResult {
+  slug: string;
+  version?: string;
+  isMalwareBlocked: boolean;
+  isSuspicious: boolean;
+  /** null means the lookup failed (network error, skill not found, etc.) */
+  error?: string;
+}
+
+/** Options for the security scanner */
+export interface ScanOptions {
+  /** ClawHub registry URL (default: https://clawhub.ai) */
+  clawhubRegistry?: string;
+  /** Skip ClawHub moderation lookups (offline mode) */
+  skipClawhub?: boolean;
 }
 
 // ── Pattern Definitions ─────────────────────────────────────────────
@@ -263,6 +286,139 @@ const PII_PATTERNS: PatternRule[] = [
   },
 ];
 
+// ── ClawHub Moderation Lookup ────────────────────────────────────────
+
+const DEFAULT_CLAWHUB_REGISTRY = "https://clawhub.ai";
+
+/**
+ * Query ClawHub's /api/v1/skills/:slug endpoint for VirusTotal Code Insight
+ * moderation status. Returns null on network/parse failure.
+ */
+async function fetchClawhubModeration(
+  slug: string,
+  registry: string
+): Promise<ClawhubModerationResult> {
+  const url = `${registry}/api/v1/skills/${encodeURIComponent(slug)}`;
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+      headers: { "Accept": "application/json" },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!response.ok) {
+      return {
+        slug,
+        isMalwareBlocked: false,
+        isSuspicious: false,
+        error: `HTTP ${response.status}`,
+      };
+    }
+    const data = await response.json() as {
+      moderation?: { isMalwareBlocked: boolean; isSuspicious: boolean } | null;
+    };
+    const mod = data.moderation;
+    if (!mod) {
+      return { slug, isMalwareBlocked: false, isSuspicious: false };
+    }
+    return {
+      slug,
+      isMalwareBlocked: Boolean(mod.isMalwareBlocked),
+      isSuspicious: Boolean(mod.isSuspicious),
+    };
+  } catch (err) {
+    return {
+      slug,
+      isMalwareBlocked: false,
+      isSuspicious: false,
+      error: err instanceof Error ? err.message : "Unknown error",
+    };
+  }
+}
+
+/**
+ * Batch-check all ClawHub-sourced skills in a build against VirusTotal Code Insight.
+ * Runs lookups in parallel with a concurrency limit of 5.
+ */
+async function checkClawhubModeration(
+  skills: SkillItem[],
+  registry: string
+): Promise<ClawhubModerationResult[]> {
+  const clawhubSkills = skills.filter((s) => s.source === "clawhub");
+  if (clawhubSkills.length === 0) return [];
+
+  // Simple parallel with concurrency limit
+  const results: ClawhubModerationResult[] = [];
+  const CONCURRENCY = 5;
+
+  for (let i = 0; i < clawhubSkills.length; i += CONCURRENCY) {
+    const batch = clawhubSkills.slice(i, i + CONCURRENCY);
+    const batchResults = await Promise.all(
+      batch.map((skill) => fetchClawhubModeration(skill.name, registry))
+    );
+    // Attach version info
+    for (let j = 0; j < batchResults.length; j++) {
+      batchResults[j].version = batch[j].version;
+    }
+    results.push(...batchResults);
+  }
+
+  return results;
+}
+
+/**
+ * Convert ClawHub moderation results into SecurityFindings
+ */
+function moderationToFindings(
+  moderationResults: ClawhubModerationResult[],
+  skills: SkillItem[]
+): SecurityFinding[] {
+  const findings: SecurityFinding[] = [];
+
+  for (const result of moderationResults) {
+    const skillIndex = skills.findIndex(
+      (s) => s.source === "clawhub" && s.name === result.slug
+    );
+    const location = skillIndex >= 0
+      ? `blocks.skills.items[${skillIndex}]`
+      : `blocks.skills (${result.slug})`;
+
+    if (result.error) {
+      findings.push({
+        severity: "info",
+        category: "skill",
+        location,
+        message: `ClawHub moderation lookup failed for "${result.slug}": ${result.error}`,
+      });
+      continue;
+    }
+
+    if (result.isMalwareBlocked) {
+      findings.push({
+        severity: "block",
+        category: "skill",
+        location,
+        message: `"${result.slug}" is flagged as MALWARE by VirusTotal Code Insight on ClawHub`,
+      });
+    } else if (result.isSuspicious) {
+      findings.push({
+        severity: "warn",
+        category: "skill",
+        location,
+        message: `"${result.slug}" is flagged as SUSPICIOUS by VirusTotal Code Insight (risky patterns: crypto keys, external APIs, eval, etc.)`,
+      });
+    } else {
+      findings.push({
+        severity: "info",
+        category: "skill",
+        location,
+        message: `"${result.slug}" passed VirusTotal Code Insight scan on ClawHub`,
+      });
+    }
+  }
+
+  return findings;
+}
+
 // ── Scanner Passes ──────────────────────────────────────────────────
 
 /**
@@ -378,7 +534,11 @@ function scanWithPatterns(text: string, location: string, patterns: PatternRule[
 
 // ── Trust Scoring ───────────────────────────────────────────────────
 
-function calculateTrustScore(build: Build, findings: SecurityFinding[]): number {
+function calculateTrustScore(
+  build: Build,
+  findings: SecurityFinding[],
+  moderationResults?: ClawhubModerationResult[]
+): number {
   let score = 0;
 
   // All skills from ClawHub with versions (+20)
@@ -398,9 +558,19 @@ function calculateTrustScore(build: Build, findings: SecurityFinding[]): number 
   const hasShell = /(?:exec|eval|curl|wget|bash|sh|python -c)/i.test(personaText);
   if (!hasShell) score += 15;
 
-  // Author is verified (future: check Nostr NIP-05) (+15)
-  // For now, skip this
-  // if (build.meta.author.includes("@")) score += 15;
+  // All ClawHub skills passed VirusTotal Code Insight (+15)
+  if (moderationResults && moderationResults.length > 0) {
+    const allPassed = moderationResults.every(
+      (r) => !r.isMalwareBlocked && !r.isSuspicious && !r.error
+    );
+    if (allPassed) score += 15;
+    // Penalty for suspicious skills
+    const suspiciousCount = moderationResults.filter((r) => r.isSuspicious).length;
+    score -= suspiciousCount * 10;
+    // Hard penalty for malware-blocked skills
+    const malwareCount = moderationResults.filter((r) => r.isMalwareBlocked).length;
+    score -= malwareCount * 30;
+  }
 
   // No external URLs in content (+10)
   const allText = JSON.stringify(build);
@@ -417,9 +587,40 @@ function calculateTrustScore(build: Build, findings: SecurityFinding[]): number 
 // ── Main Scanner ────────────────────────────────────────────────────
 
 /**
- * Scan a build for security issues
+ * Scan a build for security issues (sync version, no ClawHub lookups)
  */
-export function scanBuild(build: Build): SecurityReport {
+export function scanBuildSync(build: Build): SecurityReport {
+  return buildReport(build, [], []);
+}
+
+/**
+ * Scan a build for security issues with optional ClawHub moderation lookups.
+ * Queries VirusTotal Code Insight for all ClawHub-sourced skills.
+ */
+export async function scanBuild(build: Build, options?: ScanOptions): Promise<SecurityReport> {
+  const registry = options?.clawhubRegistry || DEFAULT_CLAWHUB_REGISTRY;
+  const skipClawhub = options?.skipClawhub ?? false;
+
+  // Run local pattern scanning
+  const localFindings = runLocalScans(build);
+
+  // Run ClawHub moderation lookups for ClawHub-sourced skills
+  let moderationResults: ClawhubModerationResult[] = [];
+  let moderationFindings: SecurityFinding[] = [];
+  const skills = build.blocks.skills?.items || [];
+
+  if (!skipClawhub && skills.some((s) => s.source === "clawhub")) {
+    moderationResults = await checkClawhubModeration(skills, registry);
+    moderationFindings = moderationToFindings(moderationResults, skills);
+  }
+
+  return buildReport(build, [...localFindings, ...moderationFindings], moderationResults);
+}
+
+/**
+ * Run all local pattern-based scan passes (no network)
+ */
+function runLocalScans(build: Build): SecurityFinding[] {
   const findings: SecurityFinding[] = [];
 
   // Pass 1: PII (scan all text content)
@@ -463,17 +664,26 @@ export function scanBuild(build: Build): SecurityReport {
     findings.push(...scanForAutomationThreats(jobText, `blocks.automations.cron[${i}]`));
   }
 
-  // Pass 4: Skill verification
+  // Pass 4: Skill verification (local checks only)
   findings.push(...scanSkills(build));
 
   // Pass 5: Exfiltration detection (all text)
   const allText = JSON.stringify(build);
   findings.push(...scanForExfiltration(allText, "build"));
 
-  // Calculate trust score
-  const trustScore = calculateTrustScore(build, findings);
+  return findings;
+}
 
-  // Summary
+/**
+ * Assemble the final SecurityReport from findings and moderation results
+ */
+function buildReport(
+  build: Build,
+  findings: SecurityFinding[],
+  moderationResults: ClawhubModerationResult[]
+): SecurityReport {
+  const trustScore = calculateTrustScore(build, findings, moderationResults);
+
   const blocked = findings.some((f) => f.severity === "block");
   const blockCount = findings.filter((f) => f.severity === "block").length;
   const warnCount = findings.filter((f) => f.severity === "warn").length;
@@ -488,6 +698,7 @@ export function scanBuild(build: Build): SecurityReport {
     findings,
     blocked,
     summary,
+    clawhubModeration: moderationResults.length > 0 ? moderationResults : undefined,
   };
 }
 
@@ -526,6 +737,24 @@ export function formatSecurityReport(report: SecurityReport): string {
     lines.push(`ℹ️  INFO (${info.length})`);
     for (const finding of info) {
       lines.push(`${finding.location}: ${finding.message}`);
+    }
+    lines.push("");
+  }
+
+  // ClawHub moderation summary
+  if (report.clawhubModeration && report.clawhubModeration.length > 0) {
+    lines.push("🔬 VIRUSTOTAL CODE INSIGHT (via ClawHub)");
+    for (const mod of report.clawhubModeration) {
+      const version = mod.version ? `@${mod.version}` : "";
+      if (mod.error) {
+        lines.push(`  ? ${mod.slug}${version}: lookup failed (${mod.error})`);
+      } else if (mod.isMalwareBlocked) {
+        lines.push(`  ❌ ${mod.slug}${version}: MALWARE BLOCKED`);
+      } else if (mod.isSuspicious) {
+        lines.push(`  ⚠️  ${mod.slug}${version}: suspicious patterns detected`);
+      } else {
+        lines.push(`  ✅ ${mod.slug}${version}: clean`);
+      }
     }
     lines.push("");
   }

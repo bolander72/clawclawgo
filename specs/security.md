@@ -188,9 +188,42 @@ Pre-publish security scan...
   Publish anyway? [y/N]
 ```
 
+### ClawHub VirusTotal Code Insight Integration
+
+For ClawHub-sourced skills, the scanner queries ClawHub's `/api/v1/skills/:slug` endpoint to check VirusTotal Code Insight moderation status. This provides server-side code analysis that complements our local pattern scanning.
+
+**How it works:**
+1. Scanner identifies all skills with `source: "clawhub"` in the build
+2. Parallel HTTP lookups (max 5 concurrent) to ClawHub registry
+3. Each skill response includes a `moderation` object with:
+   - `isMalwareBlocked: boolean` -- hard block, VirusTotal flagged as malware
+   - `isSuspicious: boolean` -- soft warning, risky patterns detected (crypto keys, external APIs, eval, etc.)
+4. Results fold into findings and trust score
+
+**Trust score impact:**
+- All ClawHub skills pass VirusTotal: +15 points
+- Each suspicious skill: -10 points
+- Each malware-blocked skill: -30 points
+
+**Offline mode:**
+Pass `--skip-clawhub` or `{ skipClawhub: true }` to skip network lookups (useful for air-gapped environments or CI without internet).
+
+**What ClawHub covers vs what we cover:**
+
+| Threat | ClawHub (VirusTotal) | ClawClawGo (local) |
+|--------|---------------------|--------------------|
+| Malicious code in skills | ✅ | Partial (pattern-based) |
+| Prompt injection in persona | ❌ | ✅ |
+| Dangerous automations (HEARTBEAT/cron) | ❌ | ✅ |
+| PII leaks | ❌ | ✅ |
+| Network exfiltration patterns | ❌ | ✅ |
+| Obfuscated code | ✅ | Partial |
+| Supply chain (compromised packages) | ✅ | ❌ |
+
+The two systems are complementary. ClawHub catches code-level threats with deep analysis. ClawClawGo catches build-level threats that exist outside of skill code.
+
 ### Future Work
 
-- ClawHub-side scanning (reject malicious publishes server-side)
 - Community reporting (flag builds)
 - Allowlisted publishers (skip WARN for trusted authors)
 - Sandboxed preview mode (apply build in isolated environment first)
