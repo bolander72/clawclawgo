@@ -12,7 +12,7 @@ import { SettingsView } from './components/SettingsView';
 import { useSlots, useSkills, useSystemStatus, useCloneLoadout, useAgents } from './hooks/useTauri';
 import { slots as mockSlots, mods as mockMods } from './data/mockLoadout';
 
-type View = 'rig' | 'mods' | 'loadouts' | 'compare' | 'feed' | 'settings';
+type View = 'loadout' | 'mods' | 'loadouts' | 'compare' | 'feed' | 'settings';
 
 function CloneToast({ result }: { result: { message: string; type: 'success' | 'error' } | null }) {
   if (!result) return null;
@@ -31,7 +31,7 @@ function CloneToast({ result }: { result: { message: string; type: 'success' | '
 
 function App() {
   const [selectedSlot, setSelectedSlot] = useState('soul');
-  const [view, setView] = useState<View>('rig');
+  const [view, setView] = useState<View>('loadout');
   const [showPublish, setShowPublish] = useState(false);
   const [compareTarget, setCompareTarget] = useState<Record<string, unknown> | null>(null);
   const [cloneResult, setCloneResult] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -66,7 +66,7 @@ function App() {
   const dataSource = slotsError ? 'mock' : 'live';
 
   const navItems: { id: View; icon: string; label: string }[] = [
-    { id: 'rig', icon: '⬡', label: 'Active Loadout' },
+    { id: 'loadout', icon: '⬡', label: 'Active Loadout' },
     { id: 'mods', icon: '◆', label: 'Mods' },
     { id: 'loadouts', icon: '▤', label: 'Loadouts' },
     { id: 'compare', icon: '⊕', label: 'Compare' },
@@ -140,7 +140,7 @@ function App() {
 
         {/* Main content */}
         <main className="flex-1 flex overflow-hidden">
-          {view === 'rig' && (
+          {view === 'loadout' && (
             <>
               {/* Slot grid */}
               <div className="w-[340px] p-4 overflow-y-auto border-r" style={{ borderColor: 'var(--rc-border)' }}>
@@ -217,7 +217,7 @@ function App() {
                 if (res) {
                   const msg = mode === 'new'
                     ? `Saved as loadout: ${res.slot_changes[0] || 'done'}`
-                    : `Cloned to your rig. ${res.applied_skills.length} skills matched, ${res.skipped_skills.length} skipped. Backup: ${res.backup_path || 'none'}`;
+                    : `Cloned to your agent. ${res.applied_skills.length} skills matched, ${res.skipped_skills.length} skipped. Backup: ${res.backup_path || 'none'}`;
                   setCloneResult({ message: msg, type: 'success' });
                   setTimeout(() => setCloneResult(null), 6000);
                 } else {

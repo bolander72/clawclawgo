@@ -12,7 +12,7 @@ const TEMPLATES = [
 type Step = 'identity' | 'configure' | 'review' | 'publishing' | 'done';
 
 export function PublishDialog({ onClose }: { onClose: () => void }) {
-  const [rigName, setRigName] = useState('');
+  const [loadoutName, setLoadoutName] = useState('');
   const [template, setTemplate] = useState('ops');
   const [description, setDescription] = useState('');
   const [tagInput, setTagInput] = useState('');
@@ -53,7 +53,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
     setStep('publishing');
     setPublishError(null);
     try {
-      const result = await publish(scrubbedJson, rigName || 'My Loadout', [...tags, template]);
+      const result = await publish(scrubbedJson, loadoutName || 'My Loadout', [...tags, template]);
       setPublishResult(result);
       setStep('done');
     } catch (err) {
@@ -229,15 +229,15 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
               <span style={{ color: 'var(--rc-magenta)' }}>⚠ Privacy:</span> Your loadout will be scrubbed of phone numbers, emails, IP addresses, API keys, file paths, and other PII before publishing. You'll review the scrubbed version before it goes live.
             </div>
 
-            {/* Rig name */}
+            {/* Loadout name */}
             <div>
               <label className="text-[10px] uppercase tracking-wider block mb-1" style={{ color: 'var(--rc-text-muted)' }}>
-                Rig Name
+                Loadout Name
               </label>
               <input
                 type="text"
-                value={rigName}
-                onChange={(e) => setRigName(e.target.value)}
+                value={loadoutName}
+                onChange={(e) => setLoadoutName(e.target.value)}
                 placeholder="e.g. Nighthawk, Mercury, Athena..."
                 className="w-full px-3 py-2 rounded text-xs border outline-none"
                 style={{
@@ -281,7 +281,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
               <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="What makes your rig unique?"
+                placeholder="What makes your loadout unique?"
                 rows={3}
                 className="w-full px-3 py-2 rounded text-xs border outline-none resize-none"
                 style={{
@@ -332,7 +332,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
 
             <button
               onClick={handleReview}
-              disabled={exporting || !rigName.trim()}
+              disabled={exporting || !loadoutName.trim()}
               className="w-full py-2.5 rounded text-xs font-semibold uppercase tracking-wider border transition-all hover:opacity-80 disabled:opacity-40"
               style={{
                 borderColor: 'var(--rc-cyan)',
@@ -450,7 +450,7 @@ export function PublishDialog({ onClose }: { onClose: () => void }) {
           <div className="text-center py-6 space-y-4">
             <div className="text-3xl" style={{ color: 'var(--rc-green)' }}>✓</div>
             <div className="text-sm font-bold" style={{ color: 'var(--rc-text)' }}>
-              Rig Published
+              Loadout Published
             </div>
             <div className="text-[10px] font-mono p-2 rounded" style={{
               background: 'rgba(255,255,255,0.03)',

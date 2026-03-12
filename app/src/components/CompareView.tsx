@@ -10,7 +10,7 @@ interface Props {
   onClone?: (loadout: Loadout, mode: 'overwrite' | 'new') => void;
 }
 
-// Build a diff between current rig and imported loadout
+// Build a diff between current loadout and imported loadout
 function buildDiff(
   currentSlots: SlotData[],
   currentMods: { name: string; source: string }[],
@@ -70,7 +70,7 @@ export function CompareView({ currentSlots, currentMods, currentName, initialLoa
   );
   const [dragOver, setDragOver] = useState(false);
 
-  // Sync when a Feed rig gets passed in
+  // Sync when a Feed loadout gets passed in
   useEffect(() => {
     if (initialLoadout) {
       setImported(initialLoadout as Loadout);
@@ -221,7 +221,7 @@ export function CompareView({ currentSlots, currentMods, currentName, initialLoa
             Active Loadout
           </div>
           <div className="text-xs font-semibold uppercase tracking-widest text-center" style={{ color: 'var(--rc-magenta)' }}>
-            Their Rig
+            Their Loadout
           </div>
         </div>
 

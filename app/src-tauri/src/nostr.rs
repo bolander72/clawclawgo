@@ -273,7 +273,7 @@ pub async fn nostr_publish_loadout(
 // ─── Subscribing / Feed ───
 
 #[derive(Serialize, Clone)]
-pub struct FeedRig {
+pub struct FeedLoadout {
     pub id: String,
     pub name: String,
     pub author: String,
@@ -287,7 +287,7 @@ pub struct FeedRig {
 pub async fn nostr_fetch_feed(
     limit: Option<usize>,
     relay_urls: Option<Vec<String>>,
-) -> Result<Vec<FeedRig>, String> {
+) -> Result<Vec<FeedLoadout>, String> {
     let keys = load_keys().unwrap_or_else(Keys::generate);
     let client = Client::new(keys);
 
@@ -313,14 +313,14 @@ pub async fn nostr_fetch_feed(
 
     let template_names = ["homelab", "ops", "researcher", "smart-home", "creator"];
 
-    let mut feed: Vec<FeedRig> = Vec::new();
+    let mut feed: Vec<FeedLoadout> = Vec::new();
 
     for event in events.iter() {
         let name = event
             .tags
             .find(TagKind::d())
             .and_then(|t| t.content().map(|s| s.to_string()))
-            .unwrap_or_else(|| "Unnamed Rig".to_string());
+            .unwrap_or_else(|| "Unnamed Loadout".to_string());
 
         let hashtags: Vec<String> = event
             .tags
@@ -339,7 +339,7 @@ pub async fn nostr_fetch_feed(
             .to_bech32()
             .unwrap_or_else(|_| "unknown".to_string());
 
-        feed.push(FeedRig {
+        feed.push(FeedLoadout {
             id: event.id.to_hex(),
             name,
             author: npub_short(&author_npub),

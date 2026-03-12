@@ -941,7 +941,7 @@ fn export_loadout_safe(
     Ok((scrubbed, report))
 }
 
-// ─── Clone loadout (apply another loadout to current rig) ───
+// ─── Clone loadout (apply another loadout) ───
 
 #[derive(Serialize)]
 struct CloneResult {
@@ -982,7 +982,7 @@ fn clone_loadout(loadout_json: String, mode: String) -> Result<CloneResult, Stri
         });
     }
 
-    // Mode: "overwrite" - apply to current rig
+    // Mode: "overwrite" - apply to current agent
     // First, backup current config
     let config_path = openclaw_dir().join("openclaw.json");
     let backup_name = format!("openclaw.backup-{}.json", chrono_now().replace(':', "-"));

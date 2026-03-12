@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
-import { useNostrKeys, useNostrFeed, type FeedRig } from '../hooks/useNostr';
+import { useNostrKeys, useNostrFeed, type FeedLoadout } from '../hooks/useNostr';
 
 // Mock feed data — shown when no real events exist yet
-const mockFeed: DisplayRig[] = [
+const mockLoadouts: DisplayLoadout[] = [
   {
     id: 'mock-1',
     name: 'Nighthawk',
     author: 'npub1cyb3r...punk',
     template: 'homelab',
-    description: 'Full surveillance rig with local LLMs, multi-camera vision, and voice control. Zero cloud dependency.',
+    description: 'Full surveillance loadout with local LLMs, multi-camera vision, and voice control. Zero cloud dependency.',
     tags: ['privacy', 'local-first', 'voice', 'cameras'],
     publishedAt: Date.now() / 1000 - 3600,
     model: 'llama-3.3-70b (local)',
@@ -30,7 +30,7 @@ const mockFeed: DisplayRig[] = [
     name: 'Athena',
     author: 'npub1wiz...ard',
     template: 'researcher',
-    description: 'Research-focused rig with deep web search, PDF analysis, and academic citation tracking. 40+ custom skills.',
+    description: 'Research-focused loadout with deep web search, PDF analysis, and academic citation tracking. 40+ custom skills.',
     tags: ['research', 'academic', 'deep-web'],
     publishedAt: Date.now() / 1000 - 14400,
     model: 'claude-opus-4-6',
@@ -52,7 +52,7 @@ const mockFeed: DisplayRig[] = [
     name: 'Ghostwriter',
     author: 'npub1pen...ink',
     template: 'creator',
-    description: 'Content creation rig. Blog posts, social media, email sequences, SEO optimization. Writes in your voice.',
+    description: 'Content creation loadout. Blog posts, social media, email sequences, SEO optimization. Writes in your voice.',
     tags: ['content', 'writing', 'seo', 'social-media'],
     publishedAt: Date.now() / 1000 - 172800,
     model: 'claude-opus-4-6',
@@ -71,7 +71,7 @@ const mockFeed: DisplayRig[] = [
   },
 ];
 
-interface DisplayRig {
+interface DisplayLoadout {
   id: string;
   name: string;
   author: string;
@@ -100,23 +100,23 @@ function timeAgo(ts: number): string {
   return `${Math.floor(diff / 86400)}d ago`;
 }
 
-function parseFeedRig(rig: FeedRig): DisplayRig {
+function parseFeedLoadout(entry: FeedLoadout): DisplayLoadout {
   let parsed: Record<string, unknown> = {};
   try {
-    parsed = JSON.parse(rig.content);
+    parsed = JSON.parse(entry.content);
   } catch { /* ignore */ }
 
-  const template = rig.template || rig.tags.find((t) => templates.includes(t)) || 'ops';
+  const template = entry.template || entry.tags.find((t) => templates.includes(t)) || 'ops';
   const meta = (parsed.meta || {}) as Record<string, unknown>;
 
   return {
-    id: rig.id,
-    name: rig.name,
-    author: rig.author,
+    id: entry.id,
+    name: entry.name,
+    author: entry.author,
     template,
-    description: (meta.description as string) || `${rig.tags.length} tags · Published via RipperClaw`,
-    tags: rig.tags,
-    publishedAt: rig.published_at,
+    description: (meta.description as string) || `${entry.tags.length} tags · Published via RipperClaw`,
+    tags: entry.tags,
+    publishedAt: entry.published_at,
     model: ((parsed.slots as Record<string, unknown>)?.skeleton as Record<string, unknown>)?.component as string | undefined,
   };
 }
@@ -127,7 +127,7 @@ interface FeedViewProps {
 
 export function FeedView({ onCompare }: FeedViewProps) {
   const [filter, setFilter] = useState<string | null>(null);
-  const [selectedRig, setSelectedRig] = useState<DisplayRig | null>(null);
+  const [selectedLoadout, setSelectedLoadout] = useState<DisplayLoadout | null>(null);
   const [showKeySetup, setShowKeySetup] = useState(false);
   const [nsecInput, setNsecInput] = useState('');
 
@@ -141,19 +141,19 @@ export function FeedView({ onCompare }: FeedViewProps) {
     }
   }, [keys.has_keys]);
 
-  // Convert nostr events to display rigs, fall back to mock
-  const realRigs = nostrFeed.map(parseFeedRig);
-  const displayRigs = realRigs.length > 0 ? realRigs : mockFeed;
-  const isUsingMock = realRigs.length === 0;
+  // Convert nostr events to display loadouts, fall back to mock
+  const realLoadouts = nostrFeed.map(parseFeedLoadout);
+  const displayLoadouts = realLoadouts.length > 0 ? realLoadouts : mockLoadouts;
+  const isUsingMock = realLoadouts.length === 0;
 
   const filtered = filter
-    ? displayRigs.filter((r) => r.template === filter || r.tags.includes(filter))
-    : displayRigs;
+    ? displayLoadouts.filter((r) => r.template === filter || r.tags.includes(filter))
+    : displayLoadouts;
 
   return (
     <div className="flex-1 flex overflow-hidden">
       {/* Feed list */}
-      <div className={`${selectedRig ? 'w-1/2' : 'w-full'} p-6 overflow-y-auto transition-all`}>
+      <div className={`${selectedLoadout ? 'w-1/2' : 'w-full'} p-6 overflow-y-auto transition-all`}>
         <div className="max-w-2xl mx-auto">
           {/* Header */}
           <div className="flex items-center justify-between mb-2">
@@ -328,34 +328,34 @@ export function FeedView({ onCompare }: FeedViewProps) {
             ))}
           </div>
 
-          {/* Rig cards */}
+          {/* Loadout cards */}
           <div className="space-y-3">
-            {filtered.map((rig) => (
+            {filtered.map((entry) => (
               <div
-                key={rig.id}
+                key={entry.id}
                 className="p-4 rounded-lg border cursor-pointer transition-all hover:border-opacity-80"
                 style={{
-                  background: selectedRig?.id === rig.id ? 'var(--rc-surface-hover)' : 'var(--rc-surface)',
-                  borderColor: selectedRig?.id === rig.id ? 'var(--rc-cyan)' : 'var(--rc-border)',
-                  boxShadow: selectedRig?.id === rig.id ? '0 0 12px var(--rc-cyan-dim)' : 'none',
+                  background: selectedLoadout?.id === entry.id ? 'var(--rc-surface-hover)' : 'var(--rc-surface)',
+                  borderColor: selectedLoadout?.id === entry.id ? 'var(--rc-cyan)' : 'var(--rc-border)',
+                  boxShadow: selectedLoadout?.id === entry.id ? '0 0 12px var(--rc-cyan-dim)' : 'none',
                 }}
-                onClick={() => setSelectedRig(selectedRig?.id === rig.id ? null : rig)}
+                onClick={() => setSelectedLoadout(selectedLoadout?.id === entry.id ? null : entry)}
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-bold" style={{ color: 'var(--rc-text)' }}>
-                      {rig.name}
+                      {entry.name}
                     </span>
                     <span
                       className="text-[10px] px-1.5 py-0.5 rounded font-mono uppercase"
                       style={{
-                        color: templateColors[rig.template] || 'var(--rc-text-muted)',
-                        border: `1px solid ${templateColors[rig.template] || 'var(--rc-border)'}33`,
+                        color: templateColors[entry.template] || 'var(--rc-text-muted)',
+                        border: `1px solid ${templateColors[entry.template] || 'var(--rc-border)'}33`,
                       }}
                     >
-                      {rig.template}
+                      {entry.template}
                     </span>
-                    {rig.isMock && (
+                    {entry.isMock && (
                       <span className="text-[9px] px-1 py-0.5 rounded" style={{
                         color: 'var(--rc-text-muted)',
                         opacity: 0.5,
@@ -365,29 +365,29 @@ export function FeedView({ onCompare }: FeedViewProps) {
                     )}
                   </div>
                   <span className="text-[10px]" style={{ color: 'var(--rc-text-muted)' }}>
-                    {timeAgo(rig.publishedAt)}
+                    {timeAgo(entry.publishedAt)}
                   </span>
                 </div>
 
                 <p className="text-xs mb-3 leading-relaxed" style={{ color: 'var(--rc-text-dim)' }}>
-                  {rig.description}
+                  {entry.description}
                 </p>
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className="text-[10px] font-mono" style={{ color: 'var(--rc-text-muted)' }}>
-                      {rig.author}
+                      {entry.author}
                     </span>
-                    {rig.model && (
+                    {entry.model && (
                       <span className="text-[10px] font-mono" style={{ color: 'var(--rc-cyan)' }}>
-                        {rig.model}
+                        {entry.model}
                       </span>
                     )}
                   </div>
                 </div>
 
                 <div className="flex gap-1 mt-2 flex-wrap">
-                  {rig.tags.map((tag) => (
+                  {entry.tags.map((tag) => (
                     <span
                       key={tag}
                       className="text-[9px] px-1.5 py-0.5 rounded font-mono cursor-pointer"
@@ -411,7 +411,7 @@ export function FeedView({ onCompare }: FeedViewProps) {
       </div>
 
       {/* Detail panel */}
-      {selectedRig && (
+      {selectedLoadout && (
         <div
           className="w-1/2 p-6 border-l overflow-y-auto"
           style={{ borderColor: 'var(--rc-border)' }}
@@ -420,39 +420,39 @@ export function FeedView({ onCompare }: FeedViewProps) {
             className="p-6 rounded-lg border"
             style={{
               background: 'var(--rc-surface)',
-              borderColor: templateColors[selectedRig.template] || 'var(--rc-border)',
-              boxShadow: `0 0 20px ${templateColors[selectedRig.template] || 'var(--rc-cyan)'}33`,
+              borderColor: templateColors[selectedLoadout.template] || 'var(--rc-border)',
+              boxShadow: `0 0 20px ${templateColors[selectedLoadout.template] || 'var(--rc-cyan)'}33`,
             }}
           >
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-bold uppercase tracking-wider" style={{ color: 'var(--rc-text)' }}>
-                {selectedRig.name}
+                {selectedLoadout.name}
               </h2>
               <span
                 className="text-xs px-2 py-1 rounded font-mono uppercase"
                 style={{
-                  color: templateColors[selectedRig.template],
-                  border: `1px solid ${templateColors[selectedRig.template]}66`,
+                  color: templateColors[selectedLoadout.template],
+                  border: `1px solid ${templateColors[selectedLoadout.template]}66`,
                 }}
               >
-                {selectedRig.template}
+                {selectedLoadout.template}
               </span>
             </div>
 
             <p className="text-xs mb-1" style={{ color: 'var(--rc-text-muted)' }}>
-              by {selectedRig.author}
+              by {selectedLoadout.author}
             </p>
             <p className="text-xs mb-6 leading-relaxed" style={{ color: 'var(--rc-text-dim)' }}>
-              {selectedRig.description}
+              {selectedLoadout.description}
             </p>
 
-            {selectedRig.model && (
+            {selectedLoadout.model && (
               <div className="mb-6 py-2 px-3 rounded" style={{ background: 'rgba(255,255,255,0.02)' }}>
                 <div className="text-[10px] uppercase tracking-wider" style={{ color: 'var(--rc-text-muted)' }}>
                   Model
                 </div>
                 <div className="text-xs font-mono mt-0.5" style={{ color: 'var(--rc-text)' }}>
-                  {selectedRig.model}
+                  {selectedLoadout.model}
                 </div>
               </div>
             )}
@@ -466,23 +466,23 @@ export function FeedView({ onCompare }: FeedViewProps) {
                   background: 'rgba(0,240,255,0.1)',
                 }}
                 onClick={() => {
-                  if (!onCompare || !selectedRig) return;
-                  // Build a Loadout-shaped object from the Feed rig
+                  if (!onCompare || !selectedLoadout) return;
+                  // Build a Loadout-shaped object from the feed entry
                   let parsed: Record<string, unknown> = {};
                   try {
                     // For real nostr events, content is the full loadout JSON
-                    const realRig = nostrFeed.find((r) => r.id === selectedRig.id);
-                    if (realRig) {
-                      parsed = JSON.parse(realRig.content);
+                    const realEntry = nostrFeed.find((r) => r.id === selectedLoadout.id);
+                    if (realEntry) {
+                      parsed = JSON.parse(realEntry.content);
                     }
                   } catch { /* use mock structure */ }
 
                   const loadout = parsed.schema ? parsed : {
                     schema: 1,
                     meta: {
-                      name: selectedRig.name,
-                      author: selectedRig.author,
-                      template: selectedRig.template,
+                      name: selectedLoadout.name,
+                      author: selectedLoadout.author,
+                      template: selectedLoadout.template,
                     },
                     slots: (parsed.slots as Record<string, unknown>) || {},
                     mods: (parsed.mods as unknown[]) || [],

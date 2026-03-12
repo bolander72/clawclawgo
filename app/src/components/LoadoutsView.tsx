@@ -15,7 +15,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
   const [expandedLoadout, setExpandedLoadout] = useState<string | null>(null);
   const [loadoutCache, setLoadoutCache] = useState<Record<string, unknown>>({});
 
-  const saveCurrentRig = async () => {
+  const saveCurrentLoadout = async () => {
     if (!saveName.trim()) return;
     setSaving(true);
     try {
@@ -98,7 +98,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
               color: 'var(--rc-bg)',
             }}
           >
-            + Save Current Rig
+            + Save Current Loadout
           </button>
         </div>
 
@@ -119,7 +119,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
                 type="text"
                 value={saveName}
                 onChange={(e) => setSaveName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && saveCurrentRig()}
+                onKeyDown={(e) => e.key === 'Enter' && saveCurrentLoadout()}
                 placeholder="e.g. Production, Experimental, Lean Ops..."
                 className="flex-1 px-3 py-2 rounded text-xs border"
                 style={{
@@ -130,7 +130,7 @@ export function LoadoutsView({ onCompare, onApply }: Props) {
                 autoFocus
               />
               <button
-                onClick={saveCurrentRig}
+                onClick={saveCurrentLoadout}
                 disabled={saving || !saveName.trim()}
                 className="px-4 py-2 rounded text-xs font-semibold uppercase tracking-wider transition-all hover:opacity-80 disabled:opacity-30"
                 style={{

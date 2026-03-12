@@ -28,7 +28,7 @@ export interface PublishResult {
   relays_failed: number;
 }
 
-export interface FeedRig {
+export interface FeedLoadout {
   id: string;
   name: string;
   author: string;
@@ -117,7 +117,7 @@ export function useNostrProfile() {
 }
 
 export function useNostrFeed() {
-  const [feed, setFeed] = useState<FeedRig[]>([]);
+  const [feed, setFeed] = useState<FeedLoadout[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -125,8 +125,8 @@ export function useNostrFeed() {
     setLoading(true);
     setError(null);
     try {
-      const rigs = await invoke<FeedRig[]>('nostr_fetch_feed', { limit, relayUrls });
-      setFeed(rigs);
+      const items = await invoke<FeedLoadout[]>('nostr_fetch_feed', { limit, relayUrls });
+      setFeed(items);
     } catch (err) {
       const msg = String(err);
       setError(msg);
