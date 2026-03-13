@@ -88,7 +88,7 @@ function Home() {
       </header>
 
       {/* Centered search */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-20 relative">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 relative">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(600px,100vw)] h-[600px] bg-rc-cyan/5 rounded-full blur-[120px] pointer-events-none" />
 
         <motion.div
@@ -97,13 +97,12 @@ function Home() {
           transition={{ duration: 0.6, ease: 'easeOut' }}
           className="text-center max-w-2xl relative z-10 w-full"
         >
-          <h1 className="text-4xl md:text-5xl font-grotesk font-bold text-rc-text mb-3 leading-[1.1] tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-grotesk font-bold text-rc-text mb-6 leading-[1.1] tracking-tight">
             ClawClawGo
           </h1>
 
-
           {/* Search bar */}
-          <form onSubmit={handleSearch} className="relative w-full max-w-xl mx-auto mb-6">
+          <form onSubmit={handleSearch} className="relative w-full max-w-xl mx-auto">
             <div className={`
               flex items-center bg-rc-surface border rounded-2xl transition-all duration-300 overflow-hidden
               ${focused ? 'border-rc-cyan/50 shadow-[0_0_20px_rgba(0,240,160,0.08)]' : 'border-rc-border'}
@@ -122,9 +121,9 @@ function Home() {
               />
               <button
                 type="submit"
-                className="m-1.5 px-6 py-2.5 bg-rc-cyan text-rc-bg font-grotesk font-semibold rounded-xl hover:bg-rc-cyan/90 transition-colors text-sm shrink-0"
+                className="m-1.5 px-4 py-2 bg-rc-cyan text-rc-bg font-grotesk font-semibold rounded-xl hover:bg-rc-cyan/90 transition-colors text-sm shrink-0"
               >
-                Search
+                Go
               </button>
             </div>
           </form>
