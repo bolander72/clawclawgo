@@ -76,7 +76,7 @@ function Home() {
   return (
     <div className="min-h-screen bg-rc-bg flex flex-col overflow-x-hidden">
       {/* Minimal nav for home */}
-      <header className="px-4 py-3">
+      <header className="px-4 py-5">
         <div className="max-w-4xl mx-auto flex items-center justify-center">
           <nav className="flex items-center gap-5 text-sm">
             <Link to="/explore" className="text-rc-text-dim hover:text-rc-cyan transition-colors flex items-center gap-1">
@@ -451,9 +451,9 @@ function FAQPage() {
 
 function Footer() {
   return (
-    <footer className="border-t border-rc-border py-16 px-6">
+    <footer className="border-t border-rc-border py-8 px-6">
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
           <div>
             <h4 className="font-grotesk font-semibold text-rc-text text-sm mb-4">ClawClawGo</h4>
             <ul className="space-y-2.5">
