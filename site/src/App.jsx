@@ -137,20 +137,6 @@ function Home() {
             </div>
           </form>
 
-          {/* Quick links */}
-          <div className="flex flex-wrap items-center justify-center gap-2 text-xs">
-            <span className="text-rc-text-muted">Try:</span>
-            {['voice assistant', 'coding', 'smart home', 'personal assistant'].map((tag) => (
-              <button
-                key={tag}
-                onClick={() => navigate(`/explore?q=${encodeURIComponent(tag)}`)}
-                className="px-3 py-1.5 rounded-lg bg-white/5 border border-rc-border text-rc-text-dim hover:text-rc-text hover:border-rc-cyan/30 transition-colors font-mono"
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-
           {/* Sub-links */}
           <div className="flex items-center justify-center gap-6 mt-8 text-sm">
             <Link to="/explore" className="text-rc-text-dim hover:text-rc-cyan transition-colors flex items-center gap-1.5">
