@@ -189,7 +189,7 @@ clawclawgo/
 │   │   └── hooks/        # useTauri, useNostr
 │   └── src-tauri/    # Rust backend
 │       └── src/
-│           ├── lib.rs    # OpenClaw data reading, block detection, apply
+│           ├── lib.rs    # OpenClaw data reading, section detection, apply
 │           ├── nostr.rs  # Nostr protocol (keys, publish, subscribe)
 │           └── scrub.rs  # PII scrubber
 ├── specs/            # Schema (build.schema.json), security, dependencies, setup guides
