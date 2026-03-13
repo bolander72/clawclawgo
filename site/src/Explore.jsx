@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { SimplePool, nip19 } from 'nostr-tools'
+import { Relay, nip19 } from 'nostr-tools'
 import {
   IconChevronRight, IconRefresh, IconFilter, IconSortDescending,
   IconGitFork, IconUsers, IconClock, IconHash,
@@ -728,7 +728,7 @@ export default function Explore() {
   const [buildCount, setBuildCount] = useState(0)
   const [searchQuery, setSearchQuery] = useState(initialQuery)
   const [searchFocused, setSearchFocused] = useState(false)
-  const poolRef = useRef(null)
+  const relayRef = useRef(null)
   const seenIds = useRef(new Set())
   const feedRef = useRef(null)
   const isInitialLoad = useRef(true)
@@ -763,47 +763,56 @@ export default function Explore() {
   }, [setSearchParams])
 
   useEffect(() => {
-    const pool = new SimplePool()
-    poolRef.current = pool
+    let sub = null
+    let relay = null
 
-    const filters = [{ kinds: [38333], limit: 200 }]
+    async function connect() {
+      try {
+        relay = await Relay.connect(RELAYS[0])
+        relayRef.current = relay
 
-    const sub = pool.subscribeMany(RELAYS, filters, {
-      onevent(event) {
-        if (seenIds.current.has(event.id)) return
-        seenIds.current.add(event.id)
+        sub = relay.subscribe([{ kinds: [38333], limit: 200 }], {
+          onevent(event) {
+            if (seenIds.current.has(event.id)) return
+            seenIds.current.add(event.id)
 
-        const build = parseBuildEvent(event)
-        if (build) {
-          setBuilds(prev => {
-            if (prev.find(l => l.id === build.id)) return prev
-            const next = [build, ...prev].sort((a, b) => b.createdAt - a.createdAt)
-            return next
-          })
-          setBuildCount(c => c + 1)
-
-          // Mark as "new" (animate from top) only after initial load
-          if (!isInitialLoad.current) {
-            setNewIds(prev => new Set([...prev, build.id]))
-            setTimeout(() => {
-              setNewIds(prev => {
-                const next = new Set(prev)
-                next.delete(build.id)
+            const build = parseBuildEvent(event)
+            if (build) {
+              setBuilds(prev => {
+                if (prev.find(l => l.id === build.id)) return prev
+                const next = [build, ...prev].sort((a, b) => b.createdAt - a.createdAt)
                 return next
               })
-            }, 2000)
-          }
-        }
-      },
-      oneose() {
+              setBuildCount(c => c + 1)
+
+              if (!isInitialLoad.current) {
+                setNewIds(prev => new Set([...prev, build.id]))
+                setTimeout(() => {
+                  setNewIds(prev => {
+                    const next = new Set(prev)
+                    next.delete(build.id)
+                    return next
+                  })
+                }, 2000)
+              }
+            }
+          },
+          oneose() {
+            setIsConnecting(false)
+            setTimeout(() => { isInitialLoad.current = false }, 500)
+          },
+        })
+      } catch (err) {
+        console.error('Failed to connect to relay:', err)
         setIsConnecting(false)
-        setTimeout(() => { isInitialLoad.current = false }, 500)
-      },
-    })
+      }
+    }
+
+    connect()
 
     return () => {
-      sub.close()
-      pool.close(RELAYS)
+      if (sub) sub.close()
+      if (relay) relay.close()
     }
   }, [])
 
