@@ -100,9 +100,7 @@ function Home() {
           <h1 className="text-4xl md:text-5xl font-grotesk font-bold text-rc-text mb-3 leading-[1.1] tracking-tight">
             ClawClawGo
           </h1>
-          <p className="text-rc-text-dim text-sm mb-8">
-            Search AI agent builds. No tracking. No accounts.
-          </p>
+
 
           {/* Search bar */}
           <form onSubmit={handleSearch} className="relative w-full max-w-xl mx-auto mb-6">
@@ -134,6 +132,7 @@ function Home() {
 
         </motion.div>
       </div>
+      <Footer />
     </div>
   )
 }
