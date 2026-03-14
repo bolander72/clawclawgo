@@ -1,7 +1,7 @@
 {
   "name": "clawclawgo",
-  "version": "0.2.2",
-  "description": "Search engine and marketplace for AI agent builds. Privacy-first, decentralized, open source.",
+  "version": "0.3.0",
+  "description": "Cross-platform agent skills aggregator CLI. Search, export, scan, and publish agent builds.",
   "type": "module",
   "bin": {
     "clawclawgo": "./cli/clawclawgo.mjs"
@@ -12,10 +12,13 @@
     "test": "vitest"
   },
   "keywords": [
-    "openclaw",
+    "agent-skills",
     "ai-agent",
-    "build",
-    "cyberware"
+    "skills",
+    "claude-code",
+    "cursor",
+    "openclaw",
+    "aggregator"
   ],
   "author": "bolander72",
   "license": "MIT",
@@ -25,8 +28,5 @@
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   },
-  "dependencies": {
-    "ajv": "^8.18.0",
-    "ajv-formats": "^3.0.1"
-  }
+  "dependencies": {}
 }
