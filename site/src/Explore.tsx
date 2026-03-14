@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { Relay } from 'nostr-tools'
-import { IconLivePhoto } from '@tabler/icons-react'
+import { IconLivePhoto, IconUpload } from '@tabler/icons-react'
 import { parseBuildEvent, RELAYS } from './lib/utils'
 import FeedItem from './components/FeedItem'
 import BuildDetail from './components/BuildDetail'
@@ -18,10 +18,12 @@ export default function Explore() {
   const [sortMode, setSortMode] = useState<'recent' | 'hot'>('recent')
   const [tagFilter, setTagFilter] = useState<string | null>(null)
   const [showPublish, setShowPublish] = useState<boolean>(false)
+  const [isDragging, setIsDragging] = useState<boolean>(false)
   
   const relayRef = useRef<any>(null)
   const seenIds = useRef<Set<string>>(new Set())
   const isInitialLoad = useRef<boolean>(true)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Check for publish query param
   useEffect(() => {
@@ -88,6 +90,64 @@ export default function Explore() {
     }
   }, [])
 
+  // File import handlers
+  const handleFileImport = (file: File) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const content = JSON.parse(e.target?.result as string)
+        const build = {
+          id: 'local-' + Date.now(),
+          name: content.meta?.name || 'Imported Build',
+          agentName: content.meta?.agentName || content.agentName || 'Imported',
+          creator: 'local',
+          createdAt: Math.floor(Date.now() / 1000),
+          isNew: true,
+          tags: content.meta?.tags || [],
+          items: [],
+          keyCount: 0,
+          content,
+          fork: null,
+          originalAuthor: null,
+          remixCount: 0,
+        }
+        setBuilds(prev => [build, ...prev])
+        setNewIds(prev => new Set([...prev, build.id]))
+        setTimeout(() => setNewIds(prev => {
+          const next = new Set(prev)
+          next.delete(build.id)
+          return next
+        }), 3000)
+      } catch (err) {
+        alert('Failed to parse build JSON: ' + (err as Error).message)
+      }
+    }
+    reader.readAsText(file)
+  }
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) handleFileImport(file)
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = () => {
+    setIsDragging(false)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    setIsDragging(false)
+    const file = e.dataTransfer.files[0]
+    if (file && file.name.endsWith('.json')) {
+      handleFileImport(file)
+    }
+  }
+
   // Filter and sort builds
   const filteredAndSortedBuilds = builds
     .filter(build => !tagFilter || build.tags.includes(tagFilter))
@@ -101,7 +161,22 @@ export default function Explore() {
     })
 
   return (
-    <div className="min-h-screen bg-rc-bg">
+    <div 
+      className="min-h-screen bg-rc-bg"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {/* Drag overlay */}
+      {isDragging && (
+        <div className="fixed inset-0 bg-rc-cyan/10 border-4 border-dashed border-rc-cyan z-50 flex items-center justify-center pointer-events-none">
+          <div className="bg-rc-surface border border-rc-cyan rounded-2xl p-8 flex flex-col items-center gap-3">
+            <IconUpload size={48} className="text-rc-cyan" />
+            <p className="font-grotesk font-bold text-rc-text text-lg">Drop build.json to import</p>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <header className="border-b border-rc-border bg-rc-bg/90 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -136,6 +211,20 @@ export default function Explore() {
         {/* Feed header with sort controls and tag filter */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="px-3 py-1.5 rounded-lg text-xs font-mono bg-rc-surface border border-rc-border text-rc-text-dim hover:text-rc-cyan hover:border-rc-cyan/40 transition-all flex items-center gap-1.5"
+            >
+              <IconUpload size={14} />
+              Import
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleFileInput}
+              className="hidden"
+            />
             <button
               onClick={() => setSortMode('recent')}
               className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
