@@ -143,10 +143,6 @@ export default function Explore() {
           </div>
 
           <div className="flex items-center gap-4">
-            <nav className="hidden sm:flex items-center gap-4 text-sm">
-              <a href="/community" className="text-rc-text-dim hover:text-rc-cyan transition-colors">Community</a>
-            </nav>
-
             <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-rc-surface border border-rc-border shrink-0">
               <div className={`w-2 h-2 rounded-full ${isLoading ? 'bg-amber-400 animate-pulse' : 'bg-green-400'}`} />
               <span className="text-xs font-mono text-rc-text-dim">

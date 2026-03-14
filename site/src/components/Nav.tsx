@@ -20,7 +20,6 @@ export default function Nav({ minimal }: NavProps) {
           <a href="/explore" className="text-rc-text-dim hover:text-rc-cyan transition-colors flex items-center gap-1">
             <IconLivePhoto size={14} /> Explore
           </a>
-          <a href="/community" className="text-rc-text-dim hover:text-rc-cyan transition-colors">Community</a>
           <a href="/docs/" className="text-rc-text-dim hover:text-rc-cyan transition-colors">Docs</a>
         </nav>
 
@@ -40,7 +39,6 @@ export default function Nav({ minimal }: NavProps) {
             <a href="/explore" className="text-rc-text-dim hover:text-rc-cyan transition-colors flex items-center gap-2">
               <IconLivePhoto size={14} /> Explore
             </a>
-            <a href="/community" className="text-rc-text-dim hover:text-rc-cyan transition-colors">Community</a>
             <a href="/docs/" className="text-rc-text-dim hover:text-rc-cyan transition-colors">Docs</a>
           </nav>
         </div>
