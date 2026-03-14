@@ -26,9 +26,16 @@ export default function BuildDetail({ build, onClose, onExport }: BuildDetailPro
     name: build.name,
     description: build.description,
     source: build.source,
-    skills: build.skills,
+    ...(build.repoUrl && { repoUrl: build.repoUrl }),
+    ...(build.owner && { owner: build.owner }),
     compatibility: build.compatibility,
+    trustTier: build.trustTier,
     tags: build.tags,
+    skills: build.skills.map(s => ({
+      name: s.name,
+      description: s.description,
+      ...(s.url ? { url: s.url } : s.path && build.repoUrl ? { url: `${build.repoUrl}/tree/main/${s.path}` } : {}),
+    })),
   }, null, 2)
 
   return (
