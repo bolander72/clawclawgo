@@ -179,7 +179,7 @@ export const builds: Build[] = [
     trustTier: 'community',
     detectedFiles: ['SKILL.md'],
     skills: [
-      { name: 'planning-with-files', description: 'Persistent markdown planning: create, update, and track plans as files', path: '.' },
+      { name: 'planning-with-files', description: 'Persistent markdown planning: create, update, and track plans as files' },
     ],
   },
   {
