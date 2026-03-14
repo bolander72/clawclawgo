@@ -1,14 +1,14 @@
 # ClawClawGo
 
-The agent skills search engine. Find, pack, and share skills for Claude Code, Cursor, OpenClaw, and 30+ AI agents.
+The agent kits search engine. Find, pack, and share skill collections for Claude Code, Cursor, OpenClaw, and 30+ AI agents.
 
 **[clawclawgo.com](https://clawclawgo.com)**
 
 ## What is it?
 
-ClawClawGo is a search engine for AI agent skills. It aggregates skills from GitHub repos, indexes them, and lets you search across all of them in one place.
+ClawClawGo is a search engine for AI agent kits — curated collections of skills packaged together. It aggregates kits from GitHub repos, indexes them, and lets you search across all of them in one place.
 
-A "kit" is a collection of skills and agent configs packaged together. Kits follow the [Agent Skills](https://agentskills.io) open standard — a SKILL.md file with YAML frontmatter describing what the skill does, which agents it works with, and what tools it needs.
+Kits follow the [Agent Skills](https://agentskills.io) open standard — SKILL.md files with YAML frontmatter describing what each skill does, which agents it works with, and what tools it needs.
 
 ## CLI
 

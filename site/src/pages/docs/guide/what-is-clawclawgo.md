@@ -5,13 +5,13 @@ title: What is ClawClawGo?
 
 # What is ClawClawGo?
 
-ClawClawGo is a search engine for AI agent skills. It aggregates skills from GitHub repos, indexes them, and lets you search across all of them in one place.
+ClawClawGo is a search engine for AI agent kits — curated collections of skills packaged together. It aggregates kits from GitHub repos, indexes them, and lets you search across all of them in one place.
 
 ## The Problem
 
-AI agents (Claude Code, Cursor, Windsurf, OpenClaw, Cline, etc.) can be extended with skills and configs. But there's no central place to find them.
+AI agents (Claude Code, Cursor, Windsurf, OpenClaw, Cline, etc.) can be extended with skills and configs. But there's no central place to find curated collections of them.
 
-- Skills are scattered across GitHub repos
+- Kits are scattered across GitHub repos with no discoverability
 - No standard format (some use SKILL.md, some use .cursorrules, some use custom formats)
 - No way to search across all of them
 - No security scanning
@@ -21,7 +21,7 @@ AI agents (Claude Code, Cursor, Windsurf, OpenClaw, Cline, etc.) can be extended
 
 ClawClawGo solves this by:
 
-1. **Aggregating** — Pulls skills from GitHub repos into one index
+1. **Aggregating** — Pulls kits from GitHub repos into one index
 2. **Standardizing** — Supports the [Agent Skills](https://agentskills.io) open standard plus all major agent formats
 3. **Searching** — Full-text search across all indexed kits
 4. **Scanning** — Built-in security analysis with trust scores
@@ -121,7 +121,7 @@ The `add` command checks the score before downloading. Low-scoring kits are bloc
 
 ## Not OpenClaw-Specific
 
-ClawClawGo started in the OpenClaw ecosystem but is **not OpenClaw-specific**. It's a cross-platform search engine for any AI agent that uses skills.
+ClawClawGo started in the OpenClaw ecosystem but is **not OpenClaw-specific**. It's a cross-platform search engine for any AI agent.
 
 OpenClaw is just one of 30+ supported agents.
 

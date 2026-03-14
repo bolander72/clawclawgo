@@ -10,8 +10,8 @@ import {
 const features = [
   {
     icon: IconWorldSearch,
-    title: 'Cross-platform aggregation',
-    desc: 'Search skills from GitHub, ClawHub, skills.sh, and more. One search, every source. Works with Claude Code, Cursor, OpenClaw, and 30+ agents.',
+    title: 'Cross-platform search',
+    desc: 'Search kits from GitHub, ClawHub, skills.sh, and more. One search, every source. Works with Claude Code, Cursor, OpenClaw, and 30+ agents.',
   },
   {
     icon: IconFingerprint,
@@ -47,7 +47,7 @@ const steps = [
 ]
 ---
 
-<BaseLayout title="About - ClawClawGo" description="Learn about ClawClawGo - the cross-platform agent skills aggregator. Search skills for Claude Code, Cursor, OpenClaw, and 30+ AI agents.">
+<BaseLayout title="About - ClawClawGo" description="ClawClawGo is the agent kits search engine. Find curated skill collections for Claude Code, Cursor, OpenClaw, and 30+ AI agents.">
   <div class="min-h-screen bg-rc-bg">
     <Nav client:load />
     
@@ -56,8 +56,11 @@ const steps = [
       <section class="py-16">
         <div class="text-center mb-16">
           <h1 class="text-3xl md:text-4xl font-grotesk font-bold text-rc-text mb-4">
-            What is ClawClawGo?
+            About ClawClawGo
           </h1>
+          <p class="text-rc-text-dim text-lg max-w-2xl mx-auto">
+            The agent kits search engine. Find curated skill collections for your AI agent.
+          </p>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((f, i) => (
