@@ -6,6 +6,7 @@ import { parseBuildEvent, RELAYS } from './lib/utils'
 import FeedItem from './components/FeedItem'
 import BuildDetail from './components/BuildDetail'
 import ApplyWizard from './components/ApplyWizard'
+import PublishModal from './components/PublishModal'
 import type { Build } from './types'
 
 export default function Explore() {
@@ -16,10 +17,21 @@ export default function Explore() {
   const [newIds, setNewIds] = useState<Set<string>>(new Set())
   const [sortMode, setSortMode] = useState<'recent' | 'hot'>('recent')
   const [tagFilter, setTagFilter] = useState<string | null>(null)
+  const [showPublish, setShowPublish] = useState<boolean>(false)
   
   const relayRef = useRef<any>(null)
   const seenIds = useRef<Set<string>>(new Set())
   const isInitialLoad = useRef<boolean>(true)
+
+  // Check for publish query param
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('publish') === 'true') {
+      setShowPublish(true)
+      // Clean up URL
+      window.history.replaceState({}, '', '/feed')
+    }
+  }, [])
 
   useEffect(() => {
     let sub: any = null
@@ -218,6 +230,9 @@ export default function Explore() {
             build={applyBuild}
             onClose={() => setApplyBuild(null)}
           />
+        )}
+        {showPublish && (
+          <PublishModal onClose={() => setShowPublish(false)} />
         )}
       </AnimatePresence>
     </div>
