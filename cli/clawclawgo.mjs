@@ -13,6 +13,7 @@
 
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import { execSync } from 'child_process';
 
 // ── Agent Detection Heuristics ──
@@ -413,7 +414,10 @@ function previewBuild(source) {
 
 // ── Publish Command ──
 
-function publishBuild(dir = '.') {
+const REGISTRY_REPO = 'bolander72/clawclawgo';
+const REGISTRY_FILE = 'registry/builds.json';
+
+async function publishBuild(dir = '.') {
   const targetDir = path.resolve(dir);
 
   // Get git remote
@@ -423,7 +427,23 @@ function publishBuild(dir = '.') {
     process.exit(1);
   }
 
-  console.log(`\n📤 Preparing to publish: ${gitUrl}\n`);
+  // Check gh CLI is available
+  const ghVersion = tryExec('gh --version');
+  if (!ghVersion) {
+    console.error('❌ GitHub CLI (gh) is required for publishing.');
+    console.error('   Install: https://cli.github.com/');
+    process.exit(1);
+  }
+
+  // Check gh auth
+  const ghAuth = tryExec('gh auth status 2>&1');
+  if (!ghAuth || ghAuth.includes('not logged in')) {
+    console.error('❌ Not authenticated with GitHub CLI.');
+    console.error('   Run: gh auth login');
+    process.exit(1);
+  }
+
+  console.log(`\n📤 Publishing: ${gitUrl}\n`);
 
   // Pack + scan
   const build = packBuild(dir);
@@ -442,8 +462,9 @@ function publishBuild(dir = '.') {
   }
 
   // Generate registry entry
+  const repoUrl = gitUrl.replace(/\.git$/, '').replace(/^git@github\.com:/, 'https://github.com/');
   const entry = {
-    url: gitUrl.replace(/\.git$/, ''),
+    url: repoUrl,
     name: build.name,
     description: build.description,
     compatibility: build.compatibility,
@@ -451,10 +472,118 @@ function publishBuild(dir = '.') {
     addedAt: new Date().toISOString().split('T')[0],
   };
 
-  console.log('📝 Registry entry:\n');
-  console.log(JSON.stringify(entry, null, 2));
-  console.log('\nTo publish, submit a PR adding this entry to registry/builds.json:');
-  console.log('https://github.com/bolander72/clawclawgo\n');
+  // Fetch current registry
+  console.log('📥 Fetching current registry...');
+  let registryContent;
+  try {
+    registryContent = tryExec(`gh api repos/${REGISTRY_REPO}/contents/${REGISTRY_FILE} --jq .content | base64 -d`);
+    if (!registryContent) throw new Error('empty');
+  } catch {
+    // Fallback: fetch raw
+    registryContent = await fetchUrl(`https://raw.githubusercontent.com/${REGISTRY_REPO}/main/${REGISTRY_FILE}`);
+  }
+
+  let registry;
+  try {
+    registry = JSON.parse(registryContent);
+  } catch {
+    console.error('❌ Could not parse registry. Submit manually.');
+    console.log('\n📝 Registry entry:\n');
+    console.log(JSON.stringify(entry, null, 2));
+    process.exit(1);
+  }
+
+  // Check for duplicate
+  const existing = (registry.builds || []).find(b => b.url === entry.url);
+  if (existing) {
+    console.log(`⚠️  ${entry.url} is already in the registry.`);
+    console.log('   To update, edit your existing entry via PR.');
+    process.exit(0);
+  }
+
+  // Add entry
+  if (!registry.builds) registry.builds = [];
+  registry.builds.push(entry);
+  const updatedRegistry = JSON.stringify(registry, null, 2) + '\n';
+
+  // Create PR via gh CLI
+  const branchName = `registry/add-${build.name.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase()}`;
+  const prTitle = `registry: add ${entry.name}`;
+  const prBody = [
+    `## New build: ${entry.name}`,
+    '',
+    `**URL:** ${entry.url}`,
+    `**Skills:** ${build.skills.length}`,
+    `**Compatibility:** ${entry.compatibility.join(', ')}`,
+    `**Trust Score:** ${scan.trustScore}/100`,
+    '',
+    '### Entry',
+    '```json',
+    JSON.stringify(entry, null, 2),
+    '```',
+    '',
+    '_Submitted via `clawclawgo publish`_',
+  ].join('\n');
+
+  console.log('🔀 Creating PR...\n');
+
+  try {
+    // Fork if needed (no-op if already forked or own repo)
+    tryExec(`gh repo fork ${REGISTRY_REPO} --clone=false 2>/dev/null`);
+
+    // Get the user's GitHub username
+    const ghUser = tryExec('gh api user --jq .login');
+    if (!ghUser) throw new Error('Could not determine GitHub username');
+
+    // Write updated registry to temp file
+    const tmpFile = path.join(os.tmpdir(), `clawclawgo-registry-${Date.now()}.json`);
+    fs.writeFileSync(tmpFile, updatedRegistry, 'utf8');
+
+    // Use gh api to create/update file on a new branch
+    const base64Content = Buffer.from(updatedRegistry).toString('base64');
+
+    // Get main branch SHA
+    const mainSha = tryExec(`gh api repos/${ghUser}/clawclawgo/git/ref/heads/main --jq .object.sha`);
+    if (!mainSha) throw new Error('Could not get main branch SHA. Is the repo forked?');
+
+    // Create branch
+    tryExec(`gh api repos/${ghUser}/clawclawgo/git/refs -f ref=refs/heads/${branchName} -f sha=${mainSha}`);
+
+    // Get current file SHA for update
+    const fileSha = tryExec(`gh api repos/${ghUser}/clawclawgo/contents/${REGISTRY_FILE} --jq .sha 2>/dev/null`);
+
+    // Create/update file
+    const fileArgs = [
+      `gh api repos/${ghUser}/clawclawgo/contents/${REGISTRY_FILE}`,
+      `-X PUT`,
+      `-f message="${prTitle}"`,
+      `-f content="${base64Content}"`,
+      `-f branch=${branchName}`,
+    ];
+    if (fileSha) fileArgs.push(`-f sha=${fileSha}`);
+    tryExec(fileArgs.join(' '));
+
+    // Create PR
+    const prUrl = tryExec(
+      `gh pr create --repo ${REGISTRY_REPO} --head ${ghUser}:${branchName} --title "${prTitle}" --body '${prBody.replace(/'/g, "'\\''")}' 2>&1`
+    );
+
+    // Clean up temp file
+    try { fs.unlinkSync(tmpFile); } catch { /* ignore */ }
+
+    if (prUrl && prUrl.includes('github.com')) {
+      console.log(`✅ PR created: ${prUrl}`);
+    } else {
+      console.log(`✅ PR submitted to ${REGISTRY_REPO}`);
+      if (prUrl) console.log(`   ${prUrl}`);
+    }
+  } catch (err) {
+    // Fallback: print manual instructions
+    console.log(`⚠️  Auto-PR failed: ${err.message}`);
+    console.log('\n📝 Registry entry (submit manually):\n');
+    console.log(JSON.stringify(entry, null, 2));
+    console.log(`\nAdd this to ${REGISTRY_FILE} in ${REGISTRY_REPO} and submit a PR.`);
+  }
 }
 
 // ── Search Command (stub) ──
@@ -527,7 +656,7 @@ try {
 
     case 'publish': {
       const dir = args.find((a, i) => i > 0 && !a.startsWith('-')) || '.';
-      publishBuild(dir);
+      await publishBuild(dir);
       break;
     }
 
