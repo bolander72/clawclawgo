@@ -100,14 +100,14 @@ const navSections = [
 
 <style>
   .prose {
-    color: #e8e8f0;
+    color: var(--rc-text);
     line-height: 1.75;
   }
 
   .prose :global(h1) {
     font-family: var(--font-grotesk), sans-serif;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--rc-heading, var(--rc-text));
     font-size: 1.875rem;
     margin-bottom: 1.5rem;
     margin-top: 0;
@@ -123,7 +123,7 @@ const navSections = [
   .prose :global(h2) {
     font-family: var(--font-grotesk), sans-serif;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--rc-heading, var(--rc-text));
     font-size: 1.5rem;
     margin-bottom: 1rem;
     margin-top: 3rem;
@@ -139,7 +139,7 @@ const navSections = [
   .prose :global(h3) {
     font-family: var(--font-grotesk), sans-serif;
     font-weight: 700;
-    color: #ffffff;
+    color: var(--rc-heading, var(--rc-text));
     font-size: 1.25rem;
     margin-bottom: 0.75rem;
     margin-top: 2rem;
@@ -154,20 +154,20 @@ const navSections = [
   .prose :global(h4) {
     font-family: var(--font-grotesk), sans-serif;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--rc-heading, var(--rc-text));
     font-size: 1.125rem;
     margin-bottom: 0.75rem;
     margin-top: 1.5rem;
   }
 
   .prose :global(p) {
-    color: #c8c8d8;
+    color: var(--rc-text-dim);
     line-height: 1.75;
     margin-bottom: 1rem;
   }
 
   .prose :global(a) {
-    color: #00f0ff;
+    color: var(--rc-cyan);
     text-decoration: none;
   }
 
@@ -178,16 +178,16 @@ const navSections = [
   .prose :global(code) {
     font-family: 'JetBrains Mono', ui-monospace, monospace;
     font-size: 0.875rem;
-    background: #12121a;
-    color: #00f0ff;
+    background: var(--rc-surface);
+    color: var(--rc-cyan);
     padding: 0.2rem 0.4rem;
     border-radius: 0.25rem;
-    border: 1px solid #1e1e2e;
+    border: 1px solid var(--rc-border);
   }
 
   .prose :global(pre) {
-    background: #12121a;
-    border: 1px solid #1e1e2e;
+    background: var(--rc-surface);
+    border: 1px solid var(--rc-border);
     border-radius: 0.5rem;
     padding: 1.25rem;
     overflow-x: auto;
@@ -198,12 +198,12 @@ const navSections = [
     background: transparent;
     border: none;
     padding: 0;
-    color: #e8e8f0;
+    color: var(--rc-text);
     font-size: 0.85rem;
   }
 
   .prose :global(ul), .prose :global(ol) {
-    color: #c8c8d8;
+    color: var(--rc-text-dim);
     margin-bottom: 1rem;
     padding-left: 1.5rem;
   }
@@ -221,10 +221,10 @@ const navSections = [
   }
 
   .prose :global(blockquote) {
-    border-left: 4px solid #00f0ff;
+    border-left: 4px solid var(--rc-cyan);
     padding-left: 1rem;
     font-style: italic;
-    color: #c8c8d8;
+    color: var(--rc-text-dim);
     margin: 1.5rem 0;
     opacity: 0.85;
   }
@@ -236,19 +236,19 @@ const navSections = [
   }
 
   .prose :global(th) {
-    background: #12121a;
-    color: #ffffff;
+    background: var(--rc-surface);
+    color: var(--rc-heading, var(--rc-text));
     font-family: var(--font-grotesk), sans-serif;
     font-weight: 600;
     text-align: left;
     padding: 0.75rem;
-    border: 1px solid #1e1e2e;
+    border: 1px solid var(--rc-border);
   }
 
   .prose :global(td) {
-    color: #c8c8d8;
+    color: var(--rc-text-dim);
     padding: 0.75rem;
-    border: 1px solid #1e1e2e;
+    border: 1px solid var(--rc-border);
   }
 
   .prose :global(img) {
@@ -257,12 +257,12 @@ const navSections = [
   }
 
   .prose :global(hr) {
-    border-color: #1e1e2e;
+    border-color: var(--rc-border);
     margin: 2rem 0;
   }
 
   .prose :global(strong) {
-    color: #ffffff;
+    color: var(--rc-heading, var(--rc-text));
     font-weight: 600;
   }
 
