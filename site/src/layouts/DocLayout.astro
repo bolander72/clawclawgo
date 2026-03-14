@@ -1,0 +1,272 @@
+---
+import BaseLayout from './BaseLayout.astro'
+import Nav from '../components/Nav'
+import Footer from '../components/Footer'
+
+const { frontmatter } = Astro.props
+const currentPath = Astro.url.pathname
+
+const navSections = [
+  {
+    title: 'Guide',
+    links: [
+      { title: 'What is ClawClawGo', href: '/docs/guide/what-is-clawclawgo' },
+      { title: 'Quickstart', href: '/docs/guide/quickstart' },
+      { title: 'Installation', href: '/docs/guide/installation' },
+      { title: 'Exporting', href: '/docs/guide/exporting' },
+      { title: 'Publishing', href: '/docs/guide/publishing' },
+      { title: 'Applying', href: '/docs/guide/applying' },
+      { title: 'Dependencies', href: '/docs/guide/dependencies' },
+      { title: 'Security', href: '/docs/guide/security' },
+      { title: 'Provenance', href: '/docs/guide/provenance' },
+      { title: 'Setup Guides', href: '/docs/guide/setup-guides' },
+      { title: 'Settings', href: '/docs/guide/settings' },
+    ]
+  },
+  {
+    title: 'Builds',
+    links: [
+      { title: 'Overview', href: '/docs/builds/overview' },
+      { title: 'Browsing', href: '/docs/builds/browsing' },
+      { title: 'Creating', href: '/docs/builds/creating' },
+      { title: 'Sharing', href: '/docs/builds/sharing' },
+    ]
+  },
+  {
+    title: 'Reference',
+    links: [
+      { title: 'CLI', href: '/docs/reference/cli' },
+      { title: 'Schema', href: '/docs/reference/schema' },
+      { title: 'Nostr', href: '/docs/reference/nostr' },
+    ]
+  },
+]
+---
+
+<BaseLayout title={`${frontmatter.title} - ClawClawGo Docs`}>
+  <div class="min-h-screen bg-rc-bg">
+    <Nav client:load />
+    
+    <div class="max-w-7xl mx-auto px-6 py-8">
+      <a href="/docs" class="inline-flex items-center gap-2 text-rc-text-dim hover:text-rc-cyan text-sm mb-8 transition-colors">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to Docs
+      </a>
+
+      <div class="flex gap-12">
+        <!-- Sidebar -->
+        <aside class="hidden lg:block w-64 flex-shrink-0">
+          <nav class="sticky top-8 space-y-8">
+            {navSections.map((section) => (
+              <div>
+                <h3 class="font-grotesk font-bold text-rc-text text-sm mb-3 uppercase tracking-wide">
+                  {section.title}
+                </h3>
+                <ul class="space-y-2">
+                  {section.links.map((link) => (
+                    <li>
+                      <a 
+                        href={link.href}
+                        class={`block text-sm transition-colors ${
+                          currentPath === link.href 
+                            ? 'text-rc-cyan font-medium' 
+                            : 'text-rc-text-dim hover:text-rc-cyan'
+                        }`}
+                      >
+                        {link.title}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </nav>
+        </aside>
+
+        <!-- Content -->
+        <main class="flex-1 min-w-0 max-w-3xl">
+          <article class="prose">
+            <slot />
+          </article>
+        </main>
+      </div>
+    </div>
+    
+    <Footer client:load />
+  </div>
+</BaseLayout>
+
+<style>
+  .prose {
+    color: #e8e8f0;
+    line-height: 1.75;
+  }
+
+  .prose :global(h1) {
+    font-family: var(--font-grotesk), sans-serif;
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 1.875rem;
+    margin-bottom: 1.5rem;
+    margin-top: 0;
+    letter-spacing: -0.01em;
+  }
+
+  @media (min-width: 768px) {
+    .prose :global(h1) {
+      font-size: 2.25rem;
+    }
+  }
+
+  .prose :global(h2) {
+    font-family: var(--font-grotesk), sans-serif;
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    margin-top: 3rem;
+    letter-spacing: -0.01em;
+  }
+
+  @media (min-width: 768px) {
+    .prose :global(h2) {
+      font-size: 1.875rem;
+    }
+  }
+
+  .prose :global(h3) {
+    font-family: var(--font-grotesk), sans-serif;
+    font-weight: 700;
+    color: #ffffff;
+    font-size: 1.25rem;
+    margin-bottom: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  @media (min-width: 768px) {
+    .prose :global(h3) {
+      font-size: 1.5rem;
+    }
+  }
+
+  .prose :global(h4) {
+    font-family: var(--font-grotesk), sans-serif;
+    font-weight: 600;
+    color: #ffffff;
+    font-size: 1.125rem;
+    margin-bottom: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  .prose :global(p) {
+    color: #c8c8d8;
+    line-height: 1.75;
+    margin-bottom: 1rem;
+  }
+
+  .prose :global(a) {
+    color: #00f0ff;
+    text-decoration: none;
+  }
+
+  .prose :global(a:hover) {
+    text-decoration: underline;
+  }
+
+  .prose :global(code) {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 0.875rem;
+    background: #12121a;
+    color: #00f0ff;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    border: 1px solid #1e1e2e;
+  }
+
+  .prose :global(pre) {
+    background: #12121a;
+    border: 1px solid #1e1e2e;
+    border-radius: 0.5rem;
+    padding: 1.25rem;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+  }
+
+  .prose :global(pre code) {
+    background: transparent;
+    border: none;
+    padding: 0;
+    color: #e8e8f0;
+    font-size: 0.85rem;
+  }
+
+  .prose :global(ul), .prose :global(ol) {
+    color: #c8c8d8;
+    margin-bottom: 1rem;
+    padding-left: 1.5rem;
+  }
+
+  .prose :global(li) {
+    margin-bottom: 0.5rem;
+  }
+
+  .prose :global(ul) {
+    list-style-type: disc;
+  }
+
+  .prose :global(ol) {
+    list-style-type: decimal;
+  }
+
+  .prose :global(blockquote) {
+    border-left: 4px solid #00f0ff;
+    padding-left: 1rem;
+    font-style: italic;
+    color: #c8c8d8;
+    margin: 1.5rem 0;
+    opacity: 0.85;
+  }
+
+  .prose :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+  }
+
+  .prose :global(th) {
+    background: #12121a;
+    color: #ffffff;
+    font-family: var(--font-grotesk), sans-serif;
+    font-weight: 600;
+    text-align: left;
+    padding: 0.75rem;
+    border: 1px solid #1e1e2e;
+  }
+
+  .prose :global(td) {
+    color: #c8c8d8;
+    padding: 0.75rem;
+    border: 1px solid #1e1e2e;
+  }
+
+  .prose :global(img) {
+    border-radius: 0.5rem;
+    margin: 1.5rem 0;
+  }
+
+  .prose :global(hr) {
+    border-color: #1e1e2e;
+    margin: 2rem 0;
+  }
+
+  .prose :global(strong) {
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .prose :global(em) {
+    font-style: italic;
+  }
+</style>

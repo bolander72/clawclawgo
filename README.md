@@ -149,7 +149,7 @@ clawclawgo/
 
 ## Built With
 
-- [React](https://react.dev/) + [Tailwind CSS](https://tailwindcss.com/): frontend
+- [Astro](https://astro.build/) + [React](https://react.dev/) + [Tailwind CSS](https://tailwindcss.com/): web app
 - [Nostr](https://nostr.com/): decentralized protocol for builds
 - [OpenClaw](https://openclaw.ai/): the agent platform this is built for
 

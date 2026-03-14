@@ -1,0 +1,8 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Explore from '../Explore'
+---
+
+<BaseLayout title="Feed - ClawClawGo" description="Live feed of agent builds from the Nostr network.">
+  <Explore client:only="react" />
+</BaseLayout>

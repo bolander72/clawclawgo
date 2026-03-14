@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Nav from '../components/Nav'
+import Footer from '../components/Footer'
+import CommunityBuilds from '../components/CommunityBuilds'
+import { builds as sampleBuilds } from '../builds'
+---
+
+<BaseLayout title="Community Builds - ClawClawGo" description="Real agent configurations from the community. See what others have built.">
+  <div class="min-h-screen bg-rc-bg">
+    <Nav client:load />
+    
+    <main class="max-w-6xl mx-auto px-6 py-16">
+      <div class="text-center mb-12">
+        <h1 class="text-3xl md:text-4xl font-grotesk font-bold text-rc-text mb-3">
+          Community Builds
+        </h1>
+        <p class="text-rc-text-dim text-sm max-w-md mx-auto">
+          Real agent configurations from the community. See what others have built.
+        </p>
+      </div>
+
+      <CommunityBuilds builds={sampleBuilds} client:load />
+    </main>
+    
+    <Footer client:load />
+  </div>
+</BaseLayout>

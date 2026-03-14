@@ -1,7 +1,9 @@
+import type { Build } from './types'
+
 // Sample builds for the conveyor belt showcase
 // In production these would come from an API as agents are shared/published
 
-export const builds = [
+export const builds: Build[] = [
   {
     id: 'quinn-personal',
     name: 'Personal Assistant',
@@ -9,6 +11,12 @@ export const builds = [
     creator: '@Bolander72',
     createdAt: '2026-03-11',
     isNew: true,
+    tags: [],
+    keyCount: 0,
+    content: {},
+    fork: null,
+    originalAuthor: null,
+    remixCount: 0,
     items: [
       { name: 'Claude Opus', color: 'text-purple-400' },
       { name: 'Claude Sonnet', color: 'text-blue-400' },
@@ -36,6 +44,12 @@ export const builds = [
     creator: '@synthwave_dev',
     createdAt: '2026-03-10',
     isNew: true,
+    tags: [],
+    keyCount: 0,
+    content: {},
+    fork: null,
+    originalAuthor: null,
+    remixCount: 0,
     items: [
       { name: 'Claude Sonnet', color: 'text-blue-400' },
       { name: 'Codex', color: 'text-rc-green' },
@@ -61,6 +75,12 @@ export const builds = [
     creator: '@homelab_nick',
     createdAt: '2026-03-08',
     isNew: false,
+    tags: [],
+    keyCount: 0,
+    content: {},
+    fork: null,
+    originalAuthor: null,
+    remixCount: 0,
     items: [
       { name: 'Qwen 3.5:4b', color: 'text-rc-green' },
       { name: 'Whisper (local)', color: 'text-rc-text-dim' },
@@ -85,6 +105,12 @@ export const builds = [
     creator: '@deep_research',
     createdAt: '2026-03-06',
     isNew: false,
+    tags: [],
+    keyCount: 0,
+    content: {},
+    fork: null,
+    originalAuthor: null,
+    remixCount: 0,
     items: [
       { name: 'Claude Opus', color: 'text-purple-400' },
       { name: 'Perplexity', color: 'text-sky-400' },
@@ -109,6 +135,12 @@ export const builds = [
     creator: '@growthcraft',
     createdAt: '2026-03-05',
     isNew: false,
+    tags: [],
+    keyCount: 0,
+    content: {},
+    fork: null,
+    originalAuthor: null,
+    remixCount: 0,
     items: [
       { name: 'Claude Sonnet', color: 'text-blue-400' },
       { name: 'GPT-5.2', color: 'text-emerald-400' },
@@ -131,6 +163,12 @@ export const builds = [
     creator: '@money_moves',
     createdAt: '2026-02-28',
     isNew: false,
+    tags: [],
+    keyCount: 0,
+    content: {},
+    fork: null,
+    originalAuthor: null,
+    remixCount: 0,
     items: [
       { name: 'Claude Sonnet', color: 'text-blue-400' },
       { name: 'Qwen 3.5:4b', color: 'text-rc-green' },
@@ -153,6 +191,12 @@ export const builds = [
     creator: '@pm_sarah',
     createdAt: '2026-03-09',
     isNew: true,
+    tags: [],
+    keyCount: 0,
+    content: {},
+    fork: null,
+    originalAuthor: null,
+    remixCount: 0,
     items: [
       { name: 'Claude Opus', color: 'text-purple-400' },
       { name: 'Claude Sonnet', color: 'text-blue-400' },
@@ -176,6 +220,12 @@ export const builds = [
     creator: '@creative_ops',
     createdAt: '2026-03-07',
     isNew: false,
+    tags: [],
+    keyCount: 0,
+    content: {},
+    fork: null,
+    originalAuthor: null,
+    remixCount: 0,
     items: [
       { name: 'Claude Opus', color: 'text-purple-400' },
       { name: 'GPT-5.2', color: 'text-emerald-400' },

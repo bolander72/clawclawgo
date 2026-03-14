@@ -1,3 +1,17 @@
+---
+import '../index.css'
+
+interface Props {
+  title?: string
+  description?: string
+}
+
+const {
+  title = 'ClawClawGo - AI Agent Builds',
+  description = 'Search, explore, and share AI agent builds. No tracking, no profiling.',
+} = Astro.props
+---
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -8,17 +22,17 @@
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="theme-color" content="#000000" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="ClawClawGo - Search, explore, and share AI agent builds. Privacy-first." />
+    <meta name="description" content={description} />
     <meta name="keywords" content="OpenClaw, AI agents, builds, search, explore, share, privacy" />
-    <meta property="og:title" content="ClawClawGo - AI Agent Builds" />
-    <meta property="og:description" content="Search, explore, and share AI agent builds. No tracking, no profiling." />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
     <meta property="og:image" content="/og-image.png" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="ClawClawGo - AI Agent Builds" />
-    <meta name="twitter:description" content="Search, explore, and share AI agent builds. No tracking, no profiling." />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content="/og-image.png" />
-    <title>ClawClawGo - AI Agent Builds</title>
+    <title>{title}</title>
     <style>
       html {
         scroll-behavior: smooth;
@@ -26,14 +40,6 @@
     </style>
   </head>
   <body>
-    <div id="root"></div>
-    <script>
-      // GitHub Pages SPA: pick up redirect from 404.html
-      (function() {
-        var p = new URLSearchParams(window.location.search).get('p');
-        if (p) window.history.replaceState(null, '', decodeURIComponent(p));
-      })();
-    </script>
-    <script type="module" src="/src/main.jsx"></script>
+    <slot />
   </body>
 </html>

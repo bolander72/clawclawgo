@@ -1,0 +1,24 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Nav from '../components/Nav'
+import Footer from '../components/Footer'
+import FAQAccordion from '../components/FAQAccordion'
+---
+
+<BaseLayout title="FAQs - ClawClawGo" description="Frequently asked questions about ClawClawGo - AI agent build search and sharing platform.">
+  <div class="min-h-screen bg-rc-bg">
+    <Nav client:load />
+    
+    <main class="max-w-3xl mx-auto px-6 py-16">
+      <div class="text-center mb-16">
+        <h1 class="text-3xl md:text-4xl font-grotesk font-bold text-rc-text mb-4">
+          FAQs
+        </h1>
+      </div>
+
+      <FAQAccordion client:load />
+    </main>
+    
+    <Footer client:load />
+  </div>
+</BaseLayout>

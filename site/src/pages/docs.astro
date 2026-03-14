@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Nav from '../components/Nav'
+import Footer from '../components/Footer'
+import { IconBook, IconTerminal, IconFileCode } from '@tabler/icons-react'
+
+const docSections = [
+  {
+    icon: IconBook,
+    title: 'Guide',
+    desc: 'Get started with ClawClawGo and learn the core concepts',
+    links: [
+      { title: 'What is ClawClawGo', href: '/docs/guide/what-is-clawclawgo' },
+      { title: 'Quickstart', href: '/docs/guide/quickstart' },
+      { title: 'Installation', href: '/docs/guide/installation' },
+      { title: 'Exporting', href: '/docs/guide/exporting' },
+      { title: 'Publishing', href: '/docs/guide/publishing' },
+      { title: 'Applying', href: '/docs/guide/applying' },
+      { title: 'Dependencies', href: '/docs/guide/dependencies' },
+      { title: 'Security', href: '/docs/guide/security' },
+      { title: 'Provenance', href: '/docs/guide/provenance' },
+      { title: 'Setup Guides', href: '/docs/guide/setup-guides' },
+      { title: 'Settings', href: '/docs/guide/settings' },
+    ]
+  },
+  {
+    icon: IconFileCode,
+    title: 'Builds',
+    desc: 'Learn about agent builds: browsing, creating, and sharing',
+    links: [
+      { title: 'Overview', href: '/docs/builds/overview' },
+      { title: 'Browsing', href: '/docs/builds/browsing' },
+      { title: 'Creating', href: '/docs/builds/creating' },
+      { title: 'Sharing', href: '/docs/builds/sharing' },
+    ]
+  },
+  {
+    icon: IconTerminal,
+    title: 'Reference',
+    desc: 'CLI commands, schema reference, and Nostr protocol details',
+    links: [
+      { title: 'CLI', href: '/docs/reference/cli' },
+      { title: 'Schema', href: '/docs/reference/schema' },
+      { title: 'Nostr', href: '/docs/reference/nostr' },
+    ]
+  },
+]
+---
+
+<BaseLayout title="Documentation - ClawClawGo" description="Complete documentation for ClawClawGo - guides, build references, CLI commands, and schema details.">
+  <div class="min-h-screen bg-rc-bg">
+    <Nav client:load />
+    
+    <main class="max-w-6xl mx-auto px-6 py-16">
+      <div class="text-center mb-16">
+        <h1 class="text-3xl md:text-4xl font-grotesk font-bold text-rc-text mb-4">
+          Documentation
+        </h1>
+        <p class="text-rc-text-dim text-lg max-w-2xl mx-auto">
+          Everything you need to know about exporting, publishing, and applying agent builds.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {docSections.map((section, i) => (
+          <div 
+            class="p-8 rounded-2xl bg-rc-surface border border-rc-border hover:border-rc-cyan/30 transition-colors"
+            style={`animation: fadeInUp 0.5s ease-out ${i * 0.1}s both`}
+          >
+            <div class="w-12 h-12 rounded-xl bg-rc-cyan/10 flex items-center justify-center mb-6">
+              <section.icon size={24} className="text-rc-cyan" stroke={1.5} />
+            </div>
+            <h2 class="font-grotesk font-bold text-rc-text text-xl mb-3">{section.title}</h2>
+            <p class="text-rc-text-dim text-sm mb-6 leading-relaxed">{section.desc}</p>
+            <ul class="space-y-2.5">
+              {section.links.map((link) => (
+                <li>
+                  <a 
+                    href={link.href}
+                    class="text-rc-text-dim text-sm hover:text-rc-cyan transition-colors inline-flex items-center gap-1.5 group"
+                  >
+                    <span class="group-hover:translate-x-0.5 transition-transform">{link.title}</span>
+                    <svg class="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <div class="mt-16 p-8 rounded-2xl bg-rc-surface border border-rc-border text-center">
+        <p class="text-rc-text-dim text-sm mb-4">
+          Can't find what you're looking for?
+        </p>
+        <div class="flex items-center justify-center gap-4">
+          <a 
+            href="https://github.com/bolander72/clawclawgo/discussions" 
+            target="_blank" 
+            rel="noopener"
+            class="text-rc-cyan text-sm font-medium hover:underline"
+          >
+            Ask on GitHub Discussions
+          </a>
+          <span class="text-rc-text-muted">·</span>
+          <a 
+            href="https://discord.com/invite/clawd" 
+            target="_blank" 
+            rel="noopener"
+            class="text-rc-cyan text-sm font-medium hover:underline"
+          >
+            Join Discord
+          </a>
+        </div>
+      </div>
+    </main>
+    
+    <Footer client:load />
+  </div>
+</BaseLayout>
+
+<style>
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>
