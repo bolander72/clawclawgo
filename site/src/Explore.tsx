@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { AnimatePresence } from 'framer-motion'
-import { IconLivePhoto, IconUpload } from '@tabler/icons-react'
+import { IconLivePhoto } from '@tabler/icons-react'
 import { extractItems } from './lib/utils'
 import { builds as sampleBuilds } from './builds'
 import FeedItem from './components/FeedItem'
@@ -17,10 +17,8 @@ export default function Explore() {
   const [newIds, setNewIds] = useState<Set<string>>(new Set())
   const [sortMode, setSortMode] = useState<'recent' | 'hot'>('recent')
   const [tagFilter, setTagFilter] = useState<string | null>(null)
-  const [isDragging, setIsDragging] = useState<boolean>(false)
   
   const seenIds = useRef<Set<string>>(new Set())
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Load sample builds on mount
   useEffect(() => {
@@ -30,67 +28,6 @@ export default function Explore() {
       setIsLoading(false)
     }, 500)
   }, [])
-
-  // File import handlers
-  const handleFileImport = (file: File) => {
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      try {
-        const content = JSON.parse(e.target?.result as string) as BuildContent
-        const { items, keyCount } = extractItems(content)
-        
-        const build: Build = {
-          id: 'local-' + Date.now(),
-          name: content.meta?.name || 'Imported Build',
-          description: content.meta?.description || 'Imported from local file',
-          source: 'local',
-          creator: 'local',
-          createdAt: Math.floor(Date.now() / 1000),
-          tags: content.meta?.tags || [],
-          items,
-          keyCount,
-          content,
-          compatibility: content.meta?.compatibility || [],
-          permissions: content.permissions || content.meta?.permissions,
-          trustTier: 'unreviewed',
-        }
-        
-        setBuilds(prev => [build, ...prev])
-        setNewIds(prev => new Set([...prev, build.id]))
-        setTimeout(() => setNewIds(prev => {
-          const next = new Set(prev)
-          next.delete(build.id)
-          return next
-        }), 3000)
-      } catch (err) {
-        alert('Failed to parse build JSON: ' + (err as Error).message)
-      }
-    }
-    reader.readAsText(file)
-  }
-
-  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) handleFileImport(file)
-  }
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(true)
-  }
-
-  const handleDragLeave = () => {
-    setIsDragging(false)
-  }
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault()
-    setIsDragging(false)
-    const file = e.dataTransfer.files[0]
-    if (file && file.name.endsWith('.json')) {
-      handleFileImport(file)
-    }
-  }
 
   // Filter and sort builds
   const filteredAndSortedBuilds = builds
@@ -112,22 +49,7 @@ export default function Explore() {
     })
 
   return (
-    <div 
-      className="min-h-screen bg-rc-bg"
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      {/* Drag overlay */}
-      {isDragging && (
-        <div className="fixed inset-0 bg-rc-cyan/10 border-4 border-dashed border-rc-cyan z-50 flex items-center justify-center pointer-events-none">
-          <div className="bg-rc-surface border border-rc-cyan rounded-2xl p-8 flex flex-col items-center gap-3">
-            <IconUpload size={48} className="text-rc-cyan" />
-            <p className="font-grotesk font-bold text-rc-text text-lg">Drop build.json to import</p>
-          </div>
-        </div>
-      )}
-
+    <div className="min-h-screen bg-rc-bg">
       {/* Header */}
       <header className="border-b border-rc-border bg-rc-bg/90 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -158,20 +80,6 @@ export default function Explore() {
         {/* Feed header with sort controls and tag filter */}
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="px-3 py-1.5 rounded-lg text-xs font-mono bg-rc-surface border border-rc-border text-rc-text-dim hover:text-rc-cyan hover:border-rc-cyan/40 transition-all flex items-center gap-1.5"
-            >
-              <IconUpload size={14} />
-              Import
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".json"
-              onChange={handleFileInput}
-              className="hidden"
-            />
             <button
               onClick={() => setSortMode('recent')}
               className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
@@ -225,7 +133,7 @@ export default function Explore() {
             </div>
             <p className="text-rc-text text-lg font-grotesk font-medium mb-2">No builds yet</p>
             <p className="text-rc-text-dim text-sm max-w-md text-center">
-              No builds found. Try importing a build.json file or check back soon.
+              No builds found. Check back soon.
             </p>
           </div>
         )}
