@@ -4,12 +4,11 @@ import { formatDate } from '../lib/utils'
 import { getAgentsByIds } from '../agents'
 import type { FeedItemProps } from '../types'
 
-// Source icons
-const SOURCE_ICONS = {
-  github: IconBrandGithub,
-  clawhub: IconHash,
-  skillssh: IconHash,
-  custom: IconHash,
+// Source badges — consistent color per source
+const SOURCE_BADGES: Record<string, { icon: typeof IconBrandGithub; color: string }> = {
+  github: { icon: IconBrandGithub, color: 'bg-white/10 border-white/20 text-rc-text-dim' },
+  clawhub: { icon: IconHash, color: 'bg-purple-400/15 border-purple-400/30 text-purple-400' },
+  skillssh: { icon: IconHash, color: 'bg-orange-400/15 border-orange-400/30 text-orange-400' },
 }
 
 // Trust tier badges
@@ -20,7 +19,8 @@ const TRUST_BADGES = {
 }
 
 export default function FeedItem({ build, index, isNew, onClick, onTagClick }: FeedItemProps) {
-  const SourceIcon = SOURCE_ICONS[build.source] || IconHash
+  const sourceBadge = SOURCE_BADGES[build.source] || { icon: IconHash, color: 'bg-white/10 border-white/20 text-rc-text-dim' }
+  const SourceIcon = sourceBadge.icon
   const trustBadge = TRUST_BADGES[build.trustTier]
   const agents = getAgentsByIds(build.compatibility.slice(0, 3))
 
@@ -48,9 +48,13 @@ export default function FeedItem({ build, index, isNew, onClick, onTagClick }: F
               </span>
             </div>
             <div className="flex flex-wrap gap-1.5">
-              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md border ${trustBadge.color}`}>
+              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md border ${sourceBadge.color}`}>
                 <SourceIcon size={10} />
                 <span className="text-[9px] font-mono font-bold tracking-wider">{build.source.toUpperCase()}</span>
+              </div>
+              <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md border ${trustBadge.color}`}>
+                {trustBadge.icon && <trustBadge.icon size={10} />}
+                <span className="text-[9px] font-mono font-bold tracking-wider">{trustBadge.label}</span>
               </div>
               {build.source === 'github' && build.stars && build.stars > 0 && (
                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-rc-yellow/15 border border-rc-yellow/30">

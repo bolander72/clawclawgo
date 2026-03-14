@@ -209,34 +209,5 @@ export const builds: Build[] = [
       { name: 'statistical-analysis', description: 'Statistical testing and inference', path: 'scientific-skills/statistical-analysis' },
     ],
   },
-  {
-    id: 'clawhub-competitor-research',
-    name: 'Competitor Research',
-    description: 'Analyze competitor strategies, keywords, pricing, and positioning. Pull data from public sources and generate comparison reports.',
-    source: 'clawhub',
-    creator: 'ClawHub Community',
-    createdAt: '2026-01-20',
-    tags: ['marketing', 'research', 'competitive-analysis', 'strategy'],
-    compatibility: ['openclaw', 'claude-code', 'claude'],
-    trustTier: 'community',
-    detectedFiles: ['SKILL.md'],
-    skills: [
-      { name: 'competitor-research', description: 'Analyze competitor strategies and keywords', url: 'https://clawhub.ai/skills/competitor-research' },
-    ],
-  },
-  {
-    id: 'clawhub-customer-support',
-    name: 'Customer Support',
-    description: 'Automated customer support: ticket triage, response drafting, FAQ generation, and escalation workflows.',
-    source: 'clawhub',
-    creator: 'ClawHub Community',
-    createdAt: '2026-02-05',
-    tags: ['support', 'automation', 'tickets', 'customer-service'],
-    compatibility: ['openclaw', 'claude-code', 'claude'],
-    trustTier: 'community',
-    detectedFiles: ['SKILL.md'],
-    skills: [
-      { name: 'customer-support', description: 'Automated responses and ticket management', url: 'https://clawhub.ai/skills/customer-support' },
-    ],
-  },
+
 ]
