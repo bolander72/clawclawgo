@@ -1,0 +1,29 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Nav from '../components/Nav'
+import Footer from '../components/Footer'
+---
+
+<BaseLayout title="404 - Page Not Found | ClawClawGo">
+  <div class="min-h-screen bg-rc-bg flex flex-col">
+    <Nav client:load />
+    
+    <main class="flex-1 flex items-center justify-center px-6">
+      <div class="text-center max-w-md">
+        <h1 class="text-6xl font-grotesk font-bold text-rc-cyan mb-4">404</h1>
+        <p class="text-rc-text text-lg mb-2">Page not found</p>
+        <p class="text-rc-text-dim text-sm mb-8">
+          The page you're looking for doesn't exist or has been moved.
+        </p>
+        <a 
+          href="/" 
+          class="inline-block px-6 py-3 bg-rc-cyan text-rc-bg font-grotesk font-semibold rounded-xl hover:bg-rc-cyan/90 transition-colors"
+        >
+          Back to Home
+        </a>
+      </div>
+    </main>
+    
+    <Footer client:load />
+  </div>
+</BaseLayout>

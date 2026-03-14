@@ -14,9 +14,20 @@
   --color-rc-text: var(--rc-text);
   --color-rc-text-dim: var(--rc-text-dim);
   --color-rc-text-muted: var(--rc-text-muted);
-
   --font-family-grotesk: 'Space Grotesk', sans-serif;
   --font-family-mono: 'JetBrains Mono', monospace;
+}
+
+::selection {
+  background: rgba(0, 240, 255, 0.7);
+  color: #000000;
+}
+
+@media (prefers-color-scheme: light) {
+  ::selection {
+    background: rgba(0, 153, 170, 0.3);
+    color: #1a1a2e;
+  }
 }
 
 :root {
@@ -29,8 +40,9 @@
   --rc-yellow: #ffcc00;
   --rc-red: #ff3366;
   --rc-text: #e8e8f0;
-  --rc-text-dim: #8888a0;
+  --rc-text-dim: #c8c8d8;
   --rc-text-muted: #555570;
+  --rc-heading: #ffffff;
 }
 
 @media (prefers-color-scheme: light) {
@@ -46,6 +58,7 @@
     --rc-text: #1a1a2e;
     --rc-text-dim: #4a4a60;
     --rc-text-muted: #7a7a90;
+    --rc-heading: #0f0f1a;
   }
 }
 
@@ -115,25 +128,9 @@ body {
 
 
 /* Selection */
-::selection {
-  background: rgba(0, 240, 255, 0.3);
-  color: #e8e8f0;
-}
-
-::-moz-selection {
-  background: rgba(0, 240, 255, 0.3);
-  color: #e8e8f0;
-}
 
 @media (prefers-color-scheme: light) {
-  ::selection {
-    background: rgba(0, 153, 170, 0.2);
-    color: #1a1a2e;
-  }
-  ::-moz-selection {
-    background: rgba(0, 153, 170, 0.2);
-    color: #1a1a2e;
-  }
+
   /* Disable scanlines in light mode */
   .scanlines::before,
   .scanlines::after {

@@ -1,0 +1,136 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro'
+import Nav from '../components/Nav'
+import Footer from '../components/Footer'
+import { 
+  IconWorldSearch, IconFingerprint, IconCopy, 
+  IconPuzzle, IconUserCircle, IconRefresh 
+} from '@tabler/icons-react'
+
+const features = [
+  {
+    icon: IconWorldSearch,
+    title: 'Search and discover',
+    desc: 'Find agent builds by capability, personality, use case, or creator. Search is fast and private. No tracking, no accounts required.',
+  },
+  {
+    icon: IconFingerprint,
+    title: 'Anonymous or verified',
+    desc: 'Publish builds anonymously (no identity required) or tie them to your verified Nostr identity. Your choice. Your control.',
+  },
+  {
+    icon: IconCopy,
+    title: 'One-click copy',
+    desc: "See a build you like? Copy the whole thing and bootstrap your agent in seconds. Swap out what doesn't fit, keep what does.",
+  },
+  {
+    icon: IconPuzzle,
+    title: 'Complete configurations',
+    desc: 'Every build is a full agent setup: models, skills, integrations, personality, automations, memory. Whatever your agent uses, it goes in the build.',
+  },
+  {
+    icon: IconUserCircle,
+    title: 'Privacy-first',
+    desc: 'PII scrubber runs locally before anything leaves your machine. No central authority. Nostr-based, decentralized, censorship-resistant.',
+  },
+  {
+    icon: IconRefresh,
+    title: 'Remix and evolve',
+    desc: 'Fork a build, change what you want, republish. Builds evolve as people improve them. Credit is optional but tracked.',
+  },
+]
+
+const steps = [
+  { num: '01', title: 'Search', desc: 'Find agent builds by capability, use case, or creator. No tracking. No accounts. Just search and discover what others have built.' },
+  { num: '02', title: 'Explore', desc: 'See exactly how an agent is configured: which models, what skills, which integrations, what personality. Complete transparency.' },
+  { num: '03', title: 'Apply', desc: 'Copy a build and bootstrap your agent in seconds. Swap models, adjust personality, add skills. Make it yours.' },
+]
+---
+
+<BaseLayout title="About - ClawClawGo" description="Learn about ClawClawGo - a privacy-first platform for searching, exploring, and sharing AI agent configurations.">
+  <div class="min-h-screen bg-rc-bg">
+    <Nav client:load />
+    
+    <main class="max-w-6xl mx-auto px-6">
+      {/* What is it */}
+      <section class="py-16">
+        <div class="text-center mb-16">
+          <h1 class="text-3xl md:text-4xl font-grotesk font-bold text-rc-text mb-4">
+            What is ClawClawGo?
+          </h1>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((f, i) => (
+            <div 
+              class="p-6 rounded-2xl bg-rc-surface border border-rc-border hover:border-rc-cyan/30 transition-colors group"
+              style={`animation: fadeInUp 0.5s ease-out ${i * 0.08}s both`}
+            >
+              <div class="w-10 h-10 rounded-xl bg-rc-cyan/10 flex items-center justify-center mb-4 group-hover:bg-rc-cyan/20 transition-colors">
+                <f.icon size={20} className="text-rc-cyan" stroke={1.5} />
+              </div>
+              <h3 class="font-grotesk font-semibold text-rc-text text-base mb-2">{f.title}</h3>
+              <p class="text-rc-text-dim text-sm leading-relaxed">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section class="py-16 relative">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-rc-cyan/3 rounded-full blur-[150px] pointer-events-none" />
+        <div class="max-w-4xl mx-auto relative z-10">
+          <div class="text-center mb-16">
+            <h2 class="text-3xl md:text-4xl font-grotesk font-bold text-rc-text mb-4">
+              How it works
+            </h2>
+            <p class="text-rc-text-dim text-lg max-w-xl mx-auto">
+              Search for builds. Explore configurations. Apply what works.
+            </p>
+          </div>
+          <div class="space-y-8">
+            {steps.map((step, i) => (
+              <div 
+                class="flex gap-6 items-start"
+                style={`animation: fadeInLeft 0.5s ease-out ${i * 0.15}s both`}
+              >
+                <div class="shrink-0 w-12 h-12 rounded-2xl bg-rc-cyan/10 border border-rc-cyan/20 flex items-center justify-center">
+                  <span class="text-rc-cyan font-mono font-bold text-sm">{step.num}</span>
+                </div>
+                <div class="flex-1">
+                  <h3 class="font-grotesk font-bold text-rc-text text-xl mb-2">{step.title}</h3>
+                  <p class="text-rc-text-dim text-sm leading-relaxed">{step.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    </main>
+    
+    <Footer client:load />
+  </div>
+</BaseLayout>
+
+<style>
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeInLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+</style>

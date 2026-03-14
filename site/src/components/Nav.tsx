@@ -1,0 +1,23 @@
+import { IconLivePhoto } from '@tabler/icons-react'
+
+interface NavProps {
+  minimal?: boolean
+}
+
+export default function Nav({ minimal }: NavProps) {
+  return (
+    <header className={`border-b border-rc-border bg-rc-bg/90 backdrop-blur-md ${minimal ? '' : 'sticky top-0 z-40'}`}>
+      <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+        <a href="/" className="font-grotesk font-bold text-rc-text text-lg hover:text-rc-cyan transition-colors">
+          ClawClawGo
+        </a>
+        <nav className="flex items-center gap-5 text-sm">
+          <a href="/feed" className="text-rc-text-dim hover:text-rc-cyan transition-colors flex items-center gap-1">
+            <IconLivePhoto size={14} /> Feed
+          </a>
+          <a href="/community" className="text-rc-text-dim hover:text-rc-cyan transition-colors">Community</a>
+        </nav>
+      </div>
+    </header>
+  )
+}
