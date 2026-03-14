@@ -155,8 +155,7 @@ export default function Search() {
         {/* Loading state */}
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-20">
-            <LoadingSprite size={64} className="mb-4" />
-            <p className="text-rc-text-dim text-sm font-mono">Loading kits...</p>
+            <LoadingSprite size={64} />
           </div>
         )}
 
