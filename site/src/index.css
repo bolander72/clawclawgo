@@ -18,6 +18,11 @@
   --font-family-mono: 'JetBrains Mono', monospace;
 }
 
+::selection {
+  background: rgba(0, 240, 255, 0.7);
+  color: #000000;
+}
+
 :root {
   --rc-bg: #0a0a0f;
   --rc-surface: #12121a;
@@ -114,25 +119,9 @@ body {
 
 
 /* Selection */
-::selection {
-  background: rgba(0, 240, 255, 0.3);
-  color: #e8e8f0;
-}
-
-::-moz-selection {
-  background: rgba(0, 240, 255, 0.3);
-  color: #e8e8f0;
-}
 
 @media (prefers-color-scheme: light) {
-  ::selection {
-    background: rgba(0, 153, 170, 0.2);
-    color: #1a1a2e;
-  }
-  ::-moz-selection {
-    background: rgba(0, 153, 170, 0.2);
-    color: #1a1a2e;
-  }
+
   /* Disable scanlines in light mode */
   .scanlines::before,
   .scanlines::after {
