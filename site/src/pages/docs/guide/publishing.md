@@ -3,144 +3,101 @@ layout: ../../../layouts/DocLayout.astro
 title: Publishing
 ---
 
-# Publishing to GitHub
+# Publishing
 
-Share your build with the community by publishing it as a GitHub repository.
+Publishing makes your build discoverable on clawclawgo.com by adding it to the registry.
 
-## Why GitHub?
+## How It Works
 
-- **Familiar workflow**: standard Git/GitHub workflow developers already know
-- **Discoverability**: builds are indexed via GitHub's topic system
-- **Trust signals**: stars, forks, contributor count, and repo age provide natural trust indicators
-- **Version control**: full Git history for your build evolution
-- **No special accounts**: if you have GitHub, you're ready to publish
+ClawClawGo's registry is a simple JSON file at `registry/builds.json` in the repo. To add your build:
 
-## Publishing Flow
+1. **Pack your repo** — `clawclawgo pack` generates `build.json` with scan results
+2. **Publish** — `clawclawgo publish` prepares the registry entry
+3. **Submit PR** — Add the entry to `registry/builds.json`
 
-1. **Export your build**  
-   Click **Publish** or run `npx clawclawgo export --out build.json`
+## The publish Command
 
-2. **Review sections**  
-   Choose which parts of your config to include. The security scanner highlights sensitive data (emails, API keys, IP addresses).
+```bash
+clawclawgo publish [directory]
+```
 
-3. **Add metadata**  
-   - Build name and description
-   - Tags for discoverability
-   - Compatibility (which agents can use this: OpenClaw, Claude Code, Cursor, etc.)
-   - Declared permissions (filesystem, web-search, email, etc.)
-
-4. **Get your build.json**  
-   Download or copy the generated JSON file
-
-5. **Create a GitHub repo**  
-   Make it public so others can discover it
-
-6. **Add build.json to repo root**  
-   Commit the file
-
-7. **Tag your repo**  
-   Add the `clawclawgo-build` topic to your repository:
-   - Go to repo settings → Topics
-   - Add: `clawclawgo-build`
-
-8. **Your build appears in the feed**  
-   The aggregator indexes GitHub repos with the `clawclawgo-build` topic. Your build will show up within 24 hours.
-
-## PII Scrubbing
-
-Before publishing, ClawClawGo automatically scans for personally identifiable information:
-
-**Warnings shown for:**
-- Phone numbers
-- Email addresses
-- Physical addresses
-- API keys and tokens
-- Bearer tokens
-- IP addresses
-
-**Never include these in your build.json:**
-- USER.md content
-- Memory content (facts, handoffs, daily notes)
-- Chat history or conversations
-- Integration credentials (tokens, passwords, API keys)
-- Personal calendar events or contact information
-
-Review the security scan results and exclude any sections with warnings before generating your build.json.
-
-## Build Schema (v4)
+This generates the JSON entry you'll add to the registry:
 
 ```json
 {
-  "schema": 4,
-  "meta": {
-    "name": "My Agent Build",
-    "description": "A productivity-focused AI assistant",
-    "tags": ["productivity", "coding"],
-    "compatibility": ["openclaw", "claude-code", "cursor"],
-    "permissions": ["filesystem", "web-search"],
-    "source": "github",
-    "repoUrl": "https://github.com/user/my-build"
-  },
-  "model": { ... },
-  "persona": { ... },
-  "skills": { ... },
-  "integrations": { ... },
-  "automations": { ... }
+  "id": "your-github-username/your-repo",
+  "name": "Your Build Name",
+  "description": "What it does",
+  "url": "https://github.com/your-username/your-repo",
+  "build_url": "https://raw.githubusercontent.com/your-username/your-repo/main/build.json",
+  "author": "Your Name",
+  "tags": ["voice", "automation", "coding"],
+  "agents": ["openclaw", "cursor", "windsurf"],
+  "added": "2024-03-14"
 }
 ```
 
-See the [Schema Reference](/docs/reference/schema) for the full spec.
+## Step-by-Step
 
-## Trust Tiers
-
-Builds are assigned trust tiers based on GitHub signals:
-
-- **Verified**: repos with 100+ stars, active contributors, established history
-- **Community**: repos with some activity and stars
-- **Unreviewed**: new repos or those with little activity
-
-These are hints, not guarantees. Always review builds before applying them.
-
-## Permissions
-
-Declare which tools/capabilities your build uses:
-
-- `filesystem` — Read, Write, Edit files
-- `web-search` — Brave Search, web research
-- `email` — Email reading/sending
-- `calendar` — Calendar access
-- `smart-home` — Home Assistant, HomeKit
-- `message` — iMessage, Telegram, Discord
-- `exec` — Shell command execution
-- `browser` — Browser automation
-
-The security scanner compares declared permissions against detected tool usage and warns if permissions are missing.
-
-## Compatibility
-
-List which AI agents can use your build:
-
-- `openclaw`
-- `claude-code`
-- `cursor`
-- `windsurf`
-- `codex`
-- `pi`
-- `opencode`
-
-This helps users find builds that work with their tools.
-
-## CLI Publishing
+### 1. Pack Your Build
 
 ```bash
-# Export from OpenClaw config
-npx clawclawgo export --agent main --out build.json
-
-# Preview before publishing
-npx clawclawgo preview build.json
-
-# Security scan
-npx clawclawgo scan build.json
+cd ~/my-agent-skills
+clawclawgo pack --name "Voice Assistant" --description "Skills for voice-controlled agents"
 ```
 
-See the [CLI Reference](/docs/reference/cli) for full usage.
+This creates `build.json` with your skills, configs, and scan results baked in.
+
+### 2. Host on GitHub
+
+Push your repo to GitHub:
+
+```bash
+git init
+git add .
+git commit -m "Initial build"
+git remote add origin https://github.com/yourusername/your-repo.git
+git push -u origin main
+```
+
+Your `build.json` must be in the root of your repo.
+
+### 3. Generate Registry Entry
+
+```bash
+clawclawgo publish
+```
+
+This outputs the JSON entry. Copy it.
+
+### 4. Submit to Registry
+
+1. Fork [bolander72/clawclawgo](https://github.com/bolander72/clawclawgo)
+2. Open `registry/builds.json`
+3. Add your entry to the array
+4. Submit a PR
+
+Once merged, your build appears on clawclawgo.com.
+
+## Best Practices
+
+**Scan before publishing**
+```bash
+clawclawgo scan build.json
+```
+Make sure your trust score is high (90+). Low scores won't be merged.
+
+**Tag appropriately**
+Use tags people will search for: `voice`, `coding`, `automation`, `home-assistant`, `email`, etc.
+
+**List all compatible agents**
+Check which agents your skills work with. The more agents listed, the more discoverable your build.
+
+**Keep it updated**
+When you add new skills or fix issues, update your `build.json` and bump the version. Users can re-download with `clawclawgo add`.
+
+## Unpublishing
+
+To remove your build from the registry, submit a PR removing the entry from `registry/builds.json`.
+
+Your repo stays on GitHub — only the registry link is removed.

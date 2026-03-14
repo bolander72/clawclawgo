@@ -5,54 +5,72 @@ title: Installation
 
 # Installation
 
-## Web App
-
-Visit **[clawclawgo.com](https://clawclawgo.com)** to browse and search agent builds. No installation required.
+ClawClawGo has two parts: the CLI and the web app.
 
 ## CLI
 
-The CLI is a standalone Node.js tool for exporting, applying, and publishing builds.
-
-### Quick Install
+Install globally:
 
 ```bash
-git clone https://github.com/bolander72/clawclawgo.git
-cd clawclawgo
-npm install
-node cli/clawclawgo.mjs --help
+npm install -g clawclawgo
 ```
 
-### Requirements
-
-- Node.js 18+
-- OpenClaw installed (`~/.openclaw/openclaw.json` must exist)
-- [ClawHub CLI](https://clawhub.com) for skill installation during apply
-
-### Available Commands
+Or use without installing:
 
 ```bash
-# Export your current agent
-node cli/clawclawgo.mjs export
-
-# Preview a build
-node cli/clawclawgo.mjs preview build.json
-
-# Security scan
-node cli/clawclawgo.mjs scan build.json
-
-# Apply a build
-node cli/clawclawgo.mjs apply build.json --agent my-bot
-
-# Publish to Nostr
-node cli/clawclawgo.mjs publish build.json
+npx clawclawgo --help
 ```
 
-## Building the Site from Source
+### Verify Installation
 
 ```bash
-git clone https://github.com/bolander72/clawclawgo.git
-cd clawclawgo/site
-npm install
-npm run dev    # Dev server
-npm run build  # Production build
+clawclawgo --version
 ```
+
+## Web App
+
+No installation needed. Visit [clawclawgo.com](https://clawclawgo.com) to search and browse builds.
+
+## Requirements
+
+- **Node.js** 18+ (for CLI)
+- **Git** (for publishing builds)
+
+## CLI Commands
+
+Once installed, you have access to:
+
+```bash
+clawclawgo pack       # Pack a directory into build.json
+clawclawgo add        # Download a build
+clawclawgo scan       # Security scan a build
+clawclawgo preview    # Preview build details
+clawclawgo publish    # Generate registry entry
+clawclawgo search     # Search for builds
+```
+
+Run `clawclawgo --help` for full usage.
+
+## Updating
+
+```bash
+npm update -g clawclawgo
+```
+
+Or with npx:
+
+```bash
+npx clawclawgo@latest --version
+```
+
+## Uninstall
+
+```bash
+npm uninstall -g clawclawgo
+```
+
+## Next Steps
+
+- [Quickstart](/docs/guide/quickstart) — Pack your first build
+- [Packing](/docs/guide/packing) — Learn the pack command
+- [Publishing](/docs/guide/publishing) — Share on the registry

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { IconEye, IconDownload, IconHash, IconBrandGithub, IconCopy, IconExternalLink, IconShield, IconAlertTriangle } from '@tabler/icons-react'
+import { IconEye, IconDownload, IconHash, IconBrandGithub, IconCopy, IconExternalLink, IconShield, IconAlertTriangle, IconFolder } from '@tabler/icons-react'
 import { formatDate } from '../lib/utils'
 import { getAgentsByIds } from '../agents'
 import CopyButton from './CopyButton'
@@ -19,7 +19,7 @@ export default function BuildDetail({ build, onClose, onExport }: BuildDetailPro
   const agents = getAgentsByIds(build.compatibility)
 
   const cliCommand = build.repoUrl 
-    ? `npx clawclawgo export ${build.repoUrl}`
+    ? `npx clawclawgo add ${build.repoUrl}`
     : `# No repo URL available`
 
   const buildJson = JSON.stringify({
@@ -125,32 +125,56 @@ export default function BuildDetail({ build, onClose, onExport }: BuildDetailPro
         <div className="p-6 md:p-8 border-b border-rc-border">
           <p className="text-rc-text-muted text-xs font-mono mb-3">Skills ({build.skills.length}):</p>
           <div className="space-y-2">
-            {build.skills.map((skill, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.03 }}
-                className="flex items-start gap-3 p-3 bg-white/5 rounded-xl border border-rc-border hover:border-rc-cyan/30 transition-colors"
-              >
-                <div className="w-2 h-2 rounded-full bg-rc-cyan mt-1.5 shrink-0" />
-                <div className="flex-1">
-                  <p className="font-grotesk font-semibold text-sm text-rc-text">{skill.name}</p>
-                  <p className="text-xs text-rc-text-dim mt-0.5">{skill.description}</p>
-                  {skill.compatibility && (
-                    <p className="text-[10px] text-rc-text-muted font-mono mt-1">
-                      Compatibility: {skill.compatibility}
-                    </p>
-                  )}
-                </div>
-              </motion.div>
-            ))}
+            {build.skills.map((skill, i) => {
+              const skillUrl = skill.path && build.repoUrl
+                ? `${build.repoUrl}/tree/main/${skill.path}`
+                : null
+
+              return (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.03 }}
+                  className="flex items-start gap-3 p-3 bg-white/5 rounded-xl border border-rc-border hover:border-rc-cyan/30 transition-colors"
+                >
+                  <div className="w-2 h-2 rounded-full bg-rc-cyan mt-1.5 shrink-0" />
+                  <div className="flex-1">
+                    {skillUrl ? (
+                      <a
+                        href={skillUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-grotesk font-semibold text-sm text-rc-cyan hover:underline inline-flex items-center gap-1.5"
+                      >
+                        {skill.name}
+                        <IconExternalLink size={12} className="opacity-50" />
+                      </a>
+                    ) : (
+                      <p className="font-grotesk font-semibold text-sm text-rc-text">{skill.name}</p>
+                    )}
+                    <p className="text-xs text-rc-text-dim mt-0.5">{skill.description}</p>
+                    {skill.path && (
+                      <p className="text-[10px] text-rc-text-muted font-mono mt-1 flex items-center gap-1">
+                        <IconFolder size={10} />
+                        {skill.path}
+                      </p>
+                    )}
+                    {skill.compatibility && (
+                      <p className="text-[10px] text-rc-text-muted font-mono mt-1">
+                        Compatibility: {skill.compatibility}
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              )
+            })}
           </div>
         </div>
 
         {/* Export section */}
         <div className="p-6 md:p-8 border-b border-rc-border bg-rc-bg/50">
-          <h3 className="text-lg font-grotesk font-bold text-rc-text mb-2">Export This Build</h3>
+          <h3 className="text-lg font-grotesk font-bold text-rc-text mb-2">Get This Build</h3>
           <p className="text-xs text-rc-text-dim mb-4">
             Give this file to your AI agent — it'll know what to do.
           </p>
