@@ -1,7 +1,8 @@
-import { useMemo } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import { marked } from 'marked'
 import { IconBrandGithub, IconExternalLink, IconArrowLeft, IconTerminal2, IconShield, IconAlertTriangle, IconStar } from '@tabler/icons-react'
 import { formatDate } from '../lib/utils'
+import { fetchRepoMeta } from '../lib/github'
 import CopyButton from './CopyButton'
 import type { Kit } from '../types'
 
@@ -11,7 +12,29 @@ const TRUST_BADGES = {
   unreviewed: { label: 'UNREVIEWED', color: 'bg-amber-400/15 border-amber-400/30 text-amber-400', icon: IconAlertTriangle },
 }
 
-export default function KitPage({ kit, readme }: { kit: Kit; readme: string }) {
+export default function KitPage({ kit: initialKit, readme }: { kit: Kit; readme: string }) {
+  const [kit, setKit] = useState<Kit>(initialKit)
+
+  // Hydrate with live GitHub metadata
+  useEffect(() => {
+    if (!initialKit.repoUrl) return
+    fetchRepoMeta(initialKit.repoUrl).then(m => {
+      if (!m) return
+      setKit(prev => ({
+        ...prev,
+        name: m.name,
+        description: m.description,
+        owner: m.owner,
+        creator: `@${m.owner}`,
+        stars: m.stars,
+        forks: m.forks,
+        createdAt: m.createdAt,
+        lastUpdated: m.pushedAt,
+        defaultBranch: m.defaultBranch,
+      }))
+    })
+  }, [initialKit.repoUrl])
+
   const trustBadge = TRUST_BADGES[kit.trustTier]
   const TrustIcon = trustBadge.icon
 

@@ -1,31 +1,57 @@
-import { useState, useMemo } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { IconSearch, IconX } from '@tabler/icons-react'
 import Nav from './components/Nav'
 import Footer from './components/Footer'
 import FeedItem from './components/FeedItem'
+import LoadingSprite from './components/LoadingSprite'
+import { fetchAllRepoMeta } from './lib/github'
 import type { Kit } from './types'
 
 interface SearchProps {
   kits: Kit[]
 }
 
-export default function Search({ kits }: SearchProps) {
+export default function Search({ kits: initialKits }: SearchProps) {
   const initialQuery = typeof window !== 'undefined' 
     ? new URLSearchParams(window.location.search).get('q') || ''
     : ''
   
+  const [kits, setKits] = useState<Kit[]>(initialKits)
+  const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState<string>(initialQuery)
-  const [sourceFilter, setSourceFilter] = useState<string | null>(null)
   const [compatFilter, setCompatFilter] = useState<string | null>(null)
 
+  // Hydrate with GitHub metadata on mount
+  useEffect(() => {
+    const urls = initialKits.map(k => k.repoUrl).filter(Boolean) as string[]
+    fetchAllRepoMeta(urls).then(meta => {
+      setKits(initialKits.map(kit => {
+        const m = kit.repoUrl ? meta[kit.repoUrl] : null
+        if (!m) return kit
+        return {
+          ...kit,
+          name: m.name,
+          description: m.description,
+          owner: m.owner,
+          creator: `@${m.owner}`,
+          stars: m.stars,
+          forks: m.forks,
+          createdAt: m.createdAt,
+          lastUpdated: m.pushedAt,
+          defaultBranch: m.defaultBranch,
+        }
+      }))
+      setLoading(false)
+    })
+  }, [initialKits])
+
   const filteredKits = useMemo(() => {
-    if (!searchQuery.trim() && !sourceFilter && !compatFilter) return []
+    if (!searchQuery.trim() && !compatFilter) return []
     const q = searchQuery.toLowerCase().trim()
     const terms = q.split(/\s+/)
     
     return kits
       .filter(kit => {
-        if (sourceFilter && kit.source !== sourceFilter) return false
         if (compatFilter && !kit.compatibility.includes(compatFilter)) return false
         if (!q) return true
         
@@ -39,7 +65,7 @@ export default function Search({ kits }: SearchProps) {
         return terms.every(term => searchable.includes(term))
       })
       .sort((a, b) => (b.stars || 0) - (a.stars || 0))
-  }, [kits, searchQuery, sourceFilter, compatFilter])
+  }, [kits, searchQuery, compatFilter])
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value)
@@ -83,7 +109,7 @@ export default function Search({ kits }: SearchProps) {
             )}
           </div>
 
-          {/* Filters */}
+          {/* Agent filter */}
           <div className="flex gap-2 mt-3 flex-wrap">
             <span className="text-[10px] font-mono text-rc-text-muted py-1.5 uppercase tracking-wider">Agent:</span>
             {['claude-code', 'cursor', 'github-copilot', 'gemini-cli', 'windsurf'].map(agent => (
@@ -102,43 +128,51 @@ export default function Search({ kits }: SearchProps) {
           </div>
         </div>
 
-        {!searchQuery.trim() && !sourceFilter && !compatFilter && (
-          <div className="text-center py-16 text-rc-text-muted text-sm font-mono">
-            Start typing to search by name, creator, or compatible agent.
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <LoadingSprite />
           </div>
-        )}
-
-        {(searchQuery.trim() || sourceFilter || compatFilter) && filteredKits.length === 0 && (
-          <div className="text-center py-16 text-rc-text-muted text-sm font-mono">
-            No kits found. Try adjusting your search or filters.
-          </div>
-        )}
-
-        {filteredKits.length > 0 && (
+        ) : (
           <>
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-rc-border text-rc-text-muted text-[10px] font-mono uppercase tracking-wider">
-                  <th className="py-2 px-3 text-right w-10">#</th>
-                  <th className="py-2 px-3 text-left">Kit</th>
-                  <th className="py-2 px-3 text-right">Stars</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredKits.map((kit, i) => (
-                  <FeedItem
-                    key={kit.id}
-                    kit={kit}
-                    index={i}
-                    rank={i + 1}
-                    onClick={() => { window.location.href = `/${kit.id}` }}
-                  />
-                ))}
-              </tbody>
-            </table>
-            <div className="mt-3 text-right text-rc-text-muted text-[10px] font-mono">
-              {filteredKits.length} {filteredKits.length === 1 ? 'kit' : 'kits'}
-            </div>
+            {!searchQuery.trim() && !compatFilter && (
+              <div className="text-center py-16 text-rc-text-muted text-sm font-mono">
+                Start typing to search by name, creator, or compatible agent.
+              </div>
+            )}
+
+            {(searchQuery.trim() || compatFilter) && filteredKits.length === 0 && (
+              <div className="text-center py-16 text-rc-text-muted text-sm font-mono">
+                No kits found. Try adjusting your search or filters.
+              </div>
+            )}
+
+            {filteredKits.length > 0 && (
+              <>
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-rc-border text-rc-text-muted text-[10px] font-mono uppercase tracking-wider">
+                      <th className="py-2 px-3 text-right w-10">#</th>
+                      <th className="py-2 px-3 text-left">Kit</th>
+                      <th className="py-2 px-3 text-right">Stars</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredKits.map((kit, i) => (
+                      <FeedItem
+                        key={kit.id}
+                        kit={kit}
+                        index={i}
+                        rank={i + 1}
+                        onClick={() => { window.location.href = `/${kit.id}` }}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+                <div className="mt-3 text-right text-rc-text-muted text-[10px] font-mono">
+                  {filteredKits.length} {filteredKits.length === 1 ? 'kit' : 'kits'}
+                </div>
+              </>
+            )}
           </>
         )}
       </main>

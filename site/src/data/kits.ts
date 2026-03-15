@@ -1,29 +1,29 @@
 import type { Kit } from '../types'
 import registryData from '../../../registry/kits.json'
 
-// Build-time: reads static registry data. No API calls.
-// A scheduled GitHub Action refreshes stars/description/etc periodically.
+// Build-time: passes through registry pointers as-is.
+// GitHub metadata (stars, description, etc.) is fetched client-side.
 export function getKits(): Kit[] {
   return (registryData.kits as any[]).map(entry => {
     const repoPath = entry.repoUrl?.replace('https://github.com/', '') || ''
-    const [owner] = repoPath.split('/')
+    const [owner, repo] = repoPath.split('/')
     return {
       id: entry.id,
-      name: entry.name || repoPath.split('/')[1] || repoPath,
-      description: entry.description || '',
+      name: repo || repoPath,
+      description: '',
       source: 'github' as const,
       repoUrl: entry.repoUrl,
-      owner: entry.owner || owner,
-      stars: entry.stars || 0,
-      forks: entry.forks || 0,
-      lastUpdated: entry.pushedAt || '',
-      creator: `@${entry.owner || owner}`,
-      createdAt: entry.createdAt || '',
+      owner,
+      stars: 0,
+      forks: 0,
+      lastUpdated: '',
+      creator: `@${owner}`,
+      createdAt: '',
       compatibility: entry.compatibility || [],
       trustTier: entry.trustTier || 'unreviewed',
       detectedFiles: entry.detectedFiles || [],
-      skillCount: entry.skillCount || 0,
-      defaultBranch: entry.defaultBranch || 'main',
+      skillCount: 0,
+      defaultBranch: 'main',
     }
   })
 }

@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import FeedItem from './components/FeedItem'
 import Nav from './components/Nav'
 import Footer from './components/Footer'
+import LoadingSprite from './components/LoadingSprite'
+import { fetchAllRepoMeta } from './lib/github'
 import type { Kit } from './types'
 
 interface ExploreProps {
@@ -10,9 +12,35 @@ interface ExploreProps {
 
 type SortMode = 'stars' | 'recent'
 
-export default function Explore({ kits }: ExploreProps) {
+export default function Explore({ kits: initialKits }: ExploreProps) {
+  const [kits, setKits] = useState<Kit[]>(initialKits)
+  const [loading, setLoading] = useState(true)
   const [sortMode, setSortMode] = useState<SortMode>('stars')
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Hydrate with GitHub metadata on mount
+  useEffect(() => {
+    const urls = initialKits.map(k => k.repoUrl).filter(Boolean) as string[]
+    fetchAllRepoMeta(urls).then(meta => {
+      setKits(initialKits.map(kit => {
+        const m = kit.repoUrl ? meta[kit.repoUrl] : null
+        if (!m) return kit
+        return {
+          ...kit,
+          name: m.name,
+          description: m.description,
+          owner: m.owner,
+          creator: `@${m.owner}`,
+          stars: m.stars,
+          forks: m.forks,
+          createdAt: m.createdAt,
+          lastUpdated: m.pushedAt,
+          defaultBranch: m.defaultBranch,
+        }
+      }))
+      setLoading(false)
+    })
+  }, [initialKits])
 
   const filtered = kits.filter(kit => {
     if (!searchQuery.trim()) return true
@@ -72,32 +100,39 @@ export default function Explore({ kits }: ExploreProps) {
           ))}
         </div>
 
-        {/* Table */}
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-rc-border text-rc-text-muted text-[10px] font-mono uppercase tracking-wider">
-              <th className="py-2 px-3 text-right w-10">#</th>
-              <th className="py-2 px-3 text-left">Kit</th>
-              <th className="py-2 px-3 text-right">Stars</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sorted.map((kit, i) => (
-              <FeedItem
-                key={kit.id}
-                kit={kit}
-                index={i}
-                rank={i + 1}
-                onClick={() => { window.location.href = `/${kit.id}` }}
-              />
-            ))}
-          </tbody>
-        </table>
-
-        {sorted.length === 0 && (
-          <div className="text-center py-12 text-rc-text-muted text-sm font-mono">
-            {searchQuery ? 'No kits match your search.' : 'No kits found.'}
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <LoadingSprite />
           </div>
+        ) : (
+          <>
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-rc-border text-rc-text-muted text-[10px] font-mono uppercase tracking-wider">
+                  <th className="py-2 px-3 text-right w-10">#</th>
+                  <th className="py-2 px-3 text-left">Kit</th>
+                  <th className="py-2 px-3 text-right">Stars</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sorted.map((kit, i) => (
+                  <FeedItem
+                    key={kit.id}
+                    kit={kit}
+                    index={i}
+                    rank={i + 1}
+                    onClick={() => { window.location.href = `/${kit.id}` }}
+                  />
+                ))}
+              </tbody>
+            </table>
+
+            {sorted.length === 0 && (
+              <div className="text-center py-12 text-rc-text-muted text-sm font-mono">
+                {searchQuery ? 'No kits match your search.' : 'No kits found.'}
+              </div>
+            )}
+          </>
         )}
       </main>
 
