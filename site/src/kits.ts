@@ -5,7 +5,7 @@ import type { Kit } from './types'
 
 export const kits: Kit[] = [
   {
-    id: 'anthropics-skills',
+    id: '092d35eb-eb8b-4ce2-a57b-6788657263f3',
     name: 'Anthropic Skills',
     description: 'Official skill collection from Anthropic: document processing, frontend design, web app testing, MCP builder, and more. The reference implementation for Agent Skills.',
     source: 'github',
@@ -34,7 +34,7 @@ export const kits: Kit[] = [
     ],
   },
   {
-    id: 'awesome-cursorrules',
+    id: '984c0770-c52b-4d3a-b6b5-4057f22abe00',
     name: 'Awesome CursorRules',
     description: '179 curated .cursorrules for popular frameworks: React, Next.js, Vue, Svelte, FastAPI, Django, and more. The definitive collection of Cursor AI configurations.',
     source: 'github',
@@ -61,7 +61,7 @@ export const kits: Kit[] = [
     ],
   },
   {
-    id: 'garrytan-gstack',
+    id: '06465063-6a42-410f-9240-ee3ebce78bc9',
     name: 'gstack',
     description: 'Garry Tan\'s Claude Code stack: CEO review, engineering review, code review, browser QA, shipping, and retro. Battle-tested by YC founders.',
     source: 'github',
@@ -88,7 +88,7 @@ export const kits: Kit[] = [
     ],
   },
   {
-    id: 'github-awesome-copilot',
+    id: '984d745e-07a7-45cf-979f-43563b605061',
     name: 'Awesome Copilot',
     description: 'GitHub\'s official community collection: 100+ skills, hooks, agents, and configurations for GitHub Copilot. Instructions, workflows, and plugins.',
     source: 'github',
@@ -113,7 +113,7 @@ export const kits: Kit[] = [
     ],
   },
   {
-    id: 'vercel-agent-skills',
+    id: 'd376e7d0-5191-4fe9-8802-340721587088',
     name: 'Vercel Agent Skills',
     description: 'Vercel\'s official agent skills: React best practices, web design guidelines, composition patterns, and deploy-to-Vercel automation.',
     source: 'github',
@@ -137,7 +137,7 @@ export const kits: Kit[] = [
     ],
   },
   {
-    id: 'microsoft-copilot-azure',
+    id: 'bc31b9a3-0d7e-43c6-a43e-d563fb629768',
     name: 'GitHub Copilot for Azure',
     description: 'Microsoft\'s official Azure Copilot skills: cloud deployment, cost optimization, diagnostics, compliance, AI gateway, and 20+ more.',
     source: 'github',
@@ -163,7 +163,7 @@ export const kits: Kit[] = [
     ],
   },
   {
-    id: 'planning-with-files',
+    id: 'b5ab332f-8c0f-443c-9680-f25c17638674',
     name: 'Planning with Files',
     description: 'Manus-style persistent markdown planning for Claude Code. The workflow pattern behind the $2B acquisition — structured thinking with file-based plans.',
     source: 'github',
@@ -183,7 +183,7 @@ export const kits: Kit[] = [
     ],
   },
   {
-    id: 'claude-scientific-skills',
+    id: 'c1330bf7-19dd-4830-a6de-9ed3d27b7aba',
     name: 'Claude Scientific Skills',
     description: '200+ skills for research, science, engineering, and finance. Covers bioinformatics, chemistry, data analysis, quantum computing, and scientific writing.',
     source: 'github',

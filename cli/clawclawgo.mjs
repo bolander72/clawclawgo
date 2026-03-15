@@ -10,6 +10,7 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import crypto from 'crypto';
 import { execSync } from 'child_process';
 
 // ── Constants ──
@@ -72,6 +73,7 @@ const SKIP_DIRS = new Set(['.git', 'node_modules', '.next', 'dist', 'build', '.c
 
 /**
  * @typedef {Object} Kit
+ * @property {string} id            - UUIDv4, assigned on first push
  * @property {number} schema        - Must be KIT_SCHEMA_VERSION
  * @property {string} name
  * @property {string} description
@@ -89,6 +91,8 @@ const SKIP_DIRS = new Set(['.git', 'node_modules', '.next', 'dist', 'build', '.c
 function validateKit(kit) {
   const errors = [];
 
+  if (typeof kit.id !== 'string' || !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(kit.id))
+    errors.push('id must be a valid UUIDv4');
   if (kit.schema !== KIT_SCHEMA_VERSION)
     errors.push(`schema must be ${KIT_SCHEMA_VERSION}, got ${kit.schema}`);
   if (typeof kit.name !== 'string' || !kit.name.trim())
@@ -318,6 +322,7 @@ function buildKit(dir, repoUrl, owner) {
 
   /** @type {Kit} */
   const kit = {
+    id: null, // assigned during push
     schema: KIT_SCHEMA_VERSION,
     name: dirName,
     description: `Agent skills from ${dirName}`,
@@ -370,16 +375,8 @@ async function push(dir = '.') {
 
   console.log(`\n📤 Pushing: ${repoUrl}\n`);
 
-  // Build kit internally
+  // Build kit internally (id is null until registry lookup)
   const kit = buildKit(dir, repoUrl, owner);
-
-  // Validate against schema
-  const errors = validateKit(kit);
-  if (errors.length) {
-    console.error('❌ Kit validation failed:\n');
-    for (const e of errors) console.error(`   • ${e}`);
-    process.exit(1);
-  }
 
   console.log(`   Skills: ${kit.skills.length}`);
   console.log(`   Configs: ${kit.configs.length}`);
@@ -409,13 +406,24 @@ async function push(dir = '.') {
   try { registry = JSON.parse(registryContent); } catch { registry = { kits: [] }; }
   if (!registry.kits) registry.kits = [];
 
-  // Check duplicate — update if exists, otherwise add
+  // Check duplicate by repoUrl — preserve id on update, generate on new
   const existingIdx = registry.kits.findIndex(k => k.repoUrl === kit.repoUrl);
   if (existingIdx >= 0) {
-    console.log(`\n🔄 Updating existing entry for ${kit.repoUrl}`);
+    kit.id = registry.kits[existingIdx].id; // preserve original id
+    console.log(`\n🔄 Updating existing entry ${kit.id}`);
     registry.kits[existingIdx] = kit;
   } else {
+    kit.id = crypto.randomUUID();
+    console.log(`\n🆕 New kit ${kit.id}`);
     registry.kits.push(kit);
+  }
+
+  // Validate now that id is assigned
+  const errors = validateKit(kit);
+  if (errors.length) {
+    console.error('❌ Kit validation failed:\n');
+    for (const e of errors) console.error(`   • ${e}`);
+    process.exit(1);
   }
 
   // Validate every kit in the registry before pushing

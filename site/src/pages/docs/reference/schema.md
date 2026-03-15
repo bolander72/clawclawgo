@@ -15,6 +15,7 @@ Current version: `1`
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
+| `id` | string | yes | UUIDv4 — assigned on first push, preserved on updates |
 | `schema` | number | yes | Schema version (must be `1`) |
 | `name` | string | yes | Kit name (usually repo directory name) |
 | `description` | string | yes | What this kit does |
@@ -79,6 +80,7 @@ Invalid kits are rejected before a PR is created.
 
 ```json
 {
+  "id": "06465063-6a42-410f-9240-ee3ebce78bc9",
   "schema": 1,
   "name": "gstack",
   "description": "Agent skills from gstack",
