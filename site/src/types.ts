@@ -21,6 +21,7 @@ export interface Kit {
   trustTier: 'verified' | 'community' | 'unreviewed'
   // Detection info
   detectedFiles?: string[]  // e.g. ['SKILL.md', 'CLAUDE.md', '.cursorrules']
+  defaultBranch?: string    // from GitHub API, used for README fetch
 }
 
 // ─── Component Props ───────────────────────────────────────

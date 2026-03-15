@@ -25,8 +25,9 @@ export default function KitPage({ kit, readme }: { kit: Kit; readme: string }) {
     if (!readme) return ''
     // Resolve relative image/link URLs to GitHub
     const repoPath = kit.repoUrl?.replace('https://github.com/', '') || ''
-    const rawBase = `https://raw.githubusercontent.com/${repoPath}/main/`
-    const repoBase = `https://github.com/${repoPath}/blob/main/`
+    const branch = kit.defaultBranch || 'main'
+    const rawBase = `https://raw.githubusercontent.com/${repoPath}/${branch}/`
+    const repoBase = `https://github.com/${repoPath}/blob/${branch}/`
 
     // Configure marked to resolve relative URLs
     const renderer = new marked.Renderer()
