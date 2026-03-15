@@ -81,7 +81,7 @@ export default function KitPage({ kit: initialKit, readme }: { kit: Kit; readme:
       <header className="border-b border-rc-border bg-rc-bg/90 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
           <a
-            href="/explore"
+            href="/"
             className="flex items-center gap-2 text-rc-text-dim hover:text-rc-cyan transition-colors text-sm font-grotesk"
           >
             <IconArrowLeft size={16} />

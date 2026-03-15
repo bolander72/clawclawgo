@@ -17,7 +17,7 @@ npx clawclawgo
 
 ## 1. Add a Kit
 
-Find a kit on [clawclawgo.com](https://clawclawgo.com/explore) or grab one directly:
+Find a kit on [clawclawgo.com](https://clawclawgo.com) or grab one directly:
 
 ```bash
 npx clawclawgo add garrytan/gstack
@@ -62,6 +62,6 @@ npx clawclawgo add <owner/repo> [--dest dir]   # Add a kit from GitHub
 
 ## Next Steps
 
-- **[Explore kits](https://clawclawgo.com/explore)** on the web app
+- **[Explore kits](https://clawclawgo.com)** on the web app
 - **[Create your own skills](/docs/kits/creating)** and push them
 - **[Learn about security](/docs/guide/security)** and trust scores

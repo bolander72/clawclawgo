@@ -19,7 +19,7 @@ Click a kit to see the full detail page — skills with links to source code, ag
 
 ### Explore
 
-The [Explore](https://clawclawgo.com/explore) page shows kits from all sources (GitHub, ClawHub, skills.sh, registry).
+The [Explore](https://clawclawgo.com) page shows kits from all sources (GitHub, ClawHub, skills.sh, registry).
 
 ### Filter by Agent
 

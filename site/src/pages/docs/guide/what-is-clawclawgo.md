@@ -60,4 +60,4 @@ ClawClawGo started in the OpenClaw ecosystem but is a cross-platform search engi
 
 - [Get started](/docs/guide/quickstart)
 - [Learn about security](/docs/guide/security)
-- [Explore kits](https://clawclawgo.com/explore)
+- [Explore kits](https://clawclawgo.com)

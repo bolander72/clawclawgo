@@ -1,27 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
-import HomeHero from '../components/HomeHero'
-import Footer from '../components/Footer'
-import { IconLivePhoto } from '@tabler/icons-react'
+import Explore from '../Explore'
+import { getKits } from '../data/kits'
+
+const kits = getKits()
 ---
 
 <BaseLayout>
-  <div class="min-h-screen bg-rc-bg flex flex-col overflow-x-hidden">
-    {/* Minimal nav for home — commented out, will reuse later
-    <header class="px-4 py-5">
-      <div class="max-w-4xl mx-auto flex items-center justify-center">
-        <nav class="flex items-center gap-5 text-sm">
-          <a href="/explore" class="text-rc-text-dim hover:text-rc-cyan transition-colors flex items-center gap-1">
-            <IconLivePhoto size={14} /> Explore
-          </a>
-          <a href="/docs/" class="text-rc-text-dim hover:text-rc-cyan transition-colors">Docs</a>
-        </nav>
-      </div>
-    </header>
-    */}
-
-    <HomeHero client:load />
-    
-    <Footer client:load />
-  </div>
+  <Explore kits={kits} client:load />
 </BaseLayout>
