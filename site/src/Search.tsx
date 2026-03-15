@@ -41,9 +41,6 @@ export default function Search() {
         kit.name,
         kit.description || '',
         kit.creator,
-        ...kit.tags,
-        kit.name,
-        kit.description,
         ...(kit.compatibility || []),
       ].join(' ').toLowerCase()
       

@@ -10,7 +10,6 @@ export default function Explore() {
   const [kits, setKits] = useState<Kit[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [sortMode, setSortMode] = useState<'recent' | 'hot'>('recent')
-  const [tagFilter, setTagFilter] = useState<string | null>(null)
 
   useEffect(() => {
     setTimeout(() => {
@@ -20,7 +19,6 @@ export default function Explore() {
   }, [])
 
   const filteredAndSortedKits = kits
-    .filter(kit => !tagFilter || kit.tags.includes(tagFilter))
     .sort((a, b) => {
       if (sortMode === 'recent') {
         const aTime = typeof a.createdAt === 'number' ? a.createdAt : new Date(a.createdAt).getTime() / 1000
@@ -85,17 +83,7 @@ export default function Explore() {
             >
               Hot
             </button>
-            {tagFilter && (
-              <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-rc-magenta/15 border border-rc-magenta/30">
-                <span className="text-xs font-mono text-rc-magenta">#{tagFilter}</span>
-                <button
-                  onClick={() => setTagFilter(null)}
-                  className="text-rc-magenta hover:text-rc-magenta/70 transition-colors"
-                >
-                  ×
-                </button>
-              </div>
-            )}
+
           </div>
           <span className="text-rc-text-muted text-[10px] font-mono">
             Multi-source aggregator
@@ -130,7 +118,6 @@ export default function Explore() {
                   index={i}
                   isNew={false}
                   onClick={() => { window.location.href = `/${kit.id}` }}
-                  onTagClick={(tag) => setTagFilter(tag)}
                 />
               ))}
             </AnimatePresence>

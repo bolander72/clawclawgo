@@ -16,7 +16,6 @@ export interface Kit {
   // Universal
   creator: string
   createdAt: number | string
-  tags: string[]
   skillCount: number        // how many skills in this kit
   compatibility: string[]   // which agents this works with (agent IDs)
   trustTier: 'verified' | 'community' | 'unreviewed'
@@ -31,7 +30,6 @@ export interface FeedItemProps {
   index: number
   isNew: boolean
   onClick: () => void
-  onTagClick?: (tag: string) => void
 }
 
 export interface CopyButtonProps {

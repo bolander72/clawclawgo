@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { IconEye, IconHash, IconBrandGithub, IconExternalLink, IconShield, IconAlertTriangle, IconFolder, IconArrowLeft, IconTerminal2 } from '@tabler/icons-react'
+import { IconEye, IconBrandGithub, IconExternalLink, IconShield, IconAlertTriangle, IconFolder, IconArrowLeft, IconTerminal2 } from '@tabler/icons-react'
 import { formatDate } from '../lib/utils'
 import { getAgentsByIds } from '../agents'
 import CopyButton from './CopyButton'
@@ -30,7 +30,6 @@ export default function KitPage({ kit }: { kit: Kit }) {
     ...(kit.owner && { owner: kit.owner }),
     compatibility: kit.compatibility,
     trustTier: kit.trustTier,
-    tags: kit.tags,
     skillCount: kit.skillCount,
   }, null, 2)
 
@@ -82,19 +81,7 @@ export default function KitPage({ kit }: { kit: Kit }) {
             {' · '}
             <span className="font-mono">{formatDate(kit.createdAt)}</span>
           </p>
-          {kit.tags && kit.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 mt-4">
-              {kit.tags.map((tag, i) => (
-                <span
-                  key={i}
-                  className="px-2.5 py-1 bg-white/5 rounded-lg text-xs font-mono text-rc-text-dim flex items-center gap-1"
-                >
-                  <IconHash size={12} />
-                  {tag}
-                </span>
-              ))}
-            </div>
-          )}
+
         </div>
 
         {/* Get This Kit */}

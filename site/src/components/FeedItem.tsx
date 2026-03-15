@@ -18,7 +18,7 @@ const TRUST_BADGES = {
   unreviewed: { label: 'UNREVIEWED', color: 'bg-amber-400/15 border-amber-400/30 text-amber-400', icon: IconAlertTriangle },
 }
 
-export default function FeedItem({ kit, index, isNew, onClick, onTagClick }: FeedItemProps) {
+export default function FeedItem({ kit, index, isNew, onClick }: FeedItemProps) {
   const sourceBadge = SOURCE_BADGES[kit.source] || { icon: IconHash, color: 'bg-white/10 border-white/20 text-rc-text-dim' }
   const SourceIcon = sourceBadge.icon
   const trustBadge = TRUST_BADGES[kit.trustTier]
@@ -103,23 +103,7 @@ export default function FeedItem({ kit, index, isNew, onClick, onTagClick }: Fee
               </div>
             )}
 
-            {/* Tags */}
-            {kit.tags.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-2">
-                {kit.tags.slice(0, 4).map((tag, i) => (
-                  <button
-                    key={i}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onTagClick?.(tag)
-                    }}
-                    className="px-1.5 py-0.5 text-[9px] font-mono text-rc-text-muted hover:text-rc-cyan hover:bg-rc-cyan/10 rounded transition-colors flex items-center gap-0.5"
-                  >
-                    <IconHash size={9} />{tag}
-                  </button>
-                ))}
-              </div>
-            )}
+
           </div>
 
           {/* Right: creator + skill count + arrow */}
