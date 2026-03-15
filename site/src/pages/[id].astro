@@ -2,8 +2,6 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { getKits } from '../data/kits'
 
-const allKits = getKits()
-
 export function getStaticPaths() {
   const kits = getKits()
   return kits.map(kit => ({
@@ -13,10 +11,24 @@ export function getStaticPaths() {
 }
 
 const { kit } = Astro.props
+
+// Fetch README from GitHub at build time
+let readme = ''
+if (kit.repoUrl) {
+  const repoPath = kit.repoUrl.replace('https://github.com/', '')
+  try {
+    const res = await fetch(`https://api.github.com/repos/${repoPath}/readme`, {
+      headers: { 'Accept': 'application/vnd.github.raw', 'User-Agent': 'ClawClawGo' },
+    })
+    if (res.ok) {
+      readme = await res.text()
+    }
+  } catch {}
+}
 ---
 
 <BaseLayout title={`${kit.name} — ClawClawGo`} description={kit.description}>
-  <div id="kit-page-root" data-kit={JSON.stringify(kit)}></div>
+  <div id="kit-page-root" data-kit={JSON.stringify(kit)} data-readme={readme}></div>
   <script>
     import { createElement } from 'react'
     import { createRoot } from 'react-dom/client'
@@ -24,6 +36,7 @@ const { kit } = Astro.props
 
     const el = document.getElementById('kit-page-root')!
     const kit = JSON.parse(el.dataset.kit!)
-    createRoot(el).render(createElement(KitPage, { kit }))
+    const readme = el.dataset.readme || ''
+    createRoot(el).render(createElement(KitPage, { kit, readme }))
   </script>
 </BaseLayout>

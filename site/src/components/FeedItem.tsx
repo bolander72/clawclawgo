@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion'
-import { IconChevronRight, IconHash, IconShield, IconAlertTriangle, IconAlertCircle, IconStar, IconBrandGithub } from '@tabler/icons-react'
+import { IconChevronRight, IconHash, IconShield, IconAlertTriangle, IconStar, IconBrandGithub } from '@tabler/icons-react'
 import { formatDate } from '../lib/utils'
-import { getAgentsByIds } from '../agents'
 import type { FeedItemProps } from '../types'
 
 // Source badges — consistent color per source
@@ -22,7 +21,6 @@ export default function FeedItem({ kit, index, isNew, onClick }: FeedItemProps) 
   const sourceBadge = SOURCE_BADGES[kit.source] || { icon: IconHash, color: 'bg-white/10 border-white/20 text-rc-text-dim' }
   const SourceIcon = sourceBadge.icon
   const trustBadge = TRUST_BADGES[kit.trustTier]
-  const agents = getAgentsByIds(kit.compatibility.slice(0, 3))
 
   return (
     <motion.div
@@ -59,60 +57,28 @@ export default function FeedItem({ kit, index, isNew, onClick }: FeedItemProps) 
               {kit.source === 'github' && kit.stars && kit.stars > 0 && (
                 <div className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-rc-yellow/15 border border-rc-yellow/30">
                   <IconStar size={10} className="text-rc-yellow" />
-                  <span className="text-[9px] font-mono font-bold text-rc-yellow">{kit.stars}</span>
+                  <span className="text-[9px] font-mono font-bold text-rc-yellow">{kit.stars.toLocaleString()}</span>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Middle: name + description + skills + tags */}
+          {/* Middle: name + description */}
           <div className="flex-1 p-5">
-            <div className="flex items-start gap-2 mb-3">
-              <div className="flex-1">
-                <h3 className="font-grotesk font-bold text-rc-text text-base">
-                  {kit.name}
-                </h3>
-                {kit.description && (
-                  <p className="text-rc-text-dim text-xs mt-1 line-clamp-2">
-                    {kit.description}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Compatibility badges */}
-            {agents.length > 0 && (
-              <div className="flex flex-wrap gap-1 mb-2">
-                {agents.map((agent) => (
-                  <span
-                    key={agent.id}
-                    className={`px-1.5 py-0.5 rounded text-[9px] font-mono bg-rc-cyan/15 border border-rc-cyan/30 ${agent.color || 'text-rc-cyan'}`}
-                    title={`Compatible with ${agent.name}`}
-                  >
-                    {agent.name}
-                  </span>
-                ))}
-                {kit.compatibility.length > 3 && (
-                  <span
-                    className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-rc-cyan/15 border border-rc-cyan/30 text-rc-cyan"
-                    title={`+${kit.compatibility.length - 3} more agents`}
-                  >
-                    +{kit.compatibility.length - 3}
-                  </span>
-                )}
-              </div>
+            <h3 className="font-grotesk font-bold text-rc-text text-base">
+              {kit.name}
+            </h3>
+            {kit.description && (
+              <p className="text-rc-text-dim text-xs mt-1 line-clamp-2">
+                {kit.description}
+              </p>
             )}
-
-
           </div>
 
-          {/* Right: creator + skill count + arrow */}
+          {/* Right: creator + arrow */}
           <div className="md:w-36 shrink-0 p-5 flex items-center justify-between md:justify-end md:flex-col md:items-end gap-2">
             <span className="text-rc-cyan/70 text-xs font-mono">
               {kit.creator}
-            </span>
-            <span className="text-rc-text-muted text-xs font-mono">
-              {kit.skillCount} {kit.skillCount === 1 ? 'skill' : 'skills'}
             </span>
             <IconChevronRight size={16} className="text-rc-text-muted group-hover:text-rc-cyan transition-colors hidden md:block" />
           </div>
