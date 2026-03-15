@@ -217,7 +217,7 @@ function formatScanReport(report) {
 
 // ── Pack Command ──
 
-function packBuild(dir = '.') {
+function packKit(dir = '.') {
   const targetDir = path.resolve(dir);
   const dirName = path.basename(targetDir);
   const detectedFiles = [];
@@ -473,9 +473,9 @@ function previewBuild(source) {
 // ── Publish Command ──
 
 const REGISTRY_REPO = 'bolander72/clawclawgo';
-const REGISTRY_FILE = 'registry/builds.json';
+const REGISTRY_FILE = 'registry/kits.json';
 
-async function publishBuild(dir = '.') {
+async function publishKit(dir = '.') {
   const targetDir = path.resolve(dir);
 
   // Get git remote
@@ -504,7 +504,7 @@ async function publishBuild(dir = '.') {
   console.log(`\n📤 Publishing: ${gitUrl}\n`);
 
   // Pack + scan
-  const build = packBuild(dir);
+  const kit = packKit(dir);
   const scan = build.scan;
 
   console.log(`✅ Pack complete`);
@@ -666,7 +666,7 @@ try {
     case 'pack': {
       const dir = args.find((a, i) => i > 0 && !a.startsWith('-')) || '.';
       const outFile = getArg('--out');
-      const build = packBuild(dir);
+      const kit = packKit(dir);
       const json = JSON.stringify(build, null, 2);
       if (outFile) {
         fs.writeFileSync(outFile, json, 'utf8');
@@ -714,7 +714,7 @@ try {
 
     case 'publish': {
       const dir = args.find((a, i) => i > 0 && !a.startsWith('-')) || '.';
-      await publishBuild(dir);
+      await publishKit(dir);
       break;
     }
 

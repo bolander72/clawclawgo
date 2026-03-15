@@ -14,65 +14,42 @@ AI agents (Claude Code, Cursor, Windsurf, OpenClaw, Cline, etc.) can be extended
 - Kits are scattered across GitHub repos with no discoverability
 - No standard format (some use SKILL.md, some use .cursorrules, some use custom formats)
 - No way to search across all of them
-- No security scanning
-- Hard to share and discover
+- No security scanning before use
 
 ## The Solution
 
 ClawClawGo solves this by:
 
-1. **Aggregating** — Pulls kits from GitHub repos into one index
+1. **Aggregating** — Pulls kits from GitHub repos into one searchable index
 2. **Standardizing** — Supports the [Agent Skills](https://agentskills.io) open standard plus all major agent formats
 3. **Searching** — Full-text search across all indexed kits
 4. **Scanning** — Built-in security analysis with trust scores
-5. **Packaging** — Bundle skills + configs into portable kits
+5. **Adding** — Clone kit repos with one command: `npx clawclawgo add owner/repo`
 
 ## What's a Kit?
 
-A kit is a collection of skills and agent configs packaged together. Think of it as a recipe:
+A kit is a GitHub repo containing a collection of skills and agent configs. Examples:
 
-```json
-{
-  "name": "Voice Assistant Kit",
-  "description": "Skills for voice-controlled agents",
-  "skills": [
-    { "path": "skills/voice-commands/SKILL.md" },
-    { "path": "skills/tts/SKILL.md" }
-  ],
-  "configs": [
-    { "path": ".cursorrules", "agent": "cursor" },
-    { "path": "CLAUDE.md", "agent": "claude-code" }
-  ],
-  "scan": {
-    "score": 95,
-    "findings": []
-  }
-}
-```
-
-Kits can be:
-- Shared via GitHub repos
-- Published to the ClawClawGo registry
-- Downloaded with the CLI
-- Scanned for security before use
+- [garrytan/gstack](https://github.com/garrytan/gstack) — 8 Claude Code skills for CEO/eng review, shipping, QA
+- [anthropics/skills](https://github.com/anthropics/skills) — Anthropic's official skill collection
+- [PatrickJS/awesome-cursorrules](https://github.com/PatrickJS/awesome-cursorrules) — Community Cursor rules
 
 ## How It Works
 
 **For kit creators:**
 1. Organize your skills and configs in a directory
-2. Run `clawclawgo pack` to generate kit.json
-3. Push to GitHub
-4. Submit to the registry
+2. Push to GitHub
+3. Run `npx clawclawgo publish` to submit to the registry
 
 **For kit users:**
 1. Search on [clawclawgo.com](https://clawclawgo.com)
-2. Download with `clawclawgo add`
-3. Review scan results
-4. Use in your agent
+2. Click through to the kit detail page
+3. Clone with `npx clawclawgo add owner/repo` or `git clone`
+4. Point your agent at the downloaded skills
 
 ## Agent Skills Standard
 
-ClawClawGo follows the [Agent Skills](https://agentskills.io) open standard. A skill is a directory with a `SKILL.md` file containing:
+ClawClawGo follows the [Agent Skills](https://agentskills.io) open standard. A skill is a directory with a `SKILL.md` file:
 
 ```markdown
 ---
@@ -87,43 +64,15 @@ tools: [read, write, exec]
 When the user asks to do X, follow these steps...
 ```
 
-The YAML frontmatter describes:
-- What the skill does
-- Which agents it works with
-- What tools/permissions it needs
-
-The markdown body contains the actual instructions.
-
-## Supported Agents
-
-ClawClawGo works with 30+ AI agents:
-
-- **Claude Code** — CLAUDE.md
-- **Cursor** — .cursorrules
-- **Windsurf** — .windsurfrules
-- **OpenClaw** — openclaw.json, SKILL.md
-- **Codex** — codex.json
-- **Cline** — .clinerules
-- **Aider** — .aider.conf.yml
-- **Continue** — .continue/config.json
-- **GitHub Copilot** — .github/copilot-instructions.md
-- And more — see [AGENT-COMPATIBILITY.md](https://github.com/bolander72/clawclawgo/blob/main/AGENT-COMPATIBILITY.md)
+30+ agents support this format. See [AGENT-COMPATIBILITY.md](https://github.com/bolander72/clawclawgo/blob/main/AGENT-COMPATIBILITY.md) for the full list.
 
 ## Security
 
-Every kit includes security scan results:
-
-- Trust score (0-100)
-- List of findings (prompt injection, shell exfiltration, credential access, etc.)
-- Timestamp of scan
-
-The `add` command checks the score before downloading. Low-scoring kits are blocked by default.
+When you run `npx clawclawgo add`, the CLI clones the repo and scans all files for prompt injection, shell exfiltration, credential access, PII, and dangerous commands. Blocking issues prevent the clone from being kept (unless `--force`).
 
 ## Not OpenClaw-Specific
 
-ClawClawGo started in the OpenClaw ecosystem but is **not OpenClaw-specific**. It's a cross-platform search engine for any AI agent.
-
-OpenClaw is just one of 30+ supported agents.
+ClawClawGo started in the OpenClaw ecosystem but is a cross-platform search engine for any AI agent. OpenClaw is just one of 30+ supported agents.
 
 ## Open Source
 

@@ -5,8 +5,6 @@ title: Installation
 
 # Installation
 
-ClawClawGo has two parts: the CLI and the web app.
-
 ## CLI
 
 Use without installing:
@@ -31,24 +29,24 @@ No installation needed. Visit [clawclawgo.com](https://clawclawgo.com) to search
 ## Requirements
 
 - **Node.js** 18+ (for CLI)
-- **Git** (for publishing kits)
+- **Git** (for `add` command — clones repos)
 - **GitHub CLI** (`gh`) — optional, for auto-publishing PRs
 
 ## CLI Commands
 
 ```bash
-npx clawclawgo pack       # Pack a directory into kit.json
-npx clawclawgo add        # Download a kit
-npx clawclawgo scan       # Security scan a kit
-npx clawclawgo preview    # Preview kit details
-npx clawclawgo publish    # Submit to the registry
-npx clawclawgo search     # Search for kits
+npx clawclawgo add <repo>     # Clone a kit repo and scan it
+npx clawclawgo pack           # Pack a directory into kit.json
+npx clawclawgo scan           # Security scan a kit file
+npx clawclawgo preview        # Preview kit details
+npx clawclawgo publish        # Submit to the registry
+npx clawclawgo search         # Search for kits
 ```
 
 Run `npx clawclawgo --help` for full usage.
 
 ## Next Steps
 
-- [Quickstart](/docs/guide/quickstart) — Pack your first kit
+- [Quickstart](/docs/guide/quickstart) — Add your first kit
 - [Packing](/docs/guide/packing) — Learn the pack command
 - [Publishing](/docs/guide/publishing) — Share on the registry

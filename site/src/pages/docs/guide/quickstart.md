@@ -5,7 +5,7 @@ title: Quickstart
 
 # Quickstart
 
-Get started with ClawClawGo in 3 steps: pack, publish, add.
+Get started with ClawClawGo in 3 steps.
 
 ## Run
 
@@ -15,16 +15,17 @@ No install required — use `npx`:
 npx clawclawgo --help
 ```
 
-Or clone and run from source:
+## 1. Add a Kit
+
+Find a kit on [clawclawgo.com](https://clawclawgo.com/explore) or grab one directly:
 
 ```bash
-git clone https://github.com/bolander72/clawclawgo
-cd clawclawgo
-chmod +x cli/clawclawgo.mjs
-./cli/clawclawgo.mjs --help
+npx clawclawgo add garrytan/gstack
 ```
 
-## 1. Pack a Kit
+This clones the repo, finds all SKILL.md files, and runs a security scan. The skills are now on your machine — point your agent at the directory.
+
+## 2. Pack Your Own Kit
 
 Create a directory with your agent skills and configs:
 
@@ -47,11 +48,11 @@ cd my-agent-skills
 npx clawclawgo pack --out kit.json
 ```
 
-This creates `kit.json` with your skills, configs, and security scan baked in.
+This generates `kit.json` with your skills, detected configs, and security scan baked in.
 
-## 2. Publish (Optional)
+## 3. Publish (Optional)
 
-To share your kit on clawclawgo.com:
+To share your kit on [clawclawgo.com](https://clawclawgo.com):
 
 ```bash
 # Push to GitHub first
@@ -63,32 +64,16 @@ git push -u origin main
 npx clawclawgo publish
 ```
 
-## 3. Add a Kit
-
-Download someone else's kit:
-
-```bash
-npx clawclawgo add https://example.com/kit.json
-```
-
-Give the downloaded file to your AI agent — it'll know what to do.
-
-## What's in a Kit?
-
-A kit is a collection of:
-- **Skills** — SKILL.md files following the [Agent Skills](https://agentskills.io) standard
-- **Agent configs** — `.cursorrules`, `CLAUDE.md`, `AGENTS.md`, etc.
-- **Scan results** — Trust score and security findings
-
 ## Common Commands
 
 ```bash
-npx clawclawgo pack                              # Pack current directory
-npx clawclawgo pack ~/my-skills --out kit.json  # Pack with output file
-npx clawclawgo scan kit.json                    # Security scan
-npx clawclawgo preview kit.json                 # Preview contents
-npx clawclawgo add https://example.com/kit.json # Download a kit
-npx clawclawgo publish                            # Submit to registry
+npx clawclawgo add anthropics/skills              # Clone a kit repo
+npx clawclawgo add garrytan/gstack --dest ~/kits   # Clone to specific directory
+npx clawclawgo pack .                              # Pack current directory
+npx clawclawgo pack ~/my-skills --out kit.json     # Pack with output file
+npx clawclawgo scan kit.json                       # Security scan
+npx clawclawgo preview kit.json                    # Preview contents
+npx clawclawgo publish                             # Submit to registry
 npx clawclawgo search "voice assistant"            # Search on web
 ```
 

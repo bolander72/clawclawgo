@@ -9,14 +9,15 @@ title: Sharing
 
 The primary way to share kits. Your skills and configs live in a GitHub repo — that's the kit.
 
-```
-You → Pack → Push to GitHub → Others find it on ClawClawGo
-```
-
 1. Organize your skills in a directory with `SKILL.md` files
-2. Run `clawclawgo pack` to verify everything looks right
-3. Push to GitHub
-4. Run `clawclawgo publish` to submit a registry entry
+2. Push to GitHub
+3. Run `npx clawclawgo publish` to submit a registry entry
+
+Others find your kit on [clawclawgo.com](https://clawclawgo.com) and add it with:
+
+```bash
+npx clawclawgo add yourname/your-repo
+```
 
 See the [Publishing guide](/docs/guide/publishing) for full details.
 
@@ -28,34 +29,18 @@ The ClawClawGo registry at `registry/kits.json` is a lightweight URL index. Subm
 npx clawclawgo publish
 ```
 
-This generates a registry entry and tells you how to submit a PR.
-
-## Share as a File
-
-Builds are JSON files. Share them however you want:
-
-- Send the `.json` file directly
-- Host on a URL
-- Commit to a Git repo
-- Paste in Discord/Slack
-
-The recipient can download with `clawclawgo add` or just give the file to their AI agent.
+This runs `pack` + `scan` on your repo, then auto-creates a PR to add your entry to the registry (requires `gh` CLI).
 
 ## What Gets Shared
 
-Everything in the kit is designed to be safe to share.
+Your GitHub repo is the kit. When someone runs `clawclawgo add`, they get a clone of your repo with:
 
-**What's included:**
-- Skill names, descriptions, and paths
+- Skill directories with `SKILL.md` files
 - Agent config files (`.cursorrules`, `CLAUDE.md`, etc.)
-- Compatibility info (which agents this works with)
-- Security scan results (trust score + findings)
+- Any scripts, assets, or docs in the repo
 
-**What's excluded by the scanner:**
-- API keys, tokens, passwords
-- Phone numbers, emails, addresses
-- Other PII patterns
+The CLI runs a security scan after cloning so the user sees a trust report before using anything.
 
 ## Licensing
 
-Builds on GitHub inherit your repo's license. If you include persona files (SOUL.md, etc.) with specific creative writing, consider that anyone can read and use them.
+Kits on GitHub inherit your repo's license. If you include persona files (SOUL.md, etc.) with specific creative writing, consider that anyone can read and use them.

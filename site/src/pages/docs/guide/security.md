@@ -5,11 +5,11 @@ title: Security
 
 # Security
 
-ClawClawGo bakes security scanning into every kit. The `scan` command checks for common threats in agent skills and configs.
+ClawClawGo scans every kit for common threats. The `scan` command and the `add` command both run the same security checks.
 
 ## What Gets Scanned
 
-The scanner looks for:
+The scanner checks for:
 
 - **Prompt injection** — Instructions that override system prompts
 - **Shell exfiltration** — Commands that send data externally
@@ -20,25 +20,39 @@ The scanner looks for:
 
 ## Trust Score
 
-Every kit gets a score from 0-100:
+Every scan produces a score from 0-100:
 
 - **90-100** — Safe to use
 - **70-89** — Review findings, use with caution
 - **Below 70** — High risk, don't use without thorough review
 
-The score is baked into `kit.json` so you can see it before downloading.
+## How It Works
 
-## Running a Scan
+### When Adding a Kit
 
 ```bash
-# Scan a kit
-clawclawgo scan kit.json
-
-# Scan before packing
-clawclawgo pack --scan
+npx clawclawgo add garrytan/gstack
 ```
 
-Output:
+The `add` command clones the repo, scans all files, and reports findings. If blocking issues are found, it removes the clone and exits unless `--force` is passed.
+
+### Standalone Scan
+
+```bash
+npx clawclawgo scan kit.json
+```
+
+Scans a kit.json file and outputs the trust score and findings.
+
+### When Packing
+
+```bash
+npx clawclawgo pack --out kit.json
+```
+
+Security scan runs automatically and results are baked into the kit.json.
+
+## Scan Output
 
 ```
 Security Scan Results
@@ -47,56 +61,14 @@ Security Scan Results
 Trust Score: 95/100 ✓
 
 Findings:
-  [LOW] External network call in setup.sh
+  [WARN] External curl usage
     → curl https://example.com/install.sh
-    → Consider reviewing install script
 ```
-
-## How It Works
-
-When you run `pack`, the scan runs automatically and results are stored in the `kit.json`:
-
-```json
-{
-  "scan": {
-    "score": 95,
-    "findings": [
-      {
-        "severity": "low",
-        "type": "network",
-        "message": "External network call in setup.sh",
-        "file": "setup.sh",
-        "line": 12
-      }
-    ],
-    "timestamp": "2024-03-14T17:00:00Z"
-  }
-}
-```
-
-## Using Kits with Findings
-
-When you `add` a kit:
-
-```bash
-clawclawgo add https://example.com/kit.json
-```
-
-ClawClawGo checks the baked-in scan:
-
-- **Score 90+** — Proceeds
-- **Score 70-89** — Warns, asks for confirmation
-- **Score <70** — Blocks (use `--force` to override)
 
 ## Review Findings Yourself
 
 Don't trust scores blindly. Read the findings:
 
-```bash
-clawclawgo scan kit.json
-```
-
-Check:
 - What files are flagged?
 - Are the warnings legitimate or false positives?
 - Do you trust the kit author?
@@ -108,23 +80,20 @@ Some legitimate patterns trigger warnings:
 - **Git clone commands** — Flagged as network access
 - **Package installs** — Flagged as shell execution
 - **API calls** — Flagged as external connections
+- **Documentation mentioning dangerous commands** — Flagged even in context of explaining what NOT to do
 
-If the kit is from a trusted source and the findings make sense, it's safe to proceed.
+If the kit is from a trusted source and the findings make sense, it's safe to proceed with `--force`.
 
-## Best Practices
+## Trust Tiers (Web App)
 
-**Before publishing:**
-1. Run `clawclawgo scan kit.json`
-2. Fix any high-severity findings
-3. Document why low-severity findings are safe
+On [clawclawgo.com](https://clawclawgo.com), kits show trust tier badges:
 
-**Before using:**
-1. Check the trust score
-2. Review findings
-3. Inspect flagged files yourself
-4. Only use kits from sources you trust
+- **Verified** — Maintained by the ClawClawGo team or verified authors
+- **Community** — Scanned clean, has community traction (10+ stars)
+- **Unreviewed** — New or unverified
 
-**Red flags:**
+## Red Flags
+
 - Score below 70
 - Credential access attempts
 - Obfuscated commands (`eval $(base64 -d ...)`)
@@ -137,6 +106,6 @@ Found a malicious kit in the registry?
 
 1. Open an issue: [github.com/bolander72/clawclawgo/issues](https://github.com/bolander72/clawclawgo/issues)
 2. Tag it `security`
-3. Include the kit ID and findings
+3. Include the kit URL and findings
 
 We'll review and remove if confirmed.

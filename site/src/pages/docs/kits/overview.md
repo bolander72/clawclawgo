@@ -5,80 +5,7 @@ title: Kits Overview
 
 # Kits Overview
 
-A kit is a collection of skills and agent configs packaged together. Think of it as a portable skill pack for AI agents.
-
-## Structure
-
-A typical kit directory looks like:
-
-```
-my-kit/
-├── skills/
-│   ├── voice-assistant/
-│   │   ├── SKILL.md
-│   │   └── scripts/
-│   │       └── tts.sh
-│   └── home-automation/
-│       └── SKILL.md
-├── .cursorrules
-├── CLAUDE.md
-├── openclaw.json
-├── kit.json
-└── README.md
-```
-
-When you run `clawclawgo pack`, it scans this directory and generates `kit.json`:
-
-```json
-{
-  "name": "Voice & Home Automation",
-  "description": "Skills for voice control and smart home management",
-  "version": "1.0.0",
-  "author": "Your Name",
-  "skills": [
-    {
-      "path": "skills/voice-assistant/SKILL.md",
-      "name": "voice-assistant",
-      "description": "Voice command processing",
-      "compatibility": ["openclaw", "cursor", "windsurf"]
-    },
-    {
-      "path": "skills/home-automation/SKILL.md",
-      "name": "home-automation",
-      "description": "Smart home device control",
-      "compatibility": ["openclaw"]
-    }
-  ],
-  "configs": [
-    {
-      "path": ".cursorrules",
-      "agent": "cursor"
-    },
-    {
-      "path": "CLAUDE.md",
-      "agent": "claude-code"
-    },
-    {
-      "path": "openclaw.json",
-      "agent": "openclaw"
-    }
-  ],
-  "scan": {
-    "score": 95,
-    "findings": [
-      {
-        "severity": "low",
-        "type": "network",
-        "message": "External API call in tts.sh",
-        "file": "skills/voice-assistant/scripts/tts.sh",
-        "line": 12
-      }
-    ],
-    "timestamp": "2024-03-14T17:00:00Z"
-  },
-  "repository": "https://github.com/yourusername/my-kit"
-}
-```
+A kit is a GitHub repo containing a collection of agent skills and configs. Think of it as a portable skill pack for AI agents.
 
 ## What's in a Kit
 
@@ -102,46 +29,54 @@ When the user sends a voice message:
 3. Generate response with TTS
 ```
 
-Skills can include:
-- Scripts (bash, python, etc.)
-- Config files
-- Assets (audio files, images, etc.)
+Skills can include scripts, config files, and assets alongside the SKILL.md.
 
 ### Agent Configs
 
 Config files tell agents how to behave:
 
-- `.cursorrules` — Instructions for Cursor
-- `CLAUDE.md` — Instructions for Claude Code
-- `openclaw.json` — OpenClaw agent config
-- `.windsurfrules` — Windsurf instructions
-- And more
+| File | Agent |
+|------|-------|
+| `CLAUDE.md` | Claude Code |
+| `.cursorrules` | Cursor |
+| `.windsurfrules` | Windsurf |
+| `AGENTS.md` | OpenClaw, Codex |
+| `codex.json` | Codex |
+| `.clinerules` | Cline |
+| `.aider.conf.yml` | Aider |
+| `.continue/config.json` | Continue |
 
-These are agent-specific and vary in format.
+## Example Structure
 
-### Scan Results
-
-Every kit includes security scan results:
-
-- **Trust score** (0-100) — Overall safety rating
-- **Findings** — List of potential issues
-- **Timestamp** — When the scan was run
-
-The scan is baked into `kit.json` so users can see it before downloading.
+```
+my-kit/
+├── skills/
+│   ├── voice-assistant/
+│   │   ├── SKILL.md
+│   │   └── scripts/
+│   │       └── tts.sh
+│   └── home-automation/
+│       └── SKILL.md
+├── .cursorrules
+├── CLAUDE.md
+└── README.md
+```
 
 ## Kit Lifecycle
 
 1. **Create** — Organize skills and configs in a directory
-2. **Pack** — `clawclawgo pack` generates kit.json
-3. **Scan** — Security analysis runs automatically
-4. **Publish** — Push to GitHub, submit to registry
-5. **Share** — Others download with `clawclawgo add`
+2. **Pack** — `npx clawclawgo pack` generates kit.json (for metadata/scanning)
+3. **Push** — Push to GitHub
+4. **Publish** — `npx clawclawgo publish` adds to the registry
+5. **Share** — Others clone with `npx clawclawgo add owner/repo`
 
-## Kit Format
+## How Others Use Your Kit
 
-Kits are just directories with a `kit.json`. No special format required. The pack command handles the detection and metadata generation.
+```bash
+npx clawclawgo add yourname/your-repo
+```
 
-You can create kits manually or use the CLI. Either way, the result is a portable package that works across agents.
+This clones your repo (shallow, no git history), finds all SKILL.md files and agent configs, runs a security scan, and reports what it found. The user gets the actual skill files on disk — ready to use with their agent.
 
 ## Next Steps
 

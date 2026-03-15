@@ -7,7 +7,7 @@ title: Creating
 
 ## Directory Structure
 
-A kit is a directory with skills and agent configs:
+A kit is a GitHub repo with skills and agent configs:
 
 ```
 my-kit/
@@ -44,14 +44,6 @@ When the user sends a voice message:
 
 Skills can include scripts, config files, and assets alongside the SKILL.md.
 
-## Pack It
-
-```bash
-npx clawclawgo pack ~/my-kit --out kit.json
-```
-
-This scans the directory, detects all skills and agent configs, runs a security scan, and outputs `kit.json`.
-
 ## Add Agent Configs
 
 Include config files for the agents you support:
@@ -59,9 +51,18 @@ Include config files for the agents you support:
 - `CLAUDE.md` — Claude Code instructions
 - `.cursorrules` — Cursor rules
 - `.windsurfrules` — Windsurf rules
-- `AGENTS.md` — OpenClaw workspace config
+- `AGENTS.md` — OpenClaw/Codex workspace config
 
 The `pack` command auto-detects these and maps them to the right agents.
+
+## Pack and Verify
+
+```bash
+npx clawclawgo pack --out kit.json
+npx clawclawgo scan kit.json
+```
+
+This generates metadata and runs a security scan. Fix any blocking findings before publishing.
 
 ## Tips
 

@@ -1,6 +1,6 @@
 # ClawClawGo
 
-The agent kits search engine. Find, pack, and share skill collections for Claude Code, Cursor, OpenClaw, and 30+ AI agents.
+The agent kits search engine. Find, explore, and add skill collections for Claude Code, Cursor, OpenClaw, and 30+ AI agents.
 
 **[clawclawgo.com](https://clawclawgo.com)**
 
@@ -18,38 +18,38 @@ npx clawclawgo <command>
 
 | Command | What it does |
 |---------|-------------|
-| `pack [dir]` | Scan a directory, detect agent files, output a kit.json with scan results baked in |
-| `add <url\|file>` | Download a kit to your machine |
-| `scan <file>` | Security scan a kit (trust score + findings) |
+| `add <repo\|owner/repo>` | Clone a kit repo and scan it |
+| `pack [dir]` | Pack local skills into a kit.json |
+| `scan <file>` | Security scan a kit file (trust score + findings) |
 | `preview <file>` | Pretty-print a kit summary |
-| `publish [dir]` | Prepare your repo for the registry |
+| `publish [dir]` | Submit your repo to the registry |
 | `search <query>` | Search for kits on clawclawgo.com |
-
-### Pack
-
-Scans your directory for agent config files and SKILL.md files, detects which agents they're compatible with, and generates a `kit.json`. Security scan results are baked into the output so anyone reading the file can see the trust score.
-
-```bash
-clawclawgo pack ~/my-skills --out kit.json
-```
-
-Detected files: SKILL.md, CLAUDE.md, .cursorrules, .windsurfrules, AGENTS.md, openclaw.json, codex.json, .clinerules, .aider.conf.yml, .continue/config.json
 
 ### Add
 
-Download a kit to your machine. Checks the baked-in scan results and blocks anything flagged (unless `--force`).
+Clone a kit repo to your machine. Finds all SKILL.md files and agent configs, runs a security scan, and reports what it found.
 
 ```bash
-clawclawgo add https://example.com/kit.json
-clawclawgo add ./someone-elses-kit.json --dest ~/kits
+npx clawclawgo add garrytan/gstack
+npx clawclawgo add https://github.com/anthropics/skills --dest ~/kits
 ```
+
+### Pack
+
+Scans your directory for agent config files and SKILL.md files, detects which agents they're compatible with, and generates a `kit.json`. Security scan results are baked into the output.
+
+```bash
+npx clawclawgo pack ~/my-skills --out kit.json
+```
+
+Detected files: SKILL.md, CLAUDE.md, .cursorrules, .windsurfrules, AGENTS.md, codex.json, .clinerules, .aider.conf.yml, .continue/config.json
 
 ### Scan
 
 Run the security scanner on any kit. Checks for prompt injection, shell exfiltration, credential access, PII, and dangerous commands. Outputs a trust score (0-100).
 
 ```bash
-clawclawgo scan kit.json
+npx clawclawgo scan kit.json
 ```
 
 ## Supported Agents
@@ -64,9 +64,9 @@ See [AGENT-COMPATIBILITY.md](AGENT-COMPATIBILITY.md) for the full list.
 
 The registry is a simple JSON file at `registry/kits.json`. To add your kit:
 
-1. `clawclawgo pack` your repo
-2. `clawclawgo publish` to generate the registry entry
-3. Submit a PR adding the entry to `registry/kits.json`
+1. Push your skills to a GitHub repo
+2. Run `npx clawclawgo publish` to auto-create a PR
+3. Or manually add an entry to `registry/kits.json`
 
 ## Development
 

@@ -7,18 +7,17 @@ title: Packing
 
 The `pack` command scans your directory for agent config files and SKILL.md files, detects which agents they're compatible with, and generates a `kit.json`.
 
-Security scan results are baked into the output so anyone reading the file can see the trust score.
+Security scan results are baked into the output.
 
 ## Usage
 
 ```bash
-clawclawgo pack [directory] [options]
+npx clawclawgo pack [directory] [--out file]
 ```
 
 **Options:**
-- `--out <file>` — Output path for kit.json (default: `./kit.json`)
-- `--name <name>` — Kit name (defaults to directory name)
-- `--description <text>` — Kit description
+- `[dir]` — Directory to scan (defaults to current directory)
+- `--out <file>` — Write to file instead of stdout
 
 ## What Gets Detected
 
@@ -26,66 +25,39 @@ The pack command looks for:
 
 - **SKILL.md** — Agent Skills standard skill files
 - **Agent config files:**
+  - `CLAUDE.md` (Claude Code)
   - `.cursorrules` (Cursor)
   - `.windsurfrules` (Windsurf)
-  - `CLAUDE.md` (Claude Code)
-  - `AGENTS.md` (generic agent instructions)
-  - `openclaw.json` (OpenClaw)
+  - `AGENTS.md` (OpenClaw, Codex)
   - `codex.json` (Codex)
   - `.clinerules` (Cline)
   - `.aider.conf.yml` (Aider)
   - `.continue/config.json` (Continue)
   - And more — see [AGENT-COMPATIBILITY.md](https://github.com/bolander72/clawclawgo/blob/main/AGENT-COMPATIBILITY.md)
 
-## What Goes in kit.json
-
-```json
-{
-  "name": "my-kit",
-  "description": "My collection of agent skills",
-  "skills": [
-    {
-      "path": "skills/example/SKILL.md",
-      "name": "example-skill",
-      "description": "Does something useful",
-      "compatibility": ["openclaw", "cursor", "windsurf"]
-    }
-  ],
-  "configs": [
-    {
-      "path": ".cursorrules",
-      "agent": "cursor"
-    }
-  ],
-  "scan": {
-    "score": 95,
-    "findings": [],
-    "timestamp": "2024-03-14T17:00:00Z"
-  }
-}
-```
-
-The scan results are baked in so anyone can see the trust score before using the kit.
-
 ## Example
 
 ```bash
 # Pack current directory
-clawclawgo pack
+npx clawclawgo pack
 
 # Pack a specific directory
-clawclawgo pack ~/my-agent-skills
+npx clawclawgo pack ~/my-agent-skills
 
 # Specify output file
-clawclawgo pack --out my-kit.json
-
-# Add metadata
-clawclawgo pack --name "Voice Assistant" --description "Skills for voice-controlled agents"
+npx clawclawgo pack --out kit.json
 ```
+
+## What Goes in kit.json
+
+The pack command generates metadata about your kit — skill names, descriptions, detected agent configs, compatibility, and security scan results. This is used by the ClawClawGo registry and web app for indexing.
+
+See [Schema Reference](/docs/reference/schema) for the full format.
 
 ## Next Steps
 
 Once packed:
 1. Review the generated `kit.json`
-2. Run `clawclawgo scan kit.json` to see detailed security findings
-3. Publish to the registry with `clawclawgo publish`
+2. Run `npx clawclawgo scan kit.json` to see detailed security findings
+3. Push your repo to GitHub
+4. Publish to the registry with `npx clawclawgo publish`
