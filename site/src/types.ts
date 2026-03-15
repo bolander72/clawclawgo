@@ -28,7 +28,7 @@ export interface Kit {
 export interface FeedItemProps {
   kit: Kit
   index: number
-  isNew: boolean
+  rank: number
   onClick: () => void
 }
 

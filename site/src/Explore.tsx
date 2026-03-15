@@ -1,105 +1,107 @@
 import { useState } from 'react'
-import { AnimatePresence } from 'framer-motion'
-import { IconLivePhoto } from '@tabler/icons-react'
 import FeedItem from './components/FeedItem'
+import Nav from './components/Nav'
+import Footer from './components/Footer'
 import type { Kit } from './types'
 
 interface ExploreProps {
   kits: Kit[]
 }
 
-export default function Explore({ kits }: ExploreProps) {
-  const [sortMode, setSortMode] = useState<'recent' | 'hot'>('recent')
+type SortMode = 'stars' | 'recent'
 
-  const sortedKits = [...kits].sort((a, b) => {
-    if (sortMode === 'recent') {
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    } else {
-      const starDiff = (b.stars || 0) - (a.stars || 0)
-      if (starDiff !== 0) return starDiff
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    }
+export default function Explore({ kits }: ExploreProps) {
+  const [sortMode, setSortMode] = useState<SortMode>('stars')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  const filtered = kits.filter(kit => {
+    if (!searchQuery.trim()) return true
+    const q = searchQuery.toLowerCase()
+    return (
+      kit.name.toLowerCase().includes(q) ||
+      kit.description?.toLowerCase().includes(q) ||
+      kit.creator?.toLowerCase().includes(q) ||
+      kit.repoUrl?.toLowerCase().includes(q)
+    )
+  })
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (sortMode === 'stars') return (b.stars || 0) - (a.stars || 0)
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
   })
 
   return (
-    <div className="min-h-screen bg-rc-bg">
-      <header className="border-b border-rc-border bg-rc-bg/90 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <a href="/" className="font-grotesk font-bold text-rc-text text-lg hover:text-rc-cyan transition-colors shrink-0">
-              ClawClawGo
-            </a>
-            <div className="h-5 w-px bg-rc-border shrink-0" />
-            <div className="flex items-center gap-2">
-              <IconLivePhoto size={16} className="text-rc-cyan" />
-              <span className="font-grotesk font-medium text-rc-text text-sm">Explore</span>
-            </div>
-          </div>
+    <div className="min-h-screen bg-rc-bg flex flex-col">
+      <Nav />
 
-          <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-rc-surface border border-rc-border shrink-0">
-            <div className="w-2 h-2 rounded-full bg-green-400" />
-            <span className="text-xs font-mono text-rc-text-dim">{kits.length} kits</span>
-          </div>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSortMode('recent')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
-                sortMode === 'recent'
-                  ? 'bg-rc-cyan text-rc-bg font-bold'
-                  : 'bg-rc-surface border border-rc-border text-rc-text-dim hover:text-rc-cyan hover:border-rc-cyan/40'
-              }`}
-            >
-              Recent
-            </button>
-            <button
-              onClick={() => setSortMode('hot')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-mono transition-all ${
-                sortMode === 'hot'
-                  ? 'bg-rc-cyan text-rc-bg font-bold'
-                  : 'bg-rc-surface border border-rc-border text-rc-text-dim hover:text-rc-cyan hover:border-rc-cyan/40'
-              }`}
-            >
-              Hot
-            </button>
-          </div>
-          <span className="text-rc-text-muted text-[10px] font-mono">
-            Multi-source aggregator
-          </span>
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 py-8">
+        <div className="mb-1">
+          <h1 className="text-xs font-mono font-bold text-rc-text-muted tracking-widest uppercase">
+            Kits Leaderboard
+          </h1>
         </div>
 
-        {kits.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 rounded-2xl bg-rc-surface border border-rc-border flex items-center justify-center mb-4">
-              <IconLivePhoto size={32} className="text-rc-text-muted" />
-            </div>
-            <p className="text-rc-text text-lg font-grotesk font-medium mb-2">No kits yet</p>
-            <p className="text-rc-text-dim text-sm max-w-md text-center">
-              No kits found. Check back soon.
-            </p>
-          </div>
-        )}
+        {/* Search */}
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search kits..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full bg-rc-surface border border-rc-border rounded-lg px-4 py-2.5 text-rc-text text-sm font-mono placeholder:text-rc-text-muted focus:outline-none focus:border-rc-cyan/40 transition-colors"
+          />
+        </div>
 
-        {kits.length > 0 && (
-          <div className="space-y-3">
-            <AnimatePresence initial={false}>
-              {sortedKits.map((kit, i) => (
-                <FeedItem
-                  key={kit.id}
-                  kit={kit}
-                  index={i}
-                  isNew={false}
-                  onClick={() => { window.location.href = `/${kit.id}` }}
-                />
-              ))}
-            </AnimatePresence>
+        {/* Sort tabs */}
+        <div className="flex items-center gap-4 mb-4 border-b border-rc-border">
+          {([
+            ['stars', `All Time (${filtered.length})`],
+            ['recent', 'Recent'],
+          ] as const).map(([mode, label]) => (
+            <button
+              key={mode}
+              onClick={() => setSortMode(mode)}
+              className={`pb-2 text-xs font-mono transition-colors border-b-2 -mb-px ${
+                sortMode === mode
+                  ? 'border-rc-text text-rc-text font-bold'
+                  : 'border-transparent text-rc-text-muted hover:text-rc-text-dim'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Table */}
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-rc-border text-rc-text-muted text-[10px] font-mono uppercase tracking-wider">
+              <th className="py-2 px-3 text-right w-10">#</th>
+              <th className="py-2 px-3 text-left">Kit</th>
+              <th className="py-2 px-3 text-right">Stars</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((kit, i) => (
+              <FeedItem
+                key={kit.id}
+                kit={kit}
+                index={i}
+                rank={i + 1}
+                onClick={() => { window.location.href = `/${kit.id}` }}
+              />
+            ))}
+          </tbody>
+        </table>
+
+        {sorted.length === 0 && (
+          <div className="text-center py-12 text-rc-text-muted text-sm font-mono">
+            {searchQuery ? 'No kits match your search.' : 'No kits found.'}
           </div>
         )}
       </main>
+
+      <Footer />
     </div>
   )
 }

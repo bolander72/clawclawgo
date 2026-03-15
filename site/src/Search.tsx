@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react'
-import { AnimatePresence } from 'framer-motion'
 import { IconSearch, IconX } from '@tabler/icons-react'
 import Nav from './components/Nav'
 import Footer from './components/Footer'
@@ -16,7 +15,6 @@ export default function Search({ kits }: SearchProps) {
     : ''
   
   const [searchQuery, setSearchQuery] = useState<string>(initialQuery)
-  const [searchFocused, setSearchFocused] = useState<boolean>(false)
   const [sourceFilter, setSourceFilter] = useState<string | null>(null)
   const [compatFilter, setCompatFilter] = useState<string | null>(null)
 
@@ -25,20 +23,22 @@ export default function Search({ kits }: SearchProps) {
     const q = searchQuery.toLowerCase().trim()
     const terms = q.split(/\s+/)
     
-    return kits.filter(kit => {
-      if (sourceFilter && kit.source !== sourceFilter) return false
-      if (compatFilter && !kit.compatibility.includes(compatFilter)) return false
-      if (!q) return true
-      
-      const searchable = [
-        kit.name,
-        kit.description || '',
-        kit.creator,
-        ...(kit.compatibility || []),
-      ].join(' ').toLowerCase()
-      
-      return terms.every(term => searchable.includes(term))
-    })
+    return kits
+      .filter(kit => {
+        if (sourceFilter && kit.source !== sourceFilter) return false
+        if (compatFilter && !kit.compatibility.includes(compatFilter)) return false
+        if (!q) return true
+        
+        const searchable = [
+          kit.name,
+          kit.description || '',
+          kit.creator,
+          ...(kit.compatibility || []),
+        ].join(' ').toLowerCase()
+        
+        return terms.every(term => searchable.includes(term))
+      })
+      .sort((a, b) => (b.stars || 0) - (a.stars || 0))
   }, [kits, searchQuery, sourceFilter, compatFilter])
 
   const handleSearchChange = (value: string) => {
@@ -60,57 +60,40 @@ export default function Search({ kits }: SearchProps) {
 
       <main className="flex-1 max-w-4xl mx-auto px-4 py-8 w-full">
         {/* Search bar */}
-        <div className="mb-8">
-          <div className={`
-            flex items-center bg-rc-surface border rounded-2xl transition-all duration-300 overflow-hidden
-            ${searchFocused ? 'border-rc-cyan/50 shadow-[0_0_20px_rgba(0,240,160,0.08)]' : 'border-rc-border'}
-          `}>
-            <div className="pl-5 pr-2 text-rc-text-muted">
-              <IconSearch size={20} />
+        <div className="mb-6">
+          <div className="flex items-center bg-rc-surface border border-rc-border rounded-lg overflow-hidden focus-within:border-rc-cyan/40 transition-colors">
+            <div className="pl-4 pr-2 text-rc-text-muted">
+              <IconSearch size={16} />
             </div>
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => handleSearchChange(e.target.value)}
-              onFocus={() => setSearchFocused(true)}
-              onBlur={() => setSearchFocused(false)}
-              placeholder="Search kits by name, creator, or compatible agent"
-              className="flex-1 py-4 px-2 bg-transparent text-rc-text font-grotesk text-base placeholder:text-rc-text-muted/50 focus:outline-none"
+              placeholder="Search kits..."
+              className="flex-1 py-2.5 px-2 bg-transparent text-rc-text font-mono text-sm placeholder:text-rc-text-muted focus:outline-none"
               autoFocus
             />
             {searchQuery && (
               <button
                 onClick={() => handleSearchChange('')}
-                className="mr-4 text-rc-text-muted hover:text-rc-text transition-colors"
+                className="mr-3 text-rc-text-muted hover:text-rc-text transition-colors"
               >
-                <IconX size={18} />
+                <IconX size={14} />
               </button>
             )}
           </div>
 
           {/* Filters */}
-          <div className="flex gap-2 mt-4 flex-wrap">
-            <span className="text-xs font-mono text-rc-text-muted py-1.5">Filter:</span>
-            <button
-              onClick={() => setSourceFilter(sourceFilter === 'github' ? null : 'github')}
-              className={`px-3 py-1 rounded-lg text-xs font-mono transition-all ${
-                sourceFilter === 'github'
-                  ? 'bg-rc-cyan text-rc-bg font-bold'
-                  : 'bg-rc-surface border border-rc-border text-rc-text-dim hover:border-rc-cyan/40'
-              }`}
-            >
-              GitHub
-            </button>
-            <div className="w-px h-6 bg-rc-border" />
-            <span className="text-xs font-mono text-rc-text-muted py-1.5">Agent:</span>
+          <div className="flex gap-2 mt-3 flex-wrap">
+            <span className="text-[10px] font-mono text-rc-text-muted py-1.5 uppercase tracking-wider">Agent:</span>
             {['claude-code', 'cursor', 'github-copilot', 'gemini-cli', 'windsurf'].map(agent => (
               <button
                 key={agent}
                 onClick={() => setCompatFilter(compatFilter === agent ? null : agent)}
-                className={`px-3 py-1 rounded-lg text-xs font-mono transition-all ${
+                className={`px-2.5 py-1 rounded text-xs font-mono transition-all ${
                   compatFilter === agent
-                    ? 'bg-rc-magenta text-rc-bg font-bold'
-                    : 'bg-rc-surface border border-rc-border text-rc-text-dim hover:border-rc-magenta/40'
+                    ? 'bg-rc-text text-rc-bg font-bold'
+                    : 'text-rc-text-muted hover:text-rc-text-dim'
                 }`}
               >
                 {agent}
@@ -120,50 +103,43 @@ export default function Search({ kits }: SearchProps) {
         </div>
 
         {!searchQuery.trim() && !sourceFilter && !compatFilter && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 rounded-2xl bg-rc-surface border border-rc-border flex items-center justify-center mb-4">
-              <IconSearch size={32} className="text-rc-text-muted" />
-            </div>
-            <p className="text-rc-text text-lg font-grotesk font-medium mb-2">Search kits</p>
-            <p className="text-rc-text-dim text-sm max-w-md text-center">
-              Start typing to search by name, creator, or compatible agent.
-            </p>
+          <div className="text-center py-16 text-rc-text-muted text-sm font-mono">
+            Start typing to search by name, creator, or compatible agent.
           </div>
         )}
 
         {(searchQuery.trim() || sourceFilter || compatFilter) && filteredKits.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="w-16 h-16 rounded-2xl bg-rc-surface border border-rc-border flex items-center justify-center mb-4">
-              <IconX size={32} className="text-rc-text-muted" />
-            </div>
-            <p className="text-rc-text text-lg font-grotesk font-medium mb-2">No kits found</p>
-            <p className="text-rc-text-dim text-sm max-w-md text-center">
-              Try adjusting your search or filters.
-            </p>
+          <div className="text-center py-16 text-rc-text-muted text-sm font-mono">
+            No kits found. Try adjusting your search or filters.
           </div>
         )}
 
         {filteredKits.length > 0 && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-rc-text-dim text-sm font-mono">
-                {filteredKits.length} {filteredKits.length === 1 ? 'kit' : 'kits'} found
-              </p>
-            </div>
-            <div className="space-y-3">
-              <AnimatePresence>
+          <>
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-rc-border text-rc-text-muted text-[10px] font-mono uppercase tracking-wider">
+                  <th className="py-2 px-3 text-right w-10">#</th>
+                  <th className="py-2 px-3 text-left">Kit</th>
+                  <th className="py-2 px-3 text-right">Stars</th>
+                </tr>
+              </thead>
+              <tbody>
                 {filteredKits.map((kit, i) => (
                   <FeedItem
                     key={kit.id}
                     kit={kit}
                     index={i}
-                    isNew={false}
+                    rank={i + 1}
                     onClick={() => { window.location.href = `/${kit.id}` }}
                   />
                 ))}
-              </AnimatePresence>
+              </tbody>
+            </table>
+            <div className="mt-3 text-right text-rc-text-muted text-[10px] font-mono">
+              {filteredKits.length} {filteredKits.length === 1 ? 'kit' : 'kits'}
             </div>
-          </div>
+          </>
         )}
       </main>
 
