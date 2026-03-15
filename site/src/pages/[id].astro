@@ -2,8 +2,8 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { getKits } from '../data/kits'
 
-export async function getStaticPaths() {
-  const kits = await getKits()
+export function getStaticPaths() {
+  const kits = getKits()
   return kits.map(kit => ({
     params: { id: kit.id },
     props: { kit },
@@ -12,7 +12,7 @@ export async function getStaticPaths() {
 
 const { kit } = Astro.props
 
-// Fetch README using the branch from GitHub API
+// Fetch README at build time — raw.githubusercontent.com has no rate limit
 let readme = ''
 if (kit.repoUrl) {
   const repoPath = kit.repoUrl.replace('https://github.com/', '')

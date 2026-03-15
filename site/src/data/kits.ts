@@ -1,74 +1,29 @@
 import type { Kit } from '../types'
 import registryData from '../../../registry/kits.json'
 
-interface RegistryEntry {
-  id: string
-  repoUrl: string
-  compatibility: string[]
-  trustTier: 'verified' | 'community' | 'unreviewed'
-  detectedFiles?: string[]
-}
-
-interface GitHubRepo {
-  name: string
-  full_name: string
-  description: string | null
-  owner: { login: string }
-  stargazers_count: number
-  forks_count: number
-  created_at: string
-  pushed_at: string
-  default_branch: string
-}
-
-// Cache so multiple calls in one build don't re-fetch
-let _cache: Kit[] | null = null
-
-export async function getKits(): Promise<Kit[]> {
-  if (_cache) return _cache
-
-  const entries = registryData.kits as RegistryEntry[]
-
-  const kits = await Promise.all(entries.map(async (entry) => {
-    const repoPath = entry.repoUrl.replace('https://github.com/', '')
+// Build-time: reads static registry data. No API calls.
+// A scheduled GitHub Action refreshes stars/description/etc periodically.
+export function getKits(): Kit[] {
+  return (registryData.kits as any[]).map(entry => {
+    const repoPath = entry.repoUrl?.replace('https://github.com/', '') || ''
     const [owner] = repoPath.split('/')
-
-    // Fetch live metadata from GitHub API
-    let gh: GitHubRepo | null = null
-    try {
-      const headers: Record<string, string> = {
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'ClawClawGo',
-      }
-      // Use token if available (5000 req/hr vs 60)
-      const token = process.env.GITHUB_TOKEN
-      if (token) headers['Authorization'] = `Bearer ${token}`
-
-      const res = await fetch(`https://api.github.com/repos/${repoPath}`, { headers })
-      if (res.ok) gh = await res.json() as GitHubRepo
-    } catch {}
-
-    const kit: Kit = {
+    return {
       id: entry.id,
-      name: gh?.name || repoPath.split('/')[1] || repoPath,
-      description: gh?.description || '',
-      source: 'github',
+      name: entry.name || repoPath.split('/')[1] || repoPath,
+      description: entry.description || '',
+      source: 'github' as const,
       repoUrl: entry.repoUrl,
-      owner: gh?.owner?.login || owner,
-      stars: gh?.stargazers_count || 0,
-      forks: gh?.forks_count || 0,
-      lastUpdated: gh?.pushed_at || '',
-      creator: `@${gh?.owner?.login || owner}`,
-      createdAt: gh?.created_at || '',
-      compatibility: entry.compatibility,
-      trustTier: entry.trustTier,
+      owner: entry.owner || owner,
+      stars: entry.stars || 0,
+      forks: entry.forks || 0,
+      lastUpdated: entry.pushedAt || '',
+      creator: `@${entry.owner || owner}`,
+      createdAt: entry.createdAt || '',
+      compatibility: entry.compatibility || [],
+      trustTier: entry.trustTier || 'unreviewed',
       detectedFiles: entry.detectedFiles || [],
-      skillCount: 0,
-      defaultBranch: gh?.default_branch || 'main',
+      skillCount: entry.skillCount || 0,
+      defaultBranch: entry.defaultBranch || 'main',
     }
-    return kit
-  }))
-
-  _cache = kits
-  return kits
+  })
 }

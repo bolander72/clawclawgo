@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro'
 import { getKits } from '../data/kits'
 
-const kits = await getKits()
+const kits = getKits()
 ---
 
 <BaseLayout title="Explore - ClawClawGo" description="Browse agent kits from GitHub, ClawHub, and more.">
