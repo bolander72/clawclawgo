@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * ClawClawGo CLI: Cross-platform agent skills aggregator
+ * ClawClawGo CLI: Agent kits search engine
  *
  * Usage:
- *   clawclawgo pack [dir] [--out file]     Pack skills into a build.json
- *   clawclawgo add <url|file>              Download a build to your machine
- *   clawclawgo scan <file|--stdin>         Security scan a build
- *   clawclawgo preview <file|--stdin>      Preview build contents
- *   clawclawgo publish [dir]               Submit build to registry
- *   clawclawgo search <query>              Search for builds
+ *   clawclawgo add <repo|owner/repo>       Clone a kit repo and scan it
+ *   clawclawgo pack [dir] [--out file]     Pack local skills into a kit.json
+ *   clawclawgo scan <file|--stdin>         Security scan a kit file
+ *   clawclawgo preview <file|--stdin>      Preview kit contents
+ *   clawclawgo publish [dir]               Submit kit to registry
+ *   clawclawgo search <query>              Search for kits
  */
 
 import fs from 'fs';
@@ -301,70 +301,128 @@ function packBuild(dir = '.') {
 
 // ── Add Command ──
 
-async function addBuild(source, destDir) {
-  let content;
-  let sourceName;
-
-  // Fetch from URL or read from file
-  if (source.startsWith('http://') || source.startsWith('https://')) {
-    console.log(`📥 Fetching ${source}...`);
-    content = await fetchUrl(source);
-    sourceName = new URL(source).pathname.split('/').pop() || 'build.json';
-  } else {
-    content = fs.readFileSync(source, 'utf8');
-    sourceName = path.basename(source);
-  }
-
-  // Parse it
-  let build;
-  try {
-    build = JSON.parse(content);
-  } catch {
-    console.error('❌ Not valid JSON. Expected a build.json file.');
-    process.exit(1);
-  }
-
-  // Quick scan check
-  const scanResult = build.scan || runScan(content);
-  if (scanResult.blocked) {
-    console.log(formatScanReport(scanResult));
-    console.error('\n❌ Build has blocking security issues. Not downloading.');
-    console.error('   Use --force to override (not recommended).');
-    if (!args.includes('--force')) process.exit(1);
-    console.log('\n⚠️  --force used. Proceeding despite security issues.\n');
-  }
-
-  // Figure out destination
-  const outputDir = destDir || process.cwd();
-  const buildName = build.name?.replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase() || 'build';
-  const buildDir = path.join(outputDir, buildName);
-
-  // Create build directory
-  fs.mkdirSync(buildDir, { recursive: true });
-
-  // Write the build.json
-  const buildJsonPath = path.join(buildDir, 'build.json');
-  fs.writeFileSync(buildJsonPath, JSON.stringify(build, null, 2), 'utf8');
-
-  // Summary
-  console.log(`\n✅ Build downloaded to ${buildDir}/`);
-  console.log(`   Name: ${build.name}`);
-  console.log(`   Skills: ${build.skills?.length || 0}`);
-  console.log(`   Compatibility: ${build.compatibility?.join(', ') || 'unknown'}`);
-  if (scanResult.trustScore !== undefined) {
-    console.log(`   Trust Score: ${scanResult.trustScore}/100`);
-  }
-  console.log(`\n📄 Build saved to: ${buildJsonPath}`);
-  console.log(`\n💡 Give this file to your AI agent — it'll know what to do.`);
-
-  if (build.skills?.length > 0) {
-    console.log(`\nSkills included:`);
-    for (const skill of build.skills) {
-      console.log(`   • ${skill.name}${skill.description ? ' — ' + skill.description.slice(0, 60) : ''}`);
+async function addKit(source, destDir) {
+  // Normalize GitHub URL
+  let repoUrl = source;
+  if (!repoUrl.startsWith('http://') && !repoUrl.startsWith('https://')) {
+    // Might be owner/repo shorthand
+    if (repoUrl.match(/^[\w.-]+\/[\w.-]+$/)) {
+      repoUrl = `https://github.com/${repoUrl}`;
+    } else {
+      console.error('❌ Expected a GitHub URL or owner/repo shorthand.');
+      console.error('   Example: clawclawgo add garrytan/gstack');
+      console.error('   Example: clawclawgo add https://github.com/anthropics/skills');
+      process.exit(1);
     }
   }
 
-  return buildDir;
+  // Clean up URL
+  repoUrl = repoUrl.replace(/\.git$/, '').replace(/\/$/, '');
+
+  // Extract owner/repo for display
+  const match = repoUrl.match(/github\.com\/([^/]+\/[^/]+)/);
+  const repoName = match ? match[1] : path.basename(repoUrl);
+  const dirName = repoName.split('/').pop();
+
+  const outputDir = destDir || process.cwd();
+  const cloneDir = path.join(outputDir, dirName);
+
+  if (fs.existsSync(cloneDir)) {
+    console.error(`❌ Directory already exists: ${cloneDir}`);
+    console.error('   Remove it first or use --dest to choose another location.');
+    process.exit(1);
+  }
+
+  console.log(`\n📥 Cloning ${repoName}...`);
+
+  // Clone the repo (shallow for speed)
+  try {
+    execSync(`git clone --depth 1 "${repoUrl}.git" "${cloneDir}"`, { stdio: 'pipe' });
+  } catch (err) {
+    console.error(`❌ Clone failed. Is this a valid public GitHub repo?`);
+    console.error(`   URL: ${repoUrl}`);
+    process.exit(1);
+  }
+
+  // Remove .git dir — user doesn't need the history
+  const gitDir = path.join(cloneDir, '.git');
+  try { fs.rmSync(gitDir, { recursive: true, force: true }); } catch { /* ok */ }
+
+  // Find skills
+  const skills = [];
+  walkDir(cloneDir, (filePath, fileName) => {
+    if (fileName !== 'SKILL.md') return;
+    const content = fs.readFileSync(filePath, 'utf8');
+    const fm = parseFrontmatter(content);
+    const skillDir = path.dirname(filePath);
+    const relativePath = path.relative(cloneDir, skillDir);
+    skills.push({
+      name: fm.name || path.basename(skillDir),
+      description: fm.description || '',
+      path: relativePath,
+    });
+  });
+
+  // Security scan
+  let scanIssues = false;
+  const allContent = [];
+  walkDir(cloneDir, (filePath, fileName) => {
+    try {
+      const content = fs.readFileSync(filePath, 'utf8');
+      allContent.push(content);
+    } catch { /* binary files, skip */ }
+  });
+  const scanResult = runScan(allContent.join('\n---\n'));
+
+  if (scanResult.blocked && !args.includes('--force')) {
+    console.log(formatScanReport(scanResult));
+    console.error('\n❌ Blocked by security scan. Review the issues above.');
+    console.error('   Use --force to override (not recommended).');
+    // Clean up
+    try { fs.rmSync(cloneDir, { recursive: true, force: true }); } catch { /* ok */ }
+    process.exit(1);
+  }
+  if (scanResult.blocked) {
+    console.log('\n⚠️  --force used. Proceeding despite security issues.\n');
+    scanIssues = true;
+  }
+
+  // Summary
+  console.log(`\n✅ Added to ${cloneDir}/`);
+  console.log(`   Source: ${repoUrl}`);
+  console.log(`   Trust Score: ${scanResult.trustScore}/100`);
+
+  if (skills.length > 0) {
+    console.log(`\n⚡ Skills found (${skills.length}):`);
+    for (const skill of skills) {
+      console.log(`   • ${skill.name}${skill.description ? ' — ' + skill.description.slice(0, 60) : ''}`);
+      console.log(`     ${skill.path}/SKILL.md`);
+    }
+  } else {
+    console.log('\n   No SKILL.md files found — check the repo for agent configs.');
+    // List detected agent files
+    const detectedFiles = [];
+    for (const [agent, { files, note }] of Object.entries(AGENT_MARKERS)) {
+      for (const marker of files) {
+        if (fs.existsSync(path.join(cloneDir, marker))) {
+          detectedFiles.push({ file: marker, note });
+        }
+      }
+    }
+    if (detectedFiles.length > 0) {
+      console.log('   Detected agent files:');
+      for (const { file, note } of detectedFiles) {
+        console.log(`     ${file} (${note})`);
+      }
+    }
+  }
+
+  if (scanResult.findings.filter(f => f.severity === 'warn').length > 0) {
+    console.log(`\n⚠️  ${scanResult.findings.filter(f => f.severity === 'warn').length} scan warnings — run \`clawclawgo scan\` for details.`);
+  }
+
+  console.log('');
+  return cloneDir;
 }
 
 // ── Preview Command ──
@@ -625,10 +683,10 @@ try {
       const source = args[1];
       const dest = getArg('--dest') || getArg('--to');
       if (!source) {
-        console.error('Usage: clawclawgo add <url|file> [--dest dir]');
+        console.error('Usage: clawclawgo add <repo-url|owner/repo> [--dest dir]');
         process.exit(1);
       }
-      await addBuild(source, dest);
+      await addKit(source, dest);
       break;
     }
 
@@ -671,21 +729,21 @@ try {
     }
 
     default:
-      console.log(`ClawClawGo — agent skills aggregator
+      console.log(`ClawClawGo — agent kits search engine
 
 Commands:
-  pack [dir] [--out file]     Pack skills into a build.json (with scan baked in)
-  add <url|file> [--dest dir] Download a build to your machine
-  scan <file|--stdin>         Security scan a build
-  preview <file|--stdin>      Preview build contents
-  publish [dir]               Submit build to the registry
-  search <query>              Search for builds
+  add <repo|owner/repo> [--dest dir]   Clone a kit repo and scan it
+  pack [dir] [--out file]              Pack local skills into a kit.json
+  scan <file|--stdin>                  Security scan a kit file
+  preview <file|--stdin>               Preview kit contents
+  publish [dir]                        Submit kit to the registry
+  search <query>                       Search for kits on the web
 
 Examples:
-  clawclawgo pack . --out build.json
-  clawclawgo add https://example.com/build.json
-  clawclawgo scan build.json
-  clawclawgo preview build.json
+  clawclawgo add garrytan/gstack
+  clawclawgo add https://github.com/anthropics/skills --dest ~/kits
+  clawclawgo pack . --out kit.json
+  clawclawgo scan kit.json
   clawclawgo publish ~/my-skills
   clawclawgo search "voice assistant"`);
   }

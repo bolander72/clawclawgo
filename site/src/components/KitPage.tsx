@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { IconEye, IconDownload, IconHash, IconBrandGithub, IconCopy, IconExternalLink, IconShield, IconAlertTriangle, IconFolder, IconArrowLeft } from '@tabler/icons-react'
+import { IconEye, IconHash, IconBrandGithub, IconExternalLink, IconShield, IconAlertTriangle, IconFolder, IconArrowLeft, IconTerminal2 } from '@tabler/icons-react'
 import { formatDate } from '../lib/utils'
 import { getAgentsByIds } from '../agents'
 import CopyButton from './CopyButton'
@@ -17,9 +17,10 @@ export default function KitPage({ kit }: { kit: Kit }) {
   const TrustIcon = trustBadge.icon
   const agents = getAgentsByIds(kit.compatibility)
 
-  const cliCommand = kit.repoUrl
-    ? `npx clawclawgo add ${kit.repoUrl}`
-    : `# No repo URL available`
+  const cloneCommand = kit.repoUrl ? `git clone ${kit.repoUrl}.git` : null
+  const addCommand = kit.repoUrl
+    ? `npx clawclawgo add ${kit.repoUrl.replace('https://github.com/', '')}`
+    : null
 
   const kitJson = JSON.stringify({
     name: kit.name,
@@ -60,16 +61,13 @@ export default function KitPage({ kit }: { kit: Kit }) {
         {/* Kit header */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-4 flex-wrap">
-            {/* Source badge */}
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rc-cyan/15 border border-rc-cyan/30">
               <span className="text-[10px] font-mono font-bold text-rc-cyan tracking-wider">{kit.source.toUpperCase()}</span>
             </div>
-            {/* Trust tier badge */}
             <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border ${trustBadge.color}`}>
               {TrustIcon && <TrustIcon size={12} />}
               <span className="text-[10px] font-mono font-bold tracking-wider">{trustBadge.label}</span>
             </div>
-            {/* GitHub stars */}
             {kit.source === 'github' && kit.stars && (
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-rc-yellow/15 border border-rc-yellow/30">
                 <IconBrandGithub size={12} className="text-rc-yellow" />
@@ -99,6 +97,52 @@ export default function KitPage({ kit }: { kit: Kit }) {
                   {tag}
                 </span>
               ))}
+            </div>
+          )}
+        </div>
+
+        {/* Get This Kit */}
+        <div className="pb-6 mb-6 border-b border-rc-border">
+          <h2 className="text-xl font-grotesk font-bold text-rc-text mb-4">Get This Kit</h2>
+
+          {/* Primary: View on GitHub */}
+          {kit.repoUrl && (
+            <a
+              href={kit.repoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2.5 px-5 py-3 bg-rc-cyan text-rc-bg rounded-xl hover:bg-rc-cyan/90 transition-colors text-sm font-grotesk font-semibold mb-4"
+            >
+              <IconBrandGithub size={18} />
+              View on GitHub
+              <IconExternalLink size={14} className="opacity-60" />
+            </a>
+          )}
+
+          {/* Clone command */}
+          {cloneCommand && (
+            <div className="mb-3">
+              <p className="text-rc-text-muted text-xs font-mono mb-2">Clone:</p>
+              <div className="flex items-center gap-2 bg-black/30 rounded-lg p-3 border border-rc-border">
+                <code className="flex-1 text-xs font-mono text-rc-text overflow-x-auto">
+                  {cloneCommand}
+                </code>
+                <CopyButton text={cloneCommand} />
+              </div>
+            </div>
+          )}
+
+          {/* CLI add command */}
+          {addCommand && (
+            <div>
+              <p className="text-rc-text-muted text-xs font-mono mb-2">Or use the CLI (clones + scans):</p>
+              <div className="flex items-center gap-2 bg-black/30 rounded-lg p-3 border border-rc-border">
+                <IconTerminal2 size={14} className="text-rc-text-muted shrink-0" />
+                <code className="flex-1 text-xs font-mono text-rc-text overflow-x-auto">
+                  {addCommand}
+                </code>
+                <CopyButton text={addCommand} />
+              </div>
             </div>
           )}
         </div>
@@ -171,71 +215,19 @@ export default function KitPage({ kit }: { kit: Kit }) {
           </div>
         </div>
 
-        {/* Add section */}
-        <div className="pb-6 mb-6 border-b border-rc-border bg-rc-bg/50 rounded-2xl p-6">
-          <h2 className="text-xl font-grotesk font-bold text-rc-text mb-2">Add This Kit</h2>
-          <p className="text-sm text-rc-text-dim mb-4">
-            Give this file to your AI agent — it'll know what to do.
-          </p>
-          <div className="space-y-3">
-            {/* CLI command */}
-            {kit.repoUrl && (
-              <div>
-                <p className="text-rc-text-muted text-xs font-mono mb-2">Copy CLI command:</p>
-                <div className="flex items-center gap-2 bg-black/30 rounded-lg p-3 border border-rc-border">
-                  <code className="flex-1 text-xs font-mono text-rc-text overflow-x-auto">
-                    {cliCommand}
-                  </code>
-                  <CopyButton text={cliCommand} />
-                </div>
-              </div>
-            )}
-            {/* Download JSON */}
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={() => {
-                  const blob = new Blob([kitJson], { type: 'application/json' })
-                  const url = URL.createObjectURL(blob)
-                  const a = document.createElement('a')
-                  a.href = url
-                  a.download = `${kit.id}.json`
-                  a.click()
-                  URL.revokeObjectURL(url)
-                }}
-                className="flex items-center gap-2 px-4 py-2.5 bg-rc-cyan text-rc-bg rounded-xl hover:bg-rc-cyan/90 transition-colors text-sm font-grotesk font-semibold"
-              >
-                <IconDownload size={16} />
-                Download kit.json
-              </button>
-              {kit.repoUrl && (
-                <a
-                  href={kit.repoUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-rc-text rounded-xl border border-rc-border transition-colors text-sm font-grotesk"
-                >
-                  <IconBrandGithub size={16} />
-                  View on GitHub
-                  <IconExternalLink size={12} className="opacity-50" />
-                </a>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Raw JSON preview */}
+        {/* Raw JSON toggle */}
         <div>
           <button
             onClick={() => setShowRaw(!showRaw)}
             className="flex items-center gap-2 px-4 py-2.5 bg-white/5 hover:bg-white/10 text-rc-text rounded-xl border border-rc-border transition-colors text-sm font-grotesk mb-4"
           >
             <IconEye size={16} />
-            {showRaw ? 'Hide' : 'View'} Raw JSON
+            {showRaw ? 'Hide' : 'View'} Kit Metadata
           </button>
           {showRaw && (
             <div>
               <div className="flex items-center justify-between mb-3">
-                <p className="text-rc-text-muted text-xs font-mono">Raw kit JSON</p>
+                <p className="text-rc-text-muted text-xs font-mono">Kit metadata (used by ClawClawGo internally)</p>
                 <CopyButton text={kitJson} />
               </div>
               <pre className="bg-black/30 rounded-xl p-4 text-xs font-mono text-rc-text-dim overflow-auto max-h-80 border border-rc-border">

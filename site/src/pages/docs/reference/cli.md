@@ -11,15 +11,32 @@ Run with `npx` (no install required):
 npx clawclawgo <command>
 ```
 
-Or run from source:
+## Commands
+
+### `add`
+
+Clone a kit repo and run a security scan on it.
 
 ```bash
-git clone https://github.com/bolander72/clawclawgo
-chmod +x clawclawgo/cli/clawclawgo.mjs
-./clawclawgo/cli/clawclawgo.mjs --help
+npx clawclawgo add <repo-url|owner/repo> [--dest dir] [--force]
 ```
 
-## Commands
+**Options:**
+
+| Flag | Description |
+|------|-------------|
+| `<repo>` | GitHub URL or `owner/repo` shorthand |
+| `--dest <dir>` | Where to clone (defaults to current directory) |
+| `--force` | Clone even if scan finds blocking issues |
+
+Clones the repo (shallow, no `.git` history), finds all SKILL.md files and agent configs, runs a security scan, and reports what it found.
+
+**Examples:**
+
+```bash
+npx clawclawgo add garrytan/gstack
+npx clawclawgo add https://github.com/anthropics/skills --dest ~/kits
+```
 
 ### `pack`
 
@@ -37,17 +54,17 @@ npx clawclawgo pack [dir] [--out file]
 | `--out <file>` | Write to file instead of stdout |
 
 **What it detects:**
-- `SKILL.md` files (Agent Skills standard)
+- `SKILL.md` files (Agent Skills standard — 30+ compatible agents)
 - `CLAUDE.md` (Claude Code)
 - `.cursorrules` (Cursor)
 - `.windsurfrules` (Windsurf)
-- `AGENTS.md` (OpenClaw)
+- `AGENTS.md` (OpenClaw, Codex)
 - `codex.json` (Codex)
 - `.clinerules` (Cline)
 - `.aider.conf.yml` (Aider)
 - `.continue/config.json` (Continue)
 
-Security scan results are baked into the output so anyone reading the file can see the trust score.
+Security scan results are baked into the output.
 
 **Examples:**
 
@@ -55,31 +72,6 @@ Security scan results are baked into the output so anyone reading the file can s
 npx clawclawgo pack ~/my-skills --out kit.json
 npx clawclawgo pack .
 ```
-
-### `add`
-
-Download a kit to your machine. Checks baked-in scan results and blocks flagged kits unless `--force`.
-
-```bash
-npx clawclawgo add <url|file> [--dest dir] [--force]
-```
-
-**Options:**
-
-| Flag | Description |
-|------|-------------|
-| `<url\|file>` | URL or local path to a kit.json |
-| `--dest <dir>` | Where to save (defaults to current directory) |
-| `--force` | Download even if scan found issues |
-
-**Examples:**
-
-```bash
-npx clawclawgo add https://example.com/kit.json
-npx clawclawgo add ./someone-elses-kit.json --dest ~/kits
-```
-
-Give the downloaded file to your AI agent — it'll know what to do with it.
 
 ### `scan`
 
@@ -89,16 +81,7 @@ Run the security scanner on any kit file. Checks for prompt injection, shell exf
 npx clawclawgo scan <file>
 ```
 
-Outputs a trust score (0-100) and list of findings.
-
-**Examples:**
-
-```bash
-npx clawclawgo scan kit.json
-npx clawclawgo scan ~/downloads/someones-kit.json
-```
-
-See [Security](/docs/guide/security) for details on what's scanned.
+Outputs a trust score (0-100) and list of findings. See [Security](/docs/guide/security) for details.
 
 ### `preview`
 
@@ -108,22 +91,15 @@ Pretty-print a kit summary — skills, compatibility, scan results.
 npx clawclawgo preview <file>
 ```
 
-**Examples:**
-
-```bash
-npx clawclawgo preview kit.json
-npx clawclawgo preview ~/downloads/someones-kit.json
-```
-
 ### `publish`
 
-Prepare your repo for the ClawClawGo registry. Detects your git remote, runs `pack` + `scan`, and generates a registry entry.
+Submit your repo to the ClawClawGo registry. Detects your git remote, runs `pack` + `scan`, and auto-creates a PR to `registry/kits.json` via `gh` CLI.
 
 ```bash
 npx clawclawgo publish [dir]
 ```
 
-Outputs a JSON entry you can submit as a PR to `registry/kits.json`. See [Publishing](/docs/guide/publishing) for details.
+Requires [GitHub CLI](https://cli.github.com/) (`gh`). See [Publishing](/docs/guide/publishing) for details.
 
 ### `search`
 
@@ -138,7 +114,8 @@ Opens [clawclawgo.com/search](https://clawclawgo.com/search) with your query.
 ## Environment
 
 - Node.js 18+
-- No other dependencies required
+- `git` (for `add` command)
+- `gh` CLI (optional, for `publish` command)
 
 ## From Source
 

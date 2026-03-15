@@ -81,19 +81,7 @@ export interface FeedItemProps {
   onTagClick?: (tag: string) => void
 }
 
-export interface KitDetailProps {
-  kit: Kit
-  onClose: () => void
-  onExport: (kit: Kit) => void
-}
-
-export interface ExportWizardProps {
-  kit: Kit
-  onClose: () => void
-}
-
-// Note: KitDetail and ExportWizard are legacy modal components.
-// Kit pages now use KitPage component at /kit/[id].
+// Kit detail pages use KitPage component at /kit/[id].
 
 export interface CopyButtonProps {
   text: string
